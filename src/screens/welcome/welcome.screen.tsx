@@ -1,6 +1,7 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import WelcomeStyle from "./styles/welcome.style";
 import { Link, useRouter } from "expo-router";
+import { Routes } from "@/src/common/resource/routes";
 
 type Props = {};
 
@@ -10,14 +11,14 @@ const WelcomeScreen = (props: Props) => {
         <View style={styles.container}>
             <Text>Màn hình Welcome</Text>
 
-            <TouchableOpacity onPress={() => router.push("/(routes)/sign-in")}>
+            <TouchableOpacity onPress={() => router.push(Routes.SIGN_IN)}>
                 <Text>Tới màn hình đăng nhập</Text>
             </TouchableOpacity>
-            {/* <Link href={"/(routes)/auth/sign-up"} asChild>
+            <Link href={Routes.SIGN_UP} asChild>
                 <TouchableOpacity>
                     <Text>Tới màn hình đăng ký</Text>
                 </TouchableOpacity>
-            </Link> */}
+            </Link>
         </View>
     );
 };

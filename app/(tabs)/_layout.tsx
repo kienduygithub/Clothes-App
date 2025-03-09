@@ -54,6 +54,11 @@ export default function TabLayout() {
                       <Text style={style.notifyText}>{notificationCount}</Text>
                     </View>
                   )}
+                  {name === "cart/index" && notificationCount > 0 && (
+                    <View style={style.notifiWrapper}>
+                      <Text style={style.notifyText}>{notificationCount}</Text>
+                    </View>
+                  )}
                 </View>
               )
               : undefined,

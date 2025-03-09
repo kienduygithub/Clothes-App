@@ -1,3 +1,4 @@
+import { Fonts } from '@/src/common/resource/fonts';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -16,6 +17,11 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
+    [Fonts.POPPINS_REGULAR]: require("@/assets/fonts/Poppins-Regular.ttf"),
+    [Fonts.POPPINS_ITALIC]: require("@/assets/fonts/Poppins-Italic.ttf"),
+    [Fonts.POPPINS_BOLD]: require("@/assets/fonts/Poppins-Bold.ttf"),
+    [Fonts.POPPINS_LIGHT]: require("@/assets/fonts/Poppins-Light.ttf"),
+    [Fonts.POPPINS_MEDIUM]: require("@/assets/fonts/Poppins-Medium.ttf"),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -52,13 +58,15 @@ function RootLayoutNav() {
         <Stack.Screen
           name="(routes)/sign-in/index"
           options={{
-            headerShown: false
+            headerShown: false,
+            presentation: 'modal'
           }}
         />
         <Stack.Screen
           name="(routes)/sign-up/index"
           options={{
-            headerShown: false
+            headerShown: false,
+            presentation: 'modal'
           }}
         />
         <Stack.Screen
