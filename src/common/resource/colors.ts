@@ -1,5 +1,5 @@
-export const AppColor = {
-    primary: '#572fff',
+export const CommonColors = {
+    primary: '#0095ff',
     black: '#333',
     gray: '#666',
     lightGray: '#999',
