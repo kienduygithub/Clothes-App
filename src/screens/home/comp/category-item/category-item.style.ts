@@ -12,7 +12,7 @@ const CategoryItemComponentStyle = StyleSheet.create({
     itemImg: {
         width: 50,
         height: 50,
-        borderRadius: '50%',
+        borderRadius: 30,
         backgroundColor: CommonColors.gray
     },
     itemTxt: {

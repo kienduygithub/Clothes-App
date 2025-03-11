@@ -10,7 +10,7 @@ type Props = {
 const CategoryListComponent = ({ categories }: Props) => {
     return (
         <>
-            <View>
+            <View style={styles.container}>
                 <View style={styles.titleWrapper}>
                     <Text style={styles.title}>Danh mục</Text>
                     <TouchableOpacity>
