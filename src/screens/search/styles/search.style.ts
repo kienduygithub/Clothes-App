@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-const HomeStyle = StyleSheet.create({
+const SearchStyle = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
@@ -8,4 +8,4 @@ const HomeStyle = StyleSheet.create({
     }
 });
 
-export default HomeStyle;
+export default SearchStyle;
