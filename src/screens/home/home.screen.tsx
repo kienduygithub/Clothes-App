@@ -1,29 +1,37 @@
-import { Fonts } from "@/src/common/resource/fonts";
-import { Routes } from "@/src/common/resource/routes";
-import { useFonts } from "expo-font";
-import { SplashScreen, Stack, useNavigation, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import HomeStyle from "./home.style";
 import axios from "axios";
-import { ProductType } from "@/src/data/types/global";
+import { CategoryType, ProductType } from "@/src/data/types/global";
 import HeaderComponent from "@/src/components/header/header.comp";
-import ProductItemComponent from "./comp/product-item/product-item.comp";
 import ProductListComponent from "./comp/product-list/product-list.comp";
+import CategoryListComponent from "./comp/category-list/category-list.comp";
 
 const HomeScreen = () => {
     const router = useRouter();
-    const [products, setProducts] = useState<ProductType[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [products, setProducts] = useState<ProductType[]>([]);
+    const [categories, setCategories] = useState<CategoryType[]>([]);
     useEffect(() => {
+        fetchCategories();
         fetchProducts();
+        setIsLoading(false)
     }, [])
     const fetchProducts = async () => {
         try {
             const url = `http://192.168.0.103:8000/products`;
             const response = await axios.get(url);
             setProducts(response.data);
-            setIsLoading(false);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const fetchCategories = async () => {
+        try {
+            const url = `http://192.168.0.103:8000/categories`;
+            const response = await axios.get(url);
+            setCategories(response.data);
         } catch (error) {
             console.log(error);
         }
@@ -36,6 +44,7 @@ const HomeScreen = () => {
                     header: () => <HeaderComponent />
                 }}
             />
+            <CategoryListComponent categories={categories} />
             <ProductListComponent products={products} />
         </>
     );
