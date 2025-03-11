@@ -70,6 +70,12 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
+          name="(routes)/product-details/index"
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
           name="(tabs)"
           options={{
             headerShown: false
