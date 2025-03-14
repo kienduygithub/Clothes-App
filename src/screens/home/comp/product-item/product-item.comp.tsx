@@ -4,17 +4,20 @@ import { ProductType } from "@/src/data/types/global";
 import { FontAwesome } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { Link, useRouter } from "expo-router";
+import { Link } from "expo-router";
 
 type Props = {
     item: ProductType,
     index: number;
+    productType: "sale" | "regular"
 };
 
-const ProductItemComponent = ({ item, index }: Props) => {
-    const router = useRouter();
+const ProductItemComponent = ({ item, index, productType }: Props) => {
     return (
-        <Link href={`/(routes)/product-details?id=${item.id}`} asChild>
+        <Link href={{
+            pathname: '/(routes)/product-details',
+            params: { id: item.id, productType: productType }
+        }} asChild>
             <TouchableOpacity>
                 <Animated.View key={item.id} style={styles.container} entering={FadeInDown.delay(300 + index * 100).duration(500)}>
                     <Image source={{ uri: item.images[0] }} style={styles.productImg} />

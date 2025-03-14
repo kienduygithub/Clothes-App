@@ -30,7 +30,7 @@ const ProductListComponent = ({ products, flatlist }: Props) => {
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={
                         ({ index, item }) => (
-                            <ProductItemComponent item={item} index={index} />
+                            <ProductItemComponent item={item} index={index} productType="regular" />
                         )
                     }
                 />
@@ -38,7 +38,7 @@ const ProductListComponent = ({ products, flatlist }: Props) => {
                 <View style={styles.itemsWrapper}>
                     {products.map((item, index) => (
                         <View key={item.id} style={styles.productWrapper}>
-                            <ProductItemComponent item={item} index={index} />
+                            <ProductItemComponent item={item} index={index} productType="regular" />
                         </View>
                     ))}
                 </View>

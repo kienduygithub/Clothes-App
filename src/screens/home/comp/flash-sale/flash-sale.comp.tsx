@@ -82,7 +82,7 @@ const FlashSaleComponent = ({ products }: Props) => {
                 renderItem={
                     ({ index, item }) => (
                         <View style={{ marginRight: 10 }}>
-                            <ProductItemComponent item={item} index={index} />
+                            <ProductItemComponent item={item} index={index} productType="sale" />
                         </View>
                     )
                 }

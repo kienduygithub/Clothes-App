@@ -7,5 +7,8 @@ export const CommonColors = {
     white: '#fff',
     background: '#F4F4F4',
     highlight: '#F4CE14',
-    yellow: '#D4AF37'
+    yellow: '#D4AF37',
+    green: '#8bc34a',
+    red: '#f44336',
+    purple: '#9c27b0'
 }
