@@ -22,7 +22,6 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: TabConfig.colorTabs["light"].tabIconSelected,
         tabBarInactiveTintColor: TabConfig.colorTabs["light"].tabIconDefault,
-        headerShown: false,
         tabBarStyle: style.tabBarStyle,
       }}
     >

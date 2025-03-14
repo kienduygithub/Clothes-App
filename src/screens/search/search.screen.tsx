@@ -1,10 +1,11 @@
 import { FlatList, Image, Text, View } from "react-native";
-import SearchStyle from "./styles/search.style";
+import SearchStyle from "./search.style";
 import { useEffect, useState } from "react";
 import { CategoryType, ProductType } from "@/src/data/types/global";
 import axios from "axios";
 import { Stack } from "expo-router";
 import { useHeaderHeight } from "@react-navigation/elements"
+import Animated, { FadeInDown } from "react-native-reanimated";
 type Props = {
 
 }
@@ -57,10 +58,10 @@ const SearchScreen = (props: Props) => {
                     showsVerticalScrollIndicator={false}
                     style={{ marginBottom: 60 }}
                     renderItem={({ index, item }) => (
-                        <View style={styles.itemWrapper}>
+                        <Animated.View style={styles.itemWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
                             <Text style={styles.itemTitle}>{item.name}</Text>
                             <Image source={{ uri: item.image }} style={styles.itemImage} />
-                        </View>
+                        </Animated.View>
                     )}
                 />
             </View>
