@@ -39,7 +39,6 @@ export default function TabLayout() {
           name={name}
           options={{
             title: title,
-            headerShown: false,
             tabBarIcon: icon
               ? ({ color }) => (
                 <View>
@@ -89,13 +88,13 @@ const style = StyleSheet.create({
     fontFamily: Fonts.POPPINS_REGULAR,
   },
   tabBarStyle: {
-    position: "absolute",
+    // position: "absolute",
     backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 20,
+    // borderRadius: 20,
     height: 60,
-    bottom: 10,
-    left: 20,
-    right: 20,
+    // bottom: 10,
+    // left: 20,
+    // right: 20,
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

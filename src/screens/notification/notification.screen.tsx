@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
+import { Stack } from "expo-router";
+import { useCallback, useState } from "react";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import NotificationStyle from "./notification.style";
 import { useHeaderHeight } from "@react-navigation/elements"
 import { NotificationType } from "@/src/data/types/global";
