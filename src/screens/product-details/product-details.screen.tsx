@@ -22,8 +22,8 @@ const ProductDetailScreen = (props: Props) => {
     const fetchProductDetails = async () => {
         try {
             const url = productType === 'sale'
-                ? `http://192.168.0.101:8000/saleProducts/${id}`
-                : `http://192.168.0.101:8000/products/${id}`
+                ? `http://192.168.0.102:8000/saleProducts/${id}`
+                : `http://192.168.0.102:8000/products/${id}`
             const response = await axios.get(url);
             setProduct(response.data);
         } catch (error) {
