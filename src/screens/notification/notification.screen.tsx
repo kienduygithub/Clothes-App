@@ -1,16 +1,18 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
 import NotificationStyle from "./notification.style";
 import { useHeaderHeight } from "@react-navigation/elements"
 import { NotificationType } from "@/src/data/types/global";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
-import Animated, { FadeInDown, FadeInLeft } from "react-native-reanimated";
+import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 const NotificationScreen = () => {
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
+    const [refresh, setRefresh] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -20,13 +22,21 @@ const NotificationScreen = () => {
 
     const fetchNotifications = async () => {
         try {
+            setLoading(true);
             const url = `http://192.168.0.102:8000/notifications`
             const response = await axios.get(url);
             setNotifications(response.data);
         } catch (error) {
             console.log(error);
         }
+        setRefresh(false);
+        setLoading(false);
     }
+
+    const handleRefreshNotifications = useCallback(() => {
+        setRefresh(true);
+        fetchNotifications();
+    }, [])
 
     const headerHeight = useHeaderHeight();
     return (
@@ -61,6 +71,15 @@ const NotificationScreen = () => {
                                 </Text>
                             </View>
                         </Animated.View>
+                    )}
+                    refreshControl={
+                        <RefreshControl refreshing={refresh} onRefresh={() => handleRefreshNotifications()} />
+                    }
+                    ListEmptyComponent={() => (
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="notifications-off-outline" size={50} color={CommonColors.gray} />
+                            <Text style={styles.emptyText}>Không có thông báo nào</Text>
+                        </View>
                     )}
                 />
             </View>

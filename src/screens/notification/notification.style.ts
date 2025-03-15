@@ -52,6 +52,28 @@ const NotificationStyle = StyleSheet.create({
         lineHeight: 22,
         letterSpacing: 0
     },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 50,
+    },
+    emptyText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: CommonColors.gray,
+    },
+    loadingWrapper: {
+        height: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+    },
+    loadingText: {
+        marginLeft: 8,
+        fontSize: 16,
+        color: CommonColors.primary,
+    }
 });
 
 export default NotificationStyle;
