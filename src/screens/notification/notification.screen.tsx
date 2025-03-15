@@ -23,7 +23,7 @@ const NotificationScreen = () => {
     const fetchNotifications = async () => {
         try {
             setLoading(true);
-            const url = `http://192.168.0.102:8000/notifications`
+            const url = `http://192.168.0.103:8000/notifications`
             const response = await axios.get(url);
             setNotifications(response.data);
         } catch (error) {

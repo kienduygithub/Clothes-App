@@ -23,7 +23,7 @@ const SearchScreen = (props: Props) => {
 
     const fetchProducts = async () => {
         try {
-            const url = `http://192.168.0.102:8000/products`;
+            const url = `http://192.168.0.103:8000/products`;
             const response = await axios.get(url);
             setProducts(response.data);
         } catch (error) {
@@ -33,7 +33,7 @@ const SearchScreen = (props: Props) => {
 
     const fetchCategories = async () => {
         try {
-            const url = `http://192.168.0.102:8000/categories`;
+            const url = `http://192.168.0.103:8000/categories`;
             const response = await axios.get(url);
             setCategories(response.data);
         } catch (error) {
@@ -56,7 +56,6 @@ const SearchScreen = (props: Props) => {
                     data={categories}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
-                    style={{ marginBottom: 60 }}
                     renderItem={({ index, item }) => (
                         <Animated.View style={styles.itemWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
                             <Text style={styles.itemTitle}>{item.name}</Text>

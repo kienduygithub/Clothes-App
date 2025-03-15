@@ -26,7 +26,7 @@ const HomeScreen = () => {
 
     const fetchProducts = async () => {
         try {
-            const url = `http://192.168.0.102:8000/products`;
+            const url = `http://192.168.0.103:8000/products`;
             const response = await axios.get(url);
             setProducts(response.data);
         } catch (error) {
@@ -36,7 +36,7 @@ const HomeScreen = () => {
 
     const fetchCategories = async () => {
         try {
-            const url = `http://192.168.0.102:8000/categories`;
+            const url = `http://192.168.0.103:8000/categories`;
             const response = await axios.get(url);
             setCategories(response.data);
         } catch (error) {
@@ -46,7 +46,7 @@ const HomeScreen = () => {
 
     const fetchSaleProducts = async () => {
         try {
-            const url = `http://192.168.0.102:8000/saleProducts`;
+            const url = `http://192.168.0.103:8000/saleProducts`;
             const response = await axios.get(url);
             setSaleProducts(response.data);
         } catch (error) {
@@ -69,7 +69,7 @@ const HomeScreen = () => {
                         <ActivityIndicator size={'large'} />
                     </View>
                 ) : (
-                    <ScrollView style={{ flex: 1, marginBottom: 20 }} showsVerticalScrollIndicator={false}>
+                    <ScrollView showsVerticalScrollIndicator={false}>
                         <CategoryListComponent categories={categories} />
                         <FlashSaleComponent products={saleProducts} />
                         <View style={{ marginHorizontal: 20, marginBottom: 10 }}>

@@ -26,7 +26,7 @@ const CartScreen = (props: Props) => {
     const getCart = async () => {
         setLoading(true);
         try {
-            const url = `http://192.168.0.102:8000/cart`;
+            const url = `http://192.168.0.103:8000/cart`;
             const response = await axios.get(url);
             setCart(response.data);
         } catch (error) {
@@ -66,14 +66,14 @@ const CartScreen = (props: Props) => {
                     onRefresh={handleRefreshCart}
                 />
             </View>
-            <View style={styles.footer}>
+            <Animated.View style={styles.footer} entering={FadeInDown.delay(500).duration(500).springify()}>
                 <View style={styles.priceInfoWrapper}>
                     <Text style={styles.totalText}>Total: $100</Text>
                 </View>
                 <TouchableOpacity style={styles.checkoutBtn}>
                     <Text style={styles.checkoutBtnText}>Thanh toán</Text>
                 </TouchableOpacity>
-            </View>
+            </Animated.View>
         </>
     )
 }
