@@ -3,14 +3,14 @@ import { ErrorModel } from "../model/error.model";
 export class HandleHttp {
 
     static success(response: any) {
-        return response;
+        return response?.body;
     }
 
     static exception(result: any) {
         let error = new ErrorModel(
             result?.status,
-            result?.error?.message,
-            result?.error?.body
+            result?.message,
+            result?.body
         );
         return error;
     }

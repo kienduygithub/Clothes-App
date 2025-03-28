@@ -1,11 +1,11 @@
-import axiosApp from "../config/axios.config";
+import CustomAxios from "../config/axios.config";
 import { HandleHttp } from "../utils/handle-http";
 
 export class ServiceCore {
 
     static async GET(domain: string, url: string, config?: any): Promise<any> {
         try {
-            const response = axiosApp.get(
+            const response = await CustomAxios.get(
                 `${domain}/${url}`,
                 config ?? {}
             );
@@ -17,7 +17,7 @@ export class ServiceCore {
 
     static async POST(domain: string, url: string, data: any, config?: any): Promise<any> {
         try {
-            const response = axiosApp.post(
+            const response = await CustomAxios.post(
                 `${domain}/${url}`,
                 data,
                 config ?? {}
@@ -30,7 +30,7 @@ export class ServiceCore {
 
     static async PUT(domain: string, url: string, data: any, config?: any): Promise<any> {
         try {
-            const response = axiosApp.put(
+            const response = await CustomAxios.put(
                 `${domain}/${url}`,
                 data,
                 config ?? {}
@@ -43,7 +43,7 @@ export class ServiceCore {
 
     static async PATCH(domain: string, url: string, data: any, config?: any): Promise<any> {
         try {
-            const response = axiosApp.patch(
+            const response = await CustomAxios.patch(
                 `${domain}/${url}`,
                 data,
                 config ?? {}
@@ -56,7 +56,7 @@ export class ServiceCore {
 
     static async DELETE(domain: string, url: string, config?: any): Promise<any> {
         try {
-            const response = axiosApp.delete(
+            const response = await CustomAxios.delete(
                 `${domain}/${url}`,
                 config ?? {}
             );

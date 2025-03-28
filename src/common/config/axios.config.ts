@@ -1,11 +1,12 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { AppConfig } from "./app.config";
+import { HandleHttp } from "../utils/handle-http";
 
 const appConfig = new AppConfig();
 
-const axiosApp = axios.create();
+const CustomAxios = axios.create();
 
-axiosApp.interceptors.request.use(
+CustomAxios.interceptors.request.use(
     async (config) => {
         const accessToken = await appConfig.getAccessToken();
 
@@ -21,13 +22,13 @@ axiosApp.interceptors.request.use(
     }
 );
 
-axiosApp.interceptors.response.use(
+CustomAxios.interceptors.response.use(
     (response) => {
         return response.data;
     },
-    async (error: AxiosError) => {
-        return Promise.reject(error);
+    (error: AxiosError) => {
+        return Promise.reject(error.response?.data);
     }
 )
 
-export default axiosApp;
+export default CustomAxios;
