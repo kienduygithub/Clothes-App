@@ -5,10 +5,27 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
+import { useEffect, useState } from "react";
+import { UserModel } from "@/src/data/model/user.model";
+import { AppConfig } from "@/src/common/config/app.config";
 
 type Props = {}
 
 const MeScreen = (props: Props) => {
+    const [user, setUser] = useState<UserModel>();
+    const preImage = new AppConfig().getPreImage();
+    useEffect(() => {
+        fetchUserInfo();
+    }, [])
+
+    const fetchUserInfo = async () => {
+        try {
+            const userInfo = await new AppConfig().getUserInfo()
+            setUser(userInfo);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const headerHeight = useHeaderHeight();
     return (
@@ -22,11 +39,15 @@ const MeScreen = (props: Props) => {
             />
             <View style={[styles.container, { marginTop: headerHeight }]}>
                 <View style={{ alignItems: 'center' }}>
-                    <Image
+                    {/* <Image
                         source={{ uri: 'https://tiki.vn/blog/wp-content/uploads/2023/01/Y7deW5ZtpOonbiD_XawHLHdkjKYKHvWxvxNZzKdXXn0L8InieLIH_-U5m0u-RUlFtXKp0Ty91Itj4Oxwn_tjKg_UZo3lxFSrOH_DHIbpKP1LDn80z6BbOxj4d8bmymdy8PWFGjLkTpCdoz-3X-KY7IedQ_dxWJlHSIBWwCYhgM02FvUfVUgLKOQxrQWgjw.jpg' }}
                         style={styles.infoImage}
+                    /> */}
+                    <Image
+                        source={{ uri: `${preImage}/${user?.image_url}` }}
+                        style={styles.infoImage}
                     />
-                    <Text style={styles.username}>John Doe</Text>
+                    <Text style={styles.username}>{user?.name ?? 'Anonymous'}</Text>
                 </View>
 
                 <View style={styles.buttonWrapper}>
