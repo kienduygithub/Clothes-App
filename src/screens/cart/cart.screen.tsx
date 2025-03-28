@@ -26,7 +26,7 @@ const CartScreen = (props: Props) => {
     const getCart = async () => {
         setLoading(true);
         try {
-            const url = `http://192.168.0.103:8000/cart`;
+            const url = `http://192.168.1.30:8000/cart`;
             const response = await axios.get(url);
             setCart(response.data);
         } catch (error) {

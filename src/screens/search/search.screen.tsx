@@ -23,7 +23,7 @@ const SearchScreen = (props: Props) => {
 
     const fetchProducts = async () => {
         try {
-            const url = `http://192.168.0.103:8000/products`;
+            const url = `http://192.168.1.30:8000/products`;
             const response = await axios.get(url);
             setProducts(response.data);
         } catch (error) {
@@ -33,7 +33,7 @@ const SearchScreen = (props: Props) => {
 
     const fetchCategories = async () => {
         try {
-            const url = `http://192.168.0.103:8000/categories`;
+            const url = `http://192.168.1.30:8000/categories`;
             const response = await axios.get(url);
             setCategories(response.data);
         } catch (error) {
