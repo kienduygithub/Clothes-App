@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Tabs } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TabConfig } from '@/src/common/resource/tab.config';
 import { Fonts } from '@/src/common/resource/fonts';
+import { AppConfig } from '@/src/common/config/app.config';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -16,6 +17,18 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const tabScreens = TabConfig.screenTabs;
   const notificationCount = 30;
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
+  const fetchUserInfo = async () => {
+    try {
+      console.log(await new AppConfig().getUserInfo())
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <Tabs

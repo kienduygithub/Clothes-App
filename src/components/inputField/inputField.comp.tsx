@@ -2,12 +2,14 @@ import React from "react";
 import { TextInput } from "react-native";
 import InputFieldStyle from "./inputField.style";
 
-type Props = {};
+type Props = {
+    invalid?: boolean
+} & React.ComponentProps<typeof TextInput>;
 
-const InputField = (props: React.ComponentProps<typeof TextInput>) => {
+const InputField = ({ invalid, ...props }: Props) => {
     return (
         <TextInput
-            style={styles.inputField}
+            style={[styles.inputField, invalid && styles.borderRed]}
             {...props}
         />
     )

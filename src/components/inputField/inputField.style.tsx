@@ -5,14 +5,17 @@ import { StyleSheet } from "react-native";
 const InputFieldStyle = StyleSheet.create({
     inputField: {
         backgroundColor: CommonColors.white,
-        paddingVertical: 12,
+        paddingVertical: 14,
         paddingHorizontal: 18,
         alignSelf: 'stretch',
         borderRadius: 5,
-        fontSize: 16,
+        fontSize: 14,
+        borderWidth: 1,
+        borderColor: CommonColors.extraLightGray,
         color: CommonColors.black,
-        fontFamily: Fonts.POPPINS_REGULAR,
-        marginBottom: 20
+    },
+    borderRed: {
+        borderColor: '#FF0000'
     }
 });
 

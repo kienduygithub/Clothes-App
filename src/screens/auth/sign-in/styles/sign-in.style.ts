@@ -31,6 +31,9 @@ const SignInStyle = StyleSheet.create({
         fontSize: 16,
         fontFamily: Fonts.POPPINS_BOLD
     },
+    formContainer: {
+        width: '100%',
+    },
     signInWrapper: {
         flexDirection: 'row',
         alignItems: 'center',

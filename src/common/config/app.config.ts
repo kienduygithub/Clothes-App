@@ -1,3 +1,4 @@
+import { UserModel } from "@/src/data/model/user.model";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export class AppConfig {
@@ -12,6 +13,27 @@ export class AppConfig {
 
     getPreImage() {
         return this.preImage;
+    }
+
+    async getUserInfo() {
+        try {
+            const userInfo = await AsyncStorage.getItem('user_Info');
+            if (userInfo) {
+                return JSON.parse(userInfo);
+            }
+
+            return {};
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async setUserInfo(userInfo: UserModel) {
+        try {
+            await AsyncStorage.setItem('user_Info', JSON.stringify(userInfo));
+        } catch (error) {
+            throw error;
+        }
     }
 
     async getAccessToken() {
