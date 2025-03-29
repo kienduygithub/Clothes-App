@@ -1,13 +1,26 @@
+import React, { useRef } from "react"
 import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import CategoryListComponentStyle from "./category-list.style"
-import { CategoryType } from "@/src/data/types/global"
 import CategoryItemComponent from "../category-item/category-item.comp"
+import { CategoryModel } from "@/src/data/model/category.model"
 
 type Props = {
-    categories: CategoryType[]
+    preImage: string,
+    categories: CategoryModel[],
+    setRefreshCategory: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-const CategoryListComponent = ({ categories }: Props) => {
+const CategoryListComponent = ({ categories, setRefreshCategory, preImage }: Props) => {
+    const flatListRef = useRef<FlatList>(null);
+
+    const checkRefresh = (event: any) => {
+        const { contentOffset } = event.nativeEvent;
+        if (contentOffset.x <= 0) {
+            console.log('Đang tải lại danh mục...');
+            setRefreshCategory(true);
+        }
+    };
+
     return (
         <>
             <View style={styles.container}>
@@ -18,13 +31,16 @@ const CategoryListComponent = ({ categories }: Props) => {
                     </TouchableOpacity>
                 </View>
                 <FlatList
+                    ref={flatListRef}
                     data={categories}
                     keyExtractor={(item) => `${item.id}`}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ index, item }) => (
-                        <CategoryItemComponent item={item} index={index} />
+                        <CategoryItemComponent item={item} preImage={preImage} index={index} />
                     )}
+                    scrollEventThrottle={16}
+                    onMomentumScrollEnd={(event) => checkRefresh(event)}
                 />
             </View>
         </>
