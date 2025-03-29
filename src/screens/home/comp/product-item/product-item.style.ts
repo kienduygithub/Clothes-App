@@ -7,18 +7,20 @@ const width = Dimensions.get('window').width - 40;
 const ProductItemStyle = StyleSheet.create({
     container: {
         width: width / 2 - 10,
+        backgroundColor: CommonColors.lightGray,
+        borderRadius: 5,
+        overflow: 'hidden'
     },
     productImg: {
         width: '100%',
         height: 200,
-        borderRadius: 15,
         marginBottom: 10
     },
     bookmarkBtn: {
         position: 'absolute',
         right: 15,
         top: 15,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
         padding: 5,
         borderRadius: 30
     },
@@ -26,13 +28,15 @@ const ProductItemStyle = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.POPPINS_BOLD,
         color: CommonColors.black,
-        letterSpacing: 1.1
+        letterSpacing: 1.1,
+        paddingHorizontal: 8
     },
     productInfo: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8
+        marginBottom: 8,
+        paddingHorizontal: 8
     },
     price: {
         fontSize: 16,
