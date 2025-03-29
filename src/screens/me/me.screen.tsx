@@ -2,7 +2,7 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 import MeStyle from "./me.style";
 
 import { useHeaderHeight } from "@react-navigation/elements";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import { useEffect, useState } from "react";
@@ -22,6 +22,18 @@ const MeScreen = (props: Props) => {
         try {
             const userInfo = await new AppConfig().getUserInfo()
             setUser(userInfo);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const logout = async () => {
+        try {
+            await new AppConfig().clear();
+            router.dismissAll();
+            router.navigate({
+                pathname: '/(routes)/sign-in'
+            });
         } catch (error) {
             console.log(error);
         }
@@ -71,7 +83,7 @@ const MeScreen = (props: Props) => {
                         <Ionicons name="pencil-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Chỉnh sửa thông tin</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={() => logout()}>
                         <Ionicons name="log-out-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Đăng xuất</Text>
                     </TouchableOpacity>
