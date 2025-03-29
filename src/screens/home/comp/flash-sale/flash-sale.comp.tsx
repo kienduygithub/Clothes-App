@@ -3,14 +3,15 @@ import FlashSaleComponentStyle from "./flash-sale.style"
 import { FontAwesome } from "@expo/vector-icons"
 import { CommonColors } from "@/src/common/resource/colors"
 import { useEffect, useState } from "react"
-import { ProductType } from "@/src/data/types/global"
 import ProductItemComponent from "../product-item/product-item.comp"
+import { ProductModel } from "@/src/data/model/product.model"
 
 type Props = {
-    products: ProductType[]
+    products: ProductModel[],
+    preImage: string
 }
 
-const FlashSaleComponent = ({ products }: Props) => {
+const FlashSaleComponent = ({ products, preImage }: Props) => {
     const saleEndDate = new Date();
     saleEndDate.setFullYear(2025, 2, 13);
     // saleEndDate.setDate(saleEndDate.getDate() + 2);
@@ -82,7 +83,7 @@ const FlashSaleComponent = ({ products }: Props) => {
                 renderItem={
                     ({ index, item }) => (
                         <View style={{ marginRight: 10 }}>
-                            <ProductItemComponent item={item} index={index} productType="sale" />
+                            <ProductItemComponent item={item} index={index} preImage={preImage} productType="sale" />
                         </View>
                     )
                 }

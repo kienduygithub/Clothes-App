@@ -37,7 +37,7 @@ export class CategoryModel {
             model.category_name = child?.category_name ?? '';
             return model;
         }) ?? [];
-        obj.parent = data?.parent ?? undefined;
+        obj.parent = data?.parent ? new CategoryModel().convertObj(data?.parent) : undefined;
         obj.count = data?.count ?? 0;
 
         return obj;

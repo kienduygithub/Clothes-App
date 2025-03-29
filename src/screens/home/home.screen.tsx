@@ -1,29 +1,30 @@
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import HomeStyle from "./home.style";
-import { CategoryType, ProductType } from "@/src/data/types/global";
 import HeaderComponent from "@/src/components/header/header.comp";
 import ProductListComponent from "./comp/product-list/product-list.comp";
 import CategoryListComponent from "./comp/category-list/category-list.comp";
 import FlashSaleComponent from "./comp/flash-sale/flash-sale.comp";
 import { ActivityIndicator, Image, ScrollView, View } from "react-native";
-import * as CategoryManagement from "../../data/management/category.management";
 import { CategoryModel } from "@/src/data/model/category.model";
 import { AppConfig } from "@/src/common/config/app.config";
+import * as CategoryManagement from "../../data/management/category.management";
+import * as ProductManagement from "../../data/management/product.management";
 import axios from "axios";
+import { ProductModel } from "@/src/data/model/product.model";
 
 const HomeScreen = () => {
     const [preImage, setPreImage] = useState('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [refreshCategory, setRefreshCategory] = useState(false);
-    const [products, setProducts] = useState<ProductType[]>([]);
-    const [saleProducts, setSaleProducts] = useState<ProductType[]>([]);
+    const [refreshCProduct, setRefreshProduct] = useState(false);
+    const [products, setProducts] = useState<ProductModel[]>([]);
+    const [saleProducts, setSaleProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
 
     useEffect(() => {
         fetchPreImage();
         fetchCategories();
-        fetchSaleProducts();
         fetchProducts();
         setIsLoading(false)
     }, [])
@@ -35,15 +36,22 @@ const HomeScreen = () => {
         }
     }, [refreshCategory])
 
+    useEffect(() => {
+        if (refreshCProduct) {
+            fetchProducts();
+            setRefreshProduct(false);
+        }
+    }, [refreshCProduct])
+
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
     }
 
     const fetchProducts = async () => {
         try {
-            // const url = `http://192.168.1.30:8000/products`;
-            // const response = await axios.get(url);
-            // setProducts(response.data);
+            const response = await ProductManagement.fetchProducts();
+            console.log('Sản phẩm: Done!');
+            setProducts(response);
         } catch (error) {
             console.log(error);
         }
@@ -58,17 +66,6 @@ const HomeScreen = () => {
             console.log(error);
         }
     }
-
-    const fetchSaleProducts = async () => {
-        try {
-            const url = `http://192.168.1.38:8000/saleProducts`;
-            const response = await axios.get(url);
-            setSaleProducts(response.data);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
 
     return (
         <>
@@ -86,7 +83,7 @@ const HomeScreen = () => {
                 ) : (
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <CategoryListComponent categories={categories} preImage={preImage} setRefreshCategory={setRefreshCategory} />
-                        <FlashSaleComponent products={saleProducts} />
+                        <FlashSaleComponent preImage={preImage} products={products} />
                         <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
                             <Image
                                 source={require("@/assets/images/sale-banner.jpg")}
@@ -97,7 +94,7 @@ const HomeScreen = () => {
                                 }}
                             />
                         </View>
-                        <ProductListComponent products={products} flatlist={false} />
+                        <ProductListComponent preImage={preImage} products={products} flatlist={false} />
                     </ScrollView>
                 )
             }

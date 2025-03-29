@@ -29,7 +29,7 @@ const WelcomeScreen = (props: Props) => {
                             <Animated.Text style={styles.description} entering={FadeInRight.delay(500).duration(300).springify()}>
                                 Giải pháp toàn diện cho mọi nhu cầu của bạn
                             </Animated.Text>
-                            <SocialSignInButtons emailHref={Routes.SIGN_UP} />
+                            <SocialSignInButtons emailHref={Routes.SIGN_IN} />
                             <View style={styles.signInWrapper}>
                                 <Text style={styles.signInTxt}>
                                     Bạn đã có tài khoản?

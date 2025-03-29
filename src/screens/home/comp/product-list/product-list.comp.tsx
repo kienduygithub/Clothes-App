@@ -1,14 +1,16 @@
-import { ProductType } from "@/src/data/types/global"
 import ProductListStyle from "./product-list.style"
 import ProductItemComponent from "../product-item/product-item.comp"
 import { View, TouchableOpacity, FlatList, Text } from "react-native"
+import { ProductModel } from "@/src/data/model/product.model"
 
 type Props = {
-    products: ProductType[],
+    products: ProductModel[],
+    preImage: string,
     flatlist: boolean
 }
 
-const ProductListComponent = ({ products, flatlist }: Props) => {
+const ProductListComponent = ({ products, preImage, flatlist }: Props) => {
+
     return (
         <View style={styles.container}>
             <View style={styles.titleWrapper}>
@@ -30,7 +32,7 @@ const ProductListComponent = ({ products, flatlist }: Props) => {
                     keyExtractor={(item) => `${item.id}`}
                     renderItem={
                         ({ index, item }) => (
-                            <ProductItemComponent item={item} index={index} productType="regular" />
+                            <ProductItemComponent item={item} index={index} preImage={preImage} productType="regular" />
                         )
                     }
                 />
@@ -38,7 +40,7 @@ const ProductListComponent = ({ products, flatlist }: Props) => {
                 <View style={styles.itemsWrapper}>
                     {products.map((item, index) => (
                         <View key={item.id} style={styles.productWrapper}>
-                            <ProductItemComponent item={item} index={index} productType="regular" />
+                            <ProductItemComponent item={item} index={index} preImage={preImage} productType="regular" />
                         </View>
                     ))}
                 </View>
