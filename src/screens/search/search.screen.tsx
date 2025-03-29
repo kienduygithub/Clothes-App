@@ -1,44 +1,52 @@
-import { FlatList, Image, Text, View } from "react-native";
+import { FlatList, Image, RefreshControl, Text, View } from "react-native";
 import SearchStyle from "./search.style";
 import { useEffect, useState } from "react";
-import { CategoryType, ProductType } from "@/src/data/types/global";
-import axios from "axios";
 import { Stack } from "expo-router";
 import { useHeaderHeight } from "@react-navigation/elements"
 import Animated, { FadeInDown } from "react-native-reanimated";
+import * as CategoryManagement from "../../data/management/category.management";
+import { CategoryModel } from "@/src/data/model/category.model";
+import { AppConfig } from "@/src/common/config/app.config";
+import { CommonColors } from "@/src/common/resource/colors";
+
 type Props = {
 
 }
 
 const SearchScreen = (props: Props) => {
+    const [preImage, setPreImage] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [categories, setCategories] = useState<CategoryType[]>([]);
-    const [products, setProducts] = useState<ProductType[]>([]);
+    const [categories, setCategories] = useState<CategoryModel[]>([]);
 
     useEffect(() => {
+        fetchPreImage();
         fetchCategories();
-        fetchProducts();
         setIsLoading(false)
     }, [])
 
-    const fetchProducts = async () => {
-        try {
-            const url = `http://192.168.1.30:8000/products`;
-            const response = await axios.get(url);
-            setProducts(response.data);
-        } catch (error) {
-            console.log(error);
-        }
+    const fetchPreImage = () => {
+        setPreImage(new AppConfig().getPreImage());
     }
 
     const fetchCategories = async () => {
         try {
-            const url = `http://192.168.1.30:8000/categories`;
-            const response = await axios.get(url);
-            setCategories(response.data);
+            setIsLoading(true);
+            console.log('Đang tải lại danh mục...');
+            const response = await CategoryManagement.fetchParentCategories();
+            console.log('Category: Done!');
+            setCategories(response);
         } catch (error) {
             console.log(error);
+        } finally {
+            setIsLoading(false);
         }
+    }
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchCategories();
+        setRefreshing(false);
     }
 
     const headerHeight = useHeaderHeight();
@@ -46,6 +54,7 @@ const SearchScreen = (props: Props) => {
         <>
             <Stack.Screen
                 options={{
+                    title: 'Danh mục',
                     headerShown: true,
                     headerTransparent: true,
                     headerTitleAlign: 'center'
@@ -56,10 +65,16 @@ const SearchScreen = (props: Props) => {
                     data={categories}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[CommonColors.primary]} />
+                    }
                     renderItem={({ index, item }) => (
                         <Animated.View style={styles.itemWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
-                            <Text style={styles.itemTitle}>{item.name}</Text>
-                            <Image source={{ uri: item.image }} style={styles.itemImage} />
+                            <View style={styles.textWrapper}>
+                                <Text style={styles.itemTitle}>{item.category_name}</Text>
+                                <Text style={styles.itemCount}>{item.count} sản phẩm</Text>
+                            </View>
+                            <Image source={{ uri: `${preImage}/${item.image_url}` }} style={styles.itemImage} />
                         </Animated.View>
                     )}
                 />

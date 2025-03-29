@@ -12,19 +12,33 @@ const SearchStyle = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: 'center',
         backgroundColor: CommonColors.extraLightGray,
-        padding: 10,
-        borderRadius: 10,
-        marginBottom: 20
+        padding: 15,
+        borderRadius: 12,
+        marginBottom: 15,
+        elevation: 3, // Thêm hiệu ứng đổ bóng nhẹ
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    textWrapper: {
+        flex: 1,
+        justifyContent: 'center'
     },
     itemTitle: {
         fontSize: 16,
-        fontWeight: '500',
+        fontWeight: 'bold',
         fontFamily: Fonts.POPPINS_MEDIUM,
-        lineHeight: 24,
-        color: CommonColors.black
+        color: CommonColors.black,
+        marginBottom: 4
+    },
+    itemCount: {
+        fontSize: 14,
+        fontFamily: Fonts.POPPINS_REGULAR,
+        color: CommonColors.gray
     },
     itemImage: {
-        width: 100,
+        width: 120,
         height: 100,
         borderRadius: 10
     }
