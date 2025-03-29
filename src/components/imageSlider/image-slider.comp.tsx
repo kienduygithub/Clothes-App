@@ -28,7 +28,7 @@ const ImageSliderComponent = ({ images, preImage }: Props) => {
     ])
 
     return (
-        <View>
+        <View style={styles.slideWrapper}>
             <FlatList
                 data={images}
                 horizontal={true}
@@ -46,22 +46,33 @@ const ImageSliderComponent = ({ images, preImage }: Props) => {
                 scrollEventThrottle={16}
                 viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
             />
-            <PaginationComponent
-                items={images}
-                paginationIndex={paginationIndex}
-            />
+            <View style={styles.pagingWrapper}>
+                <PaginationComponent
+                    items={images}
+                    paginationIndex={paginationIndex}
+                />
+            </View>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+    slideWrapper: {
+        position: 'relative'
+    },
     imageWrapper: {
         width: width
     },
     imageItem: {
         width: '100%',
         height: 300,
-        borderRadius: 10
+        borderRadius: 10,
+        resizeMode: 'stretch'
+    },
+    pagingWrapper: {
+        position: 'absolute',
+        bottom: 0,
+        width: width
     }
 });
 

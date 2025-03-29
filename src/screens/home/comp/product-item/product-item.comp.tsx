@@ -3,7 +3,7 @@ import ProductItemStyle from "./product-item.style";
 import { FontAwesome } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { ProductModel } from "@/src/data/model/product.model";
 import { useEffect } from "react";
 
@@ -21,7 +21,11 @@ const ProductItemComponent = ({ item, index, preImage, productType }: Props) => 
             {item && (
                 <Link href={{
                     pathname: '/(routes)/product-details',
-                    params: { id: item.id, productType: productType }
+                    params: {
+                        id: item.id,
+                        shop_id: item.shop?.id ?? 0,
+                        productType: productType
+                    }
                 }} asChild>
                     <TouchableOpacity>
                         <Animated.View key={item.id} style={styles.container} entering={FadeInDown.delay(300 + index * 100).duration(500)}>
@@ -33,7 +37,7 @@ const ProductItemComponent = ({ item, index, preImage, productType }: Props) => 
                                 <Text style={styles.price}>${item.unit_price}</Text>
                                 <View style={styles.ratingWrapper}>
                                     <FontAwesome name="star" size={18} color={CommonColors.yellow} />
-                                    <Text style={styles.ratingTxt}>{item.rating}</Text>
+                                    <Text style={styles.ratingTxt}>{Number(item.rating).toFixed(1)}</Text>
                                 </View>
                             </View>
                             <Text style={styles.title}>{item.product_name}</Text>
