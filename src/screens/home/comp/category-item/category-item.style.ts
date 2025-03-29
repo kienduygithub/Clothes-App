@@ -10,10 +10,10 @@ const CategoryItemComponentStyle = StyleSheet.create({
         marginLeft: 20
     },
     itemImg: {
-        width: 50,
-        height: 50,
+        width: 60,
+        height: 60,
         borderRadius: 30,
-        backgroundColor: CommonColors.gray
+        backgroundColor: CommonColors.white
     },
     itemTxt: {
         fontFamily: Fonts.POPPINS_REGULAR

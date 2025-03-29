@@ -60,7 +60,7 @@ export class ProductModel {
     }
 }
 
-class ProductImageModel {
+export class ProductImageModel {
     id: number;
     image_url: string;
 

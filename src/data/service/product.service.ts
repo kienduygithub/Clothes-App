@@ -14,3 +14,17 @@ export const fetchProducts = async () => {
         throw error;
     }
 }
+
+export const fetchDetailProduct = async (id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `product/${id}/mobile`
+        )
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

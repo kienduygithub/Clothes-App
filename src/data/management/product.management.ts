@@ -12,3 +12,15 @@ export const fetchProducts = async () => {
         throw error;
     }
 }
+
+export const fetchDetailProduct = async (id: number) => {
+    try {
+        const result = await ProductService.fetchDetailProduct(id);
+        const response = result?.products?.map(
+            (product: any) => new ProductModel().convertObj(product)
+        ) ?? [];
+        return response[0];
+    } catch (error) {
+        throw error;
+    }
+}

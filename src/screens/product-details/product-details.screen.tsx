@@ -1,31 +1,51 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import ProductDetailStyle from "./product-details.style"
 import { router, Stack, useLocalSearchParams } from "expo-router"
-import axios from "axios"
 import { useEffect, useState } from "react"
-import { ProductType } from "@/src/data/types/global"
 import ImageSliderComponent from "@/src/components/imageSlider/image-slider.comp"
 import { FontAwesome, Ionicons } from "@expo/vector-icons"
 import { CommonColors } from "@/src/common/resource/colors"
 import { useHeaderHeight } from "@react-navigation/elements";
-import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated"
+import Animated, { FadeInDown } from "react-native-reanimated"
+import { ProductImageModel, ProductModel } from "@/src/data/model/product.model";
+import * as ProductManagement from "../../data/management/product.management";
+import { AppConfig } from "@/src/common/config/app.config"
+import RenderHTML from "react-native-render-html";
+
 type Props = {}
 
 const ProductDetailScreen = (props: Props) => {
     const { id, productType } = useLocalSearchParams();
-    const [product, setProduct] = useState<ProductType>();
+    const [preImage, setPreImage] = useState('');
+    const [widthWindow, setWidthWindow] = useState(0);
+    const [product, setProduct] = useState<ProductModel>();
+    const [slideImages, setSlideImages] = useState<string[]>([]);
 
     useEffect(() => {
+        fetchPreImage();
+        fetchWidthWindow();
         fetchProductDetails();
     }, []);
 
+    const fetchPreImage = () => {
+        const preImage = new AppConfig().getPreImage();
+        setPreImage(preImage);
+    }
+
+    const fetchWidthWindow = () => {
+        const { width } = Dimensions.get('window');
+        setWidthWindow(width);
+    }
+
     const fetchProductDetails = async () => {
         try {
-            const url = productType === 'sale'
-                ? `http://192.168.1.30:8000/saleProducts/${id}`
-                : `http://192.168.1.30:8000/products/${id}`
-            const response = await axios.get(url);
-            setProduct(response.data);
+            const response = await ProductManagement.fetchDetailProduct(+id);
+            console.log('Chi tiết sản phẩm: Done!');
+            const images = response?.product_images?.map(
+                (image: ProductImageModel) => image.image_url
+            )
+            setSlideImages(images);
+            setProduct(response);
         } catch (error) {
             console.log(error);
         }
@@ -53,7 +73,7 @@ const ProductDetailScreen = (props: Props) => {
             <ScrollView style={{ marginTop: headerHeight, marginBottom: 90 }} showsVerticalScrollIndicator={false}>
                 {product && (
                     <Animated.View entering={FadeInDown.delay(300).duration(500)}>
-                        <ImageSliderComponent images={product.images} />
+                        <ImageSliderComponent images={slideImages} preImage={preImage} />
                     </Animated.View>
                 )}
                 {product && (
@@ -75,23 +95,22 @@ const ProductDetailScreen = (props: Props) => {
                             style={styles.title}
                             entering={FadeInDown.delay(700).duration(500)}
                         >
-                            {product.title}
+                            {product.product_name}
                         </Animated.Text>
 
                         <Animated.View style={styles.priceWrapper} entering={FadeInDown.delay(900).duration(500)}>
-                            <Text style={styles.price}>${product.price}</Text>
+                            <Text style={styles.price}>đ{product.unit_price}</Text>
                             <View style={styles.priceDiscount}>
-                                <Text style={styles.priceDiscountTxt}>6% Off</Text>
+                                <Text style={styles.priceDiscountTxt}>0% Off</Text>
                             </View>
-                            <Text style={styles.oldPrice}>${product.price + 2}</Text>
                         </Animated.View>
 
-                        <Animated.Text
+                        <Animated.View
                             style={styles.description}
                             entering={FadeInDown.delay(1100).duration(500)}
                         >
-                            {product.description}
-                        </Animated.Text>
+                            <RenderHTML contentWidth={widthWindow} source={{ html: product.description }} />
+                        </Animated.View>
 
                         <Animated.View style={styles.productVariantWrapper} entering={FadeInDown.delay(1300).duration(500)}>
                             <View style={styles.productVariantType}>

@@ -3,12 +3,13 @@ import PaginationComponent from "../pagination/pagination.comp";
 import { useRef, useState } from "react";
 
 type Props = {
-    images: string[]
+    images: string[],
+    preImage: string,
 }
 
 const width = Dimensions.get('window').width;
 
-const ImageSliderComponent = ({ images }: Props) => {
+const ImageSliderComponent = ({ images, preImage }: Props) => {
 
     const [paginationIndex, setPaginationIndex] = useState(0);
 
@@ -37,7 +38,7 @@ const ImageSliderComponent = ({ images }: Props) => {
                 renderItem={({ index, item }) => (
                     <View style={styles.imageWrapper}>
                         <Image
-                            source={{ uri: item }}
+                            source={{ uri: `${preImage}/${item}` }}
                             style={styles.imageItem}
                         />
                     </View>
