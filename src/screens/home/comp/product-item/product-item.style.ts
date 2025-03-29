@@ -7,36 +7,44 @@ const width = Dimensions.get('window').width - 40;
 const ProductItemStyle = StyleSheet.create({
     container: {
         width: width / 2 - 10,
-        backgroundColor: CommonColors.lightGray,
-        borderRadius: 5,
-        overflow: 'hidden'
+        backgroundColor: '#F5F5F5',
+        borderRadius: 10,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4,
+        marginBottom: 15
     },
     productImg: {
         width: '100%',
-        height: 200,
-        marginBottom: 10
+        height: 220,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10
     },
     bookmarkBtn: {
         position: 'absolute',
-        right: 15,
-        top: 15,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        padding: 5,
-        borderRadius: 30
+        right: 10,
+        top: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        padding: 6,
+        borderRadius: 20
     },
     title: {
-        fontSize: 14,
+        fontSize: 16,
         fontFamily: Fonts.POPPINS_BOLD,
         color: CommonColors.black,
-        letterSpacing: 1.1,
-        paddingHorizontal: 8
+        letterSpacing: 1,
+        paddingHorizontal: 10,
+        marginTop: 5
     },
     productInfo: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
-        paddingHorizontal: 8
+        marginBottom: 10,
+        paddingHorizontal: 10
     },
     price: {
         fontSize: 16,
@@ -46,12 +54,13 @@ const ProductItemStyle = StyleSheet.create({
     ratingWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 5
+        gap: 6
     },
     ratingTxt: {
         fontSize: 14,
         color: CommonColors.gray,
-        fontFamily: Fonts.POPPINS_REGULAR
+        fontFamily: Fonts.POPPINS_REGULAR,
+        lineHeight: 19
     }
 });
 
