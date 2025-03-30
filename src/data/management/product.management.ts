@@ -42,7 +42,7 @@ export const fetchDetailProduct = async (id: number) => {
 export const fetchProductVariantByProductId = async (id: number) => {
     try {
         const result = await ProductService.fetchProductVariantByProductId(id);
-        const response = result?.variants?.map(
+        const response: ProductVariantModel[] = result?.variants?.map(
             (variant: any) => new ProductVariantModel().convertObj(variant)
         ) ?? [];
 

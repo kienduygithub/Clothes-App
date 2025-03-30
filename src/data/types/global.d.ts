@@ -33,3 +33,16 @@ export interface CartItemType {
     quantity: number;
     image: string;
 }
+
+// MAIN
+
+export interface ColorType {
+    id: number,
+    color_name: string,
+    image_url: string
+}
+
+export interface SizeType {
+    id: number,
+    size_code: string,
+}
