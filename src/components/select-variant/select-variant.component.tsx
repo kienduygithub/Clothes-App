@@ -127,21 +127,21 @@ const SelectVariantComponent = ({
             // Di chuyển đến giỏ hàng
             Animated.timing(flyingImageAnimation, {
                 toValue: { x: cartX, y: cartY },
-                duration: 1500,
+                duration: 2500,
                 useNativeDriver: false,
                 easing: Easing.bezier(0.2, 1, 0.2, 1)
             }),
             // Thu nhỏ hình ảnh khi đến gần giỏ hàng
             Animated.timing(flyingImageScale, {
                 toValue: 0.1,
-                duration: 1500,
+                duration: 2500,
                 useNativeDriver: false,
                 easing: Easing.bezier(0.2, 1, 0.2, 1)
             }),
             // Làm mờ dần khi đến giỏ hàng
             Animated.timing(flyingImageOpacity, {
                 toValue: 0,
-                duration: 1500,
+                duration: 2500,
                 delay: 500,
                 useNativeDriver: false
             })
