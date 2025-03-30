@@ -10,7 +10,8 @@ type Props = {
     product: ProductModel,
     variants: ProductVariantModel[],
     preImage: string,
-    headerHeight?: number
+    headerHeight?: number,
+    cartPosition?: { x: number, y: number }
 }
 
 const { width, height } = Dimensions.get('window');
@@ -20,6 +21,7 @@ const SelectVariantComponent = ({
     variants,
     preImage,
     headerHeight = 60, // Chiều cao của header để tính toán vị trí giỏ hàng
+    cartPosition = { x: 0, y: 0 }
 }: Props) => {
     const [colors, setColors] = useState<ColorType[]>([]);
     const [sizes, setSizes] = useState<SizeType[]>([]);
@@ -119,29 +121,29 @@ const SelectVariantComponent = ({
         flyingImageOpacity.setValue(1);
 
         // Tọa độ của giỏ hàng - ở góc trên bên phải
-        const cartX = width + 180; // Vị trí X của icon giỏ hàng
-        const cartY = -height + headerHeight + 30; // Vị trí Y của icon giỏ hàng
-
+        // const cartX = width + 180; // Vị trí X của icon giỏ hàng
+        // const cartY = -height + 30 + 100; // Vị trí Y của icon giỏ hàng
+        const { x: cartX, y: cartY } = cartPosition;
         // Bắt đầu animation
         Animated.parallel([
             // Di chuyển đến giỏ hàng
             Animated.timing(flyingImageAnimation, {
-                toValue: { x: cartX, y: cartY },
-                duration: 2500,
+                toValue: { x: width + 180, y: -height + cartY + 80 },
+                duration: 3000,
                 useNativeDriver: false,
                 easing: Easing.bezier(0.2, 1, 0.2, 1)
             }),
             // Thu nhỏ hình ảnh khi đến gần giỏ hàng
             Animated.timing(flyingImageScale, {
                 toValue: 0.1,
-                duration: 2500,
+                duration: 3000,
                 useNativeDriver: false,
                 easing: Easing.bezier(0.2, 1, 0.2, 1)
             }),
             // Làm mờ dần khi đến giỏ hàng
             Animated.timing(flyingImageOpacity, {
                 toValue: 0,
-                duration: 2500,
+                duration: 3000,
                 delay: 500,
                 useNativeDriver: false
             })

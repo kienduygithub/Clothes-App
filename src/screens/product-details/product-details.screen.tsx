@@ -1,7 +1,7 @@
-import { Dimensions, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import ProductDetailStyle from "./product-details.style"
 import { router, Stack, useLocalSearchParams } from "expo-router"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ImageSliderComponent from "@/src/components/imageSlider/image-slider.comp"
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons"
 import { CommonColors } from "@/src/common/resource/colors"
@@ -13,31 +13,21 @@ import RenderHTML from "react-native-render-html";
 import { ProductVariantModel } from "@/src/data/model/product_variant.model"
 import AvailableVariantImagesComponent from "./comp/available-variant-images/available-variant-images.component"
 import ShopProductListComponent from "./comp/shop-product-list/shop-product-list.component"
-import { useWindowDimensions } from 'react-native';
-import { WebView } from "react-native-webview";
-import { ColorType, SizeType } from "@/src/data/types/global"
-import QuantityProductComponent from "@/src/components/quantity-product/quantity-product.comp"
 import SelectVariantComponent from "@/src/components/select-variant/select-variant.component"
 
-type Props = {}
+type Props = {};
+
+const { width, height } = Dimensions.get('window');
 
 const ProductDetailScreen = (props: Props) => {
-    const { id, shop_id, productType } = useLocalSearchParams();
+    const { id } = useLocalSearchParams();
+    const [cartPosition, setCartPosition] = useState({ x: width - 50, y: 50 });
     const [preImage, setPreImage] = useState('');
-    const [widthWindow, setWidthWindow] = useState(useWindowDimensions().width);
     const [product, setProduct] = useState<ProductModel>();
     const [slideImages, setSlideImages] = useState<string[]>([]);
     const [variants, setVariants] = useState<ProductVariantModel[]>([]);
     const [availableVariants, setAvailableVariants] = useState<Map<number, string>>();
     const [products, setProducts] = useState<ProductModel[]>([]);
-
-    const [colors, setColors] = useState<ColorType[]>([]);
-    const [sizes, setSizes] = useState<SizeType[]>([]);
-    const [selectedSize, setSelectedSize] = useState<number | null>(null);
-    const [selectedColor, setSelectedColor] = useState<number | null>(null);
-    const [stockQuantity, setStockQuantity] = useState<number>(0);
-    const [displayVariantImage, setDisplayVariantImage] = useState('');
-    const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
         fetchPreImage();
@@ -107,7 +97,14 @@ const ProductDetailScreen = (props: Props) => {
                     </TouchableOpacity>
                 ),
                 headerRight: () => (
-                    <TouchableOpacity style={styles.buttonHeader} onPress={() => router.back()}>
+                    <TouchableOpacity
+                        style={styles.buttonHeader}
+                        onPress={() => router.back()}
+                        onLayout={(event) => {
+                            const { x, y } = event.nativeEvent.layout;
+                            setCartPosition({ x, y });
+                        }}
+                    >
                         <Ionicons name="cart-outline" size={28} color={CommonColors.white} />
                     </TouchableOpacity>
                 )
@@ -217,6 +214,7 @@ const ProductDetailScreen = (props: Props) => {
                             product={product}
                             variants={variants}
                             preImage={preImage}
+                            cartPosition={cartPosition}
                         />
                     </Animated.View>
                 )}
