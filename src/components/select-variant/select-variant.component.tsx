@@ -2,20 +2,24 @@ import { CommonColors } from "@/src/common/resource/colors";
 import { ProductModel } from "@/src/data/model/product.model";
 import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 import { ColorType, SizeType } from "@/src/data/types/global";
-import { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Dimensions, Easing, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QuantityProductComponent from "../quantity-product/quantity-product.comp";
 
 type Props = {
     product: ProductModel,
     variants: ProductVariantModel[],
     preImage: string,
+    headerHeight?: number
 }
+
+const { width, height } = Dimensions.get('window');
 
 const SelectVariantComponent = ({
     product,
     variants,
-    preImage
+    preImage,
+    headerHeight = 60, // Chiều cao của header để tính toán vị trí giỏ hàng
 }: Props) => {
     const [colors, setColors] = useState<ColorType[]>([]);
     const [sizes, setSizes] = useState<SizeType[]>([]);
@@ -94,6 +98,64 @@ const SelectVariantComponent = ({
         return product?.product_images[0].image_url;
     }
 
+    /** Functions thực hiện thêm vào giỏ hàng */
+    // Ref cho hiệu ứng animation
+    const flyingImageAnimation = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+    const flyingImageScale = useRef(new Animated.Value(1)).current;
+    const flyingImageOpacity = useRef(new Animated.Value(0)).current;
+    // State kiểm soát hiển thị hình ảnh bay
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [flyingImage, setFlyingImage] = useState('');
+    const animateToCart = () => {
+        // Lưu hình ảnh hiện tại để hiển thị animation
+        setFlyingImage(`${preImage}/${getDisplayVariantImage()}`);
+
+        // Reset vị trí ban đầu về giữa hình ảnh sản phẩm
+        flyingImageAnimation.setValue({ x: 0, y: 0 });
+        flyingImageScale.setValue(1);
+
+        // Hiển thị hình ảnh bay
+        setIsAnimating(true);
+        flyingImageOpacity.setValue(1);
+
+        // Tọa độ của giỏ hàng - ở góc trên bên phải
+        const cartX = width + 180; // Vị trí X của icon giỏ hàng
+        const cartY = -height + headerHeight + 30; // Vị trí Y của icon giỏ hàng
+
+        // Bắt đầu animation
+        Animated.parallel([
+            // Di chuyển đến giỏ hàng
+            Animated.timing(flyingImageAnimation, {
+                toValue: { x: cartX, y: cartY },
+                duration: 1500,
+                useNativeDriver: false,
+                easing: Easing.bezier(0.2, 1, 0.2, 1)
+            }),
+            // Thu nhỏ hình ảnh khi đến gần giỏ hàng
+            Animated.timing(flyingImageScale, {
+                toValue: 0.1,
+                duration: 1500,
+                useNativeDriver: false,
+                easing: Easing.bezier(0.2, 1, 0.2, 1)
+            }),
+            // Làm mờ dần khi đến giỏ hàng
+            Animated.timing(flyingImageOpacity, {
+                toValue: 0,
+                duration: 1500,
+                delay: 500,
+                useNativeDriver: false
+            })
+        ]).start(() => {
+            // Kết thúc animation
+            setIsAnimating(false);
+
+            // Thêm Function cập nhập số lưởng sản phẩm trong giỏ hàng
+        })
+    }
+    const handleAddToCart = () => {
+        animateToCart();
+    }
+
     return (
         <>
             <View style={styles.selectVariantWrapper}>
@@ -169,11 +231,36 @@ const SelectVariantComponent = ({
                 <View style={styles.devider}></View>
                 {/* Button */}
                 <View style={{ paddingHorizontal: 20 }}>
-                    <TouchableOpacity style={styles.buttonAddCart}>
+                    <TouchableOpacity
+                        style={styles.buttonAddCart}
+                        onPress={() => handleAddToCart()}
+                    >
                         <Text style={styles.buttonAddCartText}>Thêm vào giỏ hàng</Text>
                     </TouchableOpacity>
                 </View>
             </View>
+            {/* Hình ảnh bay vào giỏ hàng */}
+            {isAnimating && (
+                <Animated.View
+                    style={[
+                        styles.flyingImageContainer,
+                        {
+                            transform: [
+                                { translateX: flyingImageAnimation.x },
+                                { translateY: flyingImageAnimation.y },
+                                { scale: flyingImageScale }
+                            ],
+                            opacity: flyingImageOpacity
+                        }
+                    ]}
+                >
+                    <Image
+                        source={{ uri: `${preImage}/${getDisplayVariantImage()}` }}
+                        style={styles.flyingImage}
+                        resizeMode="stretch"
+                    />
+                </Animated.View>
+            )}
         </>
     )
 }
@@ -275,6 +362,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: CommonColors.white,
         fontWeight: '500'
+    },
+
+    // Styles cho hình ảnh bay
+    flyingImageContainer: {
+        position: 'absolute',
+        top: 10, // Căn chỉnh sao khớp với hình ảnh sản phẩm
+        left: 20, // Căn chỉnh sao khớp với hình ảnh sản phẩm
+        zIndex: 1000
+    },
+    flyingImage: {
+        width: 100,
+        height: 100,
     }
 })
 
