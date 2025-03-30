@@ -1,7 +1,7 @@
 import { Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import ProductDetailStyle from "./product-details.style"
 import { router, Stack, useLocalSearchParams } from "expo-router"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import ImageSliderComponent from "@/src/components/imageSlider/image-slider.comp"
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons"
 import { CommonColors } from "@/src/common/resource/colors"
@@ -14,6 +14,8 @@ import { ProductVariantModel } from "@/src/data/model/product_variant.model"
 import AvailableVariantImagesComponent from "./comp/available-variant-images/available-variant-images.component"
 import ShopProductListComponent from "./comp/shop-product-list/shop-product-list.component"
 import SelectVariantComponent from "@/src/components/select-variant/select-variant.component"
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 
 type Props = {};
 
@@ -28,6 +30,10 @@ const ProductDetailScreen = (props: Props) => {
     const [variants, setVariants] = useState<ProductVariantModel[]>([]);
     const [availableVariants, setAvailableVariants] = useState<Map<number, string>>();
     const [products, setProducts] = useState<ProductModel[]>([]);
+
+    const sheetRef = useRef<BottomSheet>(null);
+    const [isOpenBottomSheet, setIsOpenBottomSheet] = useState(false);
+    const snapPoints = ["50%"];
 
     useEffect(() => {
         fetchPreImage();
@@ -85,6 +91,15 @@ const ProductDetailScreen = (props: Props) => {
         }
     }
 
+    const handleSnapPress = useCallback((index: number) => {
+        sheetRef.current?.snapToIndex(index);
+        setIsOpenBottomSheet(true);
+    }, [])
+
+    const handleAddToCart = (variant: ProductVariantModel, quantity: number) => {
+        sheetRef.current?.close();
+    }
+
     return (
         <>
             <Stack.Screen options={{
@@ -109,66 +124,67 @@ const ProductDetailScreen = (props: Props) => {
                     </TouchableOpacity>
                 )
             }} />
-            <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 90 }}>
-                {/* Product Slider */}
-                {product && (
-                    <Animated.View entering={FadeInDown.delay(300).duration(500)}>
-                        <ImageSliderComponent images={slideImages} preImage={preImage} />
-                    </Animated.View>
-                )}
-                {/* Product Info */}
-                {product && (
-                    <Animated.View style={styles.container} entering={FadeInDown.delay(600).duration(500)}>
-                        <Animated.View
-                            style={styles.variantWrapper}
-                            entering={FadeInDown.delay(800).duration(500)}
-                        >
-                            <View style={styles.variantInfoWrapper}>
-                                <Text style={styles.variantText}>{availableVariants?.size} phân loại có sẵn</Text>
-                                <AvailableVariantImagesComponent images={Array.from(availableVariants?.values() ?? [])} preImage={preImage} />
-                            </View>
+            <GestureHandlerRootView >
+                <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 90, flex: 1 }}>
+                    {/* Product Slider */}
+                    {product && (
+                        <Animated.View entering={FadeInDown.delay(300).duration(500)}>
+                            <ImageSliderComponent images={slideImages} preImage={preImage} />
                         </Animated.View>
-
-                        <Animated.View style={styles.metaInfoWrapper} entering={FadeInDown.delay(800).duration(500)}>
-                            <View style={styles.priceAndRatingWrapper}>
-                                <View style={styles.priceWrapper}>
-                                    <Text style={styles.price}>đ{product.unit_price}</Text>
+                    )}
+                    {/* Product Info */}
+                    {product && (
+                        <Animated.View style={styles.container} entering={FadeInDown.delay(600).duration(500)}>
+                            <Animated.View
+                                style={styles.variantWrapper}
+                                entering={FadeInDown.delay(800).duration(500)}
+                            >
+                                <View style={styles.variantInfoWrapper}>
+                                    <Text style={styles.variantText}>{availableVariants?.size} phân loại có sẵn</Text>
+                                    <AvailableVariantImagesComponent images={Array.from(availableVariants?.values() ?? [])} preImage={preImage} />
                                 </View>
-                                <View style={styles.ratingWrapper}>
-                                    <FontAwesome name="star" size={18} color={CommonColors.yellow} />
-                                    <Text style={styles.rating}>
-                                        {Number(product.rating).toFixed(1)}
-                                    </Text>
+                            </Animated.View>
+
+                            <Animated.View style={styles.metaInfoWrapper} entering={FadeInDown.delay(800).duration(500)}>
+                                <View style={styles.priceAndRatingWrapper}>
+                                    <View style={styles.priceWrapper}>
+                                        <Text style={styles.price}>đ{product.unit_price}</Text>
+                                    </View>
+                                    <View style={styles.ratingWrapper}>
+                                        <FontAwesome name="star" size={18} color={CommonColors.yellow} />
+                                        <Text style={styles.rating}>
+                                            {Number(product.rating).toFixed(1)}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                            <View style={styles.soldAndLikeWrapper}>
-                                <Text style={styles.soldTxt}>Đã bán {product.sold_quantity}</Text>
-                                <TouchableOpacity>
-                                    <FontAwesome name="heart-o" size={20} color={CommonColors.lightGray} />
-                                </TouchableOpacity>
-                            </View>
-                        </Animated.View>
+                                <View style={styles.soldAndLikeWrapper}>
+                                    <Text style={styles.soldTxt}>Đã bán {product.sold_quantity}</Text>
+                                    <TouchableOpacity>
+                                        <FontAwesome name="heart-o" size={20} color={CommonColors.lightGray} />
+                                    </TouchableOpacity>
+                                </View>
+                            </Animated.View>
 
-                        <Animated.Text style={styles.title} entering={FadeInDown.delay(800).duration(500)} >
-                            {product.product_name}
-                        </Animated.Text>
+                            <Animated.Text style={styles.title} entering={FadeInDown.delay(800).duration(500)} >
+                                {product.product_name}
+                            </Animated.Text>
 
-                        <Animated.View
-                            style={styles.descriptionWrapper}
-                            entering={FadeInDown.delay(800).duration(500)}
-                        >
-                            {/* <View style={styles.devider}></View> */}
-                            <View style={styles.descHeader}>
-                                <Text style={styles.descTxt}>Chi tiết sản phẩm</Text>
+                            <Animated.View
+                                style={styles.descriptionWrapper}
+                                entering={FadeInDown.delay(800).duration(500)}
+                            >
+                                {/* <View style={styles.devider}></View> */}
+                                <View style={styles.descHeader}>
+                                    <Text style={styles.descTxt}>Chi tiết sản phẩm</Text>
 
-                            </View>
-                            {/* <View style={styles.devider}></View> */}
-                            <View style={{ paddingHorizontal: 20, flex: 1 }}>
-                                <RenderHTML contentWidth={Dimensions.get('window').width} source={{ html: product.description }} />
-                            </View>
-                        </Animated.View>
+                                </View>
+                                {/* <View style={styles.devider}></View> */}
+                                <View style={{ paddingHorizontal: 20, flex: 1 }}>
+                                    <RenderHTML contentWidth={Dimensions.get('window').width} source={{ html: product.description }} />
+                                </View>
+                            </Animated.View>
 
-                        {/* <Animated.View style={styles.productVariantWrapper} entering={FadeInDown.delay(1300).duration(500)}>
+                            {/* <Animated.View style={styles.productVariantWrapper} entering={FadeInDown.delay(1300).duration(500)}>
                             <View style={styles.productVariantType}>
                                 <Text style={styles.productVariantTitle}>Color</Text>
 
@@ -205,81 +221,98 @@ const ProductDetailScreen = (props: Props) => {
                                 </View>
                             </View>
                         </Animated.View> */}
-                    </Animated.View>
-                )}
-                {/* Variants */}
-                {product && (
-                    <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
-                        <SelectVariantComponent
-                            product={product}
-                            variants={variants}
-                            preImage={preImage}
-                            cartPosition={cartPosition}
-                        />
-                    </Animated.View>
-                )}
-                {/* Shop */}
-                {product && (
-                    <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
-                        <View style={styles.shopWrapper}>
-                            <View style={styles.shopInfoWrapper}>
-                                <View style={{ width: 60, height: 60 }}>
-                                    <Image
-                                        style={{ width: '100%', height: '100%' }}
-                                        source={{ uri: `${preImage}/${product.shop?.logo_url}` }}
-                                    />
+                        </Animated.View>
+                    )}
+                    {/* Shop */}
+                    {product && (
+                        <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
+                            <View style={styles.shopWrapper}>
+                                <View style={styles.shopInfoWrapper}>
+                                    <View style={{ width: 60, height: 60 }}>
+                                        <Image
+                                            style={{ width: '100%', height: '100%' }}
+                                            source={{ uri: `${preImage}/${product.shop?.logo_url}` }}
+                                        />
+                                    </View>
+                                    <View style={styles.shopContent}>
+                                        <Text style={styles.shopNameText}>{product.shop?.shop_name}</Text>
+                                        <Text style={styles.shopAddressText}>{product.shop?.contact_address}</Text>
+                                    </View>
                                 </View>
-                                <View style={styles.shopContent}>
-                                    <Text style={styles.shopNameText}>{product.shop?.shop_name}</Text>
-                                    <Text style={styles.shopAddressText}>{product.shop?.contact_address}</Text>
-                                </View>
+                                <TouchableOpacity style={styles.buttonShopView}>
+                                    <Text style={styles.buttonShopViewText}>Xem cửa hàng</Text>
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity style={styles.buttonShopView}>
-                                <Text style={styles.buttonShopViewText}>Xem cửa hàng</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </Animated.View>
-                )}
-                {/* Product Shop */}
-                {product && (
-                    <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
-                        <View style={styles.productShopWrapper}>
-                            <Text style={styles.productShopText}>Các sản phẩm khác của cửa hàng</Text>
-                            <ShopProductListComponent
-                                products={products}
-                                preImage={preImage}
-                                shop_id={product.shop?.id ?? 0}
-                            />
-                        </View>
-                    </Animated.View>
-                )}
-                {/* Review */}
-                {product && (
-                    <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
+                        </Animated.View>
+                    )}
+                    {/* Product Shop */}
+                    {product && (
+                        <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
+                            <View style={styles.productShopWrapper}>
+                                <Text style={styles.productShopText}>Các sản phẩm khác của cửa hàng</Text>
+                                <ShopProductListComponent
+                                    products={products}
+                                    preImage={preImage}
+                                    shop_id={product.shop?.id ?? 0}
+                                />
+                            </View>
+                        </Animated.View>
+                    )}
+                    {/* Review */}
+                    {product && (
+                        <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
 
-                    </Animated.View>
+                        </Animated.View>
+                    )}
+                </ScrollView>
+                {/* Button Action */}
+                <Animated.View
+                    style={styles.buttonWrapper}
+                    entering={FadeInDown.delay(500).duration(500).springify()}
+                >
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            {
+                                backgroundColor: CommonColors.white,
+                                borderColor: CommonColors.primary,
+                                borderWidth: 1,
+                            }
+                        ]}
+                        onPress={() => handleSnapPress(0)}
+                    >
+                        <Ionicons name="cart-outline" size={20} color={CommonColors.primary} />
+                        <Text style={[styles.buttonTxt, { color: CommonColors.primary }]}>Thêm vào giỏ</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={styles.buttonTxt}>Mua ngay</Text>
+                    </TouchableOpacity>
+                </Animated.View>
+                {product && (
+                    <BottomSheet
+                        ref={sheetRef}
+                        snapPoints={snapPoints}
+                        enablePanDownToClose={true}
+                        onClose={() => setIsOpenBottomSheet(false)}
+                        index={-1}
+                        backdropComponent={(props) => (
+                            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+                        )}
+                    >
+                        <BottomSheetView>
+                            <View style={[styles.container]}>
+                                <SelectVariantComponent
+                                    product={product}
+                                    variants={variants}
+                                    preImage={preImage}
+                                    cartPosition={cartPosition}
+                                    handleAddToCart={handleAddToCart}
+                                />
+                            </View>
+                        </BottomSheetView>
+                    </BottomSheet>
                 )}
-            </ScrollView>
-            {/* Button Action */}
-            <Animated.View
-                style={styles.buttonWrapper}
-                entering={FadeInDown.delay(500).duration(500).springify()}
-            >
-                <TouchableOpacity style={[
-                    styles.button,
-                    {
-                        backgroundColor: CommonColors.white,
-                        borderColor: CommonColors.primary,
-                        borderWidth: 1,
-                    }
-                ]}>
-                    <Ionicons name="cart-outline" size={20} color={CommonColors.primary} />
-                    <Text style={[styles.buttonTxt, { color: CommonColors.primary }]}>Thêm vào giỏ</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonTxt}>Mua ngay</Text>
-                </TouchableOpacity>
-            </Animated.View>
+            </GestureHandlerRootView>
         </>
     )
 }

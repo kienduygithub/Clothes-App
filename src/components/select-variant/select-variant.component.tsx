@@ -11,7 +11,8 @@ type Props = {
     variants: ProductVariantModel[],
     preImage: string,
     headerHeight?: number,
-    cartPosition?: { x: number, y: number }
+    cartPosition?: { x: number, y: number },
+    handleAddToCart: (variant: ProductVariantModel, quantity: number) => void
 }
 
 const { width, height } = Dimensions.get('window');
@@ -21,7 +22,8 @@ const SelectVariantComponent = ({
     variants,
     preImage,
     headerHeight = 60, // Chiều cao của header để tính toán vị trí giỏ hàng
-    cartPosition = { x: 0, y: 0 }
+    cartPosition = { x: 0, y: 0 },
+    handleAddToCart
 }: Props) => {
     const [colors, setColors] = useState<ColorType[]>([]);
     const [sizes, setSizes] = useState<SizeType[]>([]);
@@ -150,12 +152,14 @@ const SelectVariantComponent = ({
         ]).start(() => {
             // Kết thúc animation
             setIsAnimating(false);
-
-            // Thêm Function cập nhập số lưởng sản phẩm trong giỏ hàng
         })
     }
-    const handleAddToCart = () => {
-        animateToCart();
+    const addToCart = () => {
+        // animateToCart();
+        const selectedVariant = variants.find(v => v.color?.id === selectedColor && v.size?.id === selectedSize);
+        if (selectedVariant) {
+            handleAddToCart(selectedVariant, quantity);
+        }
     }
 
     return (
@@ -235,7 +239,7 @@ const SelectVariantComponent = ({
                 <View style={{ paddingHorizontal: 20 }}>
                     <TouchableOpacity
                         style={styles.buttonAddCart}
-                        onPress={() => handleAddToCart()}
+                        onPress={() => addToCart()}
                     >
                         <Text style={styles.buttonAddCartText}>Thêm vào giỏ hàng</Text>
                     </TouchableOpacity>
