@@ -26,7 +26,9 @@ const CartStyle = StyleSheet.create({
     },
     priceInfoWrapper: {
         flex: 1,
-        justifyContent: 'center'
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        flexDirection: 'row'
     },
     totalText: {
         fontSize: 16,
@@ -60,7 +62,7 @@ const CartStyle = StyleSheet.create({
         paddingHorizontal: 10,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10
+        gap: 10,
     },
     checkbox: {
         width: 26,
@@ -74,7 +76,8 @@ const CartStyle = StyleSheet.create({
     },
     shopNameText: {
         fontSize: 16,
-        fontWeight: '700'
+        fontWeight: '700',
+        color: '#000'
     },
     listCartItemWrapper: {
         paddingHorizontal: 10,
