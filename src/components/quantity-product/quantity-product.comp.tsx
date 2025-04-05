@@ -23,6 +23,13 @@ const QuantityProductComponent = ({
     const [quantity, setQuantity] = useState(initialQuantity);
 
     useEffect(() => {
+        /** Chả để làm gì cả, chỉ để nó nhận initialQuantity */
+        if (initialQuantity !== quantity) {
+            setQuantity(initialQuantity);
+        }
+    }, [quantity])
+
+    useEffect(() => {
         if (resetQuantity) {
             setQuantity(min);
             onQuantityChange?.(min);
@@ -63,16 +70,16 @@ const QuantityProductComponent = ({
     return (
         <View style={styles.quantityWrapper}>
             <TouchableOpacity style={styles.quantityButton} onPress={handleDecrease} disabled={quantity <= min}>
-                <AntDesign name="minus" size={18} color={quantity <= min ? CommonColors.gray : CommonColors.black} />
+                <AntDesign name="minus" size={16} color={quantity <= min ? CommonColors.gray : CommonColors.black} />
             </TouchableOpacity>
             <TextInput
                 style={styles.quantityInput}
-                value={quantity.toString()}
+                value={quantity + ""}
                 keyboardType="numeric"
                 onChangeText={handleInputChange}
             />
             <TouchableOpacity style={styles.quantityButton} onPress={handleIncrease} disabled={quantity >= max}>
-                <AntDesign name="plus" size={18} color={quantity >= max ? CommonColors.gray : CommonColors.black} />
+                <AntDesign name="plus" size={16} color={quantity >= max ? CommonColors.gray : CommonColors.black} />
             </TouchableOpacity>
         </View>
     );
@@ -80,8 +87,8 @@ const QuantityProductComponent = ({
 
 const styles = StyleSheet.create({
     quantityWrapper: {
-        width: 140,
-        height: 30,
+        width: 114,
+        height: 25,
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
@@ -91,13 +98,13 @@ const styles = StyleSheet.create({
     },
     quantityButton: {
         backgroundColor: CommonColors.white,
-        width: 40,
+        width: 30,
         justifyContent: 'center',
         alignItems: 'center'
     },
     quantityInput: {
-        width: 60,
-        height: 30,
+        width: 50,
+        height: 25,
         padding: 0,
         textAlign: "center",
         verticalAlign: "middle",

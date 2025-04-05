@@ -7,11 +7,12 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as CartManagement from "../../data/management/cart.management";
-import { CartItemModel, CartModel } from "@/src/data/model/cart.model";
+import { CartItemModel, CartModel, CartShopModel } from "@/src/data/model/cart.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
+import QuantityProductComponent from "@/src/components/quantity-product/quantity-product.comp";
 
 type Props = {}
 
@@ -87,6 +88,31 @@ const CartScreen = (props: Props) => {
                 cart_items: updatedItems
             }
         }))
+    }
+
+    const handleUpdateCartItemQuantity = (cart_shop_id: number, cart_item_id: number, new_quantity: number) => {
+        setCart(prev => {
+            const updatedCartShops = prev?.cart_shops.map(
+                (cart_shop) => {
+                    if (cart_shop.id !== cart_shop_id) {
+                        return cart_shop;
+                    }
+
+                    const updatedCartItems = cart_shop.cart_items.map(
+                        cart_item => {
+                            if (cart_item.id !== cart_item_id) {
+                                return cart_item;
+                            }
+
+                            return { ...cart_item, quantity: new_quantity } as CartItemModel;
+                        }
+                    );
+
+                    return { ...cart_shop, cart_items: updatedCartItems } as CartShopModel;
+                }
+            )
+            return { ...prev, cart_shops: updatedCartShops } as CartModel;
+        });
     }
 
     const calculatePaymentTotal = (): number => {
@@ -193,6 +219,7 @@ const CartScreen = (props: Props) => {
                                                         toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
                                                         disabled={isOutOfStock}
                                                     />
+                                                    {/* Thông tin cart item */}
                                                     <View style={styles.cartItemInfo}>
                                                         <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
                                                         <View style={styles.cartItemContent}>
@@ -204,14 +231,20 @@ const CartScreen = (props: Props) => {
                                                                         {cart_item.product_variant?.product?.unit_price ?? 0}
                                                                     </Text>
                                                                 </View>
-                                                            </View>
-                                                            <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                                <TouchableOpacity>
-                                                                    <Ionicons name="trash-outline" size={20} color={CommonColors.red} />
-                                                                </TouchableOpacity>
                                                                 <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
                                                                     Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}
                                                                 </Text>
+                                                            </View>
+                                                            <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                                <QuantityProductComponent
+                                                                    initialQuantity={cart_item.quantity}
+                                                                    min={1}
+                                                                    max={cart_item.product_variant?.stock_quantity ?? 99}
+                                                                    onQuantityChange={(newQuantity) => handleUpdateCartItemQuantity(item.id, cart_item.id, newQuantity)}
+                                                                />
+                                                                <TouchableOpacity>
+                                                                    <Ionicons name="trash-outline" size={25} color={CommonColors.red} />
+                                                                </TouchableOpacity>
                                                             </View>
                                                         </View>
                                                     </View>
