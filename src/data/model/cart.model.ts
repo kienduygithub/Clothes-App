@@ -78,4 +78,12 @@ export class CartItemModel {
 
         return obj;
     }
+
+    convertModelToExecute(data: ProductVariantModel, quantity: number) {
+        return {
+            shop_id: data.product?.shop?.id ?? 0,
+            product_variant_id: data.id,
+            quantity: quantity
+        }
+    }
 }

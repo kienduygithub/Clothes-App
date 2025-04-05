@@ -17,7 +17,7 @@ CustomAxios.interceptors.request.use(
         return config;
     },
     (error: AxiosError) => {
-        console.error("🚨 Lỗi khi gửi request:", error);
+        console.error(">>> Lỗi khi gửi request:", error);
         return Promise.reject(error);
     }
 );
