@@ -7,7 +7,7 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as CartManagement from "../../data/management/cart.management";
-import { CartModel } from "@/src/data/model/cart.model";
+import { CartItemModel, CartModel } from "@/src/data/model/cart.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
@@ -109,8 +109,49 @@ const CartScreen = (props: Props) => {
         return total;
     }
 
+    const isShopOutOfStock = (cartItems: CartItemModel[]) => {
+        return cartItems.some((cartItem) => {
+            const requestedQuantity = cartItem.quantity;
+            const stockQuantity = cartItem.product_variant?.stock_quantity ?? 0;
+            return requestedQuantity > stockQuantity
+        });
+    }
+
+    const isAnyItemChecked = () => {
+        return Object.values(cartChecked).some(
+            cart_shop =>
+                cart_shop.checked ||
+                Object.values(cart_shop.cart_items || {}).some(Boolean)
+        )
+    }
+
+    const isAnySelectedOutOfStock = () => {
+        return Object.entries(cartChecked).some(
+            ([cartShopId, cartShopData]) => {
+                const cart_shop = cart?.cart_shops.find(item => item.id.toString() === cartShopId.toString());
+                if (!cart_shop || !cartShopData.cart_items) {
+                    return false;
+                }
+
+                return Object.entries(cartShopData.cart_items).some(
+                    ([cartItemId, isChecked]) => {
+                        if (!isChecked) return false;
+
+                        const cartItem = cart_shop.cart_items.find(
+                            (cart_item: any) => cart_item.id.toString() === cartItemId.toString()
+                        );
+
+                        if (!cartItem) return false;
+
+                        return cartItem.quantity > (cartItem.product_variant?.stock_quantity ?? 0);
+                    }
+                )
+            }
+        )
+    }
+
     const headerHeight = useHeaderHeight();
-    const { width: widthScreen } = Dimensions.get('window');
+    const shouldDisableCheckout = !isAnyItemChecked() || isAnySelectedOutOfStock();
     return (
         <>
             <Stack.Screen
@@ -137,46 +178,54 @@ const CartScreen = (props: Props) => {
                                     <CheckboxComponent
                                         stateChecked={!!cartChecked[item.id]?.checked}
                                         toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, item.cart_items, isChecked)}
+                                        disabled={isShopOutOfStock(item.cart_items)}
                                     />
                                     <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
                                 </View>
                                 <View style={styles.listCartItemWrapper}>
                                     {item.cart_items.length > 0 &&
-                                        item.cart_items.map((cart_item, index) => (
-                                            <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
-                                                <CheckboxComponent
-                                                    stateChecked={!!cartChecked?.[item.id]?.cart_items?.[cart_item.id]}
-                                                    toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
-                                                />
-                                                <View style={styles.cartItemInfo}>
-                                                    <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
-                                                    <View style={styles.cartItemContent}>
-                                                        <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
-                                                        <View style={styles.cartItemPriceAndQuantity}>
-                                                            <View style={styles.priceWrapper}>
-                                                                <Text style={styles.dText}>đ</Text>
-                                                                <Text style={styles.priceText}>
-                                                                    {cart_item.product_variant?.product?.unit_price ?? 0}
+                                        item.cart_items.map((cart_item, index) => {
+                                            const isOutOfStock = cart_item.quantity > (cart_item.product_variant?.stock_quantity ?? 0);
+                                            return (
+                                                <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
+                                                    <CheckboxComponent
+                                                        stateChecked={!!cartChecked?.[item.id]?.cart_items?.[cart_item.id]}
+                                                        toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
+                                                        disabled={isOutOfStock}
+                                                    />
+                                                    <View style={styles.cartItemInfo}>
+                                                        <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
+                                                        <View style={styles.cartItemContent}>
+                                                            <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
+                                                            <View style={styles.cartItemPriceAndQuantity}>
+                                                                <View style={styles.priceWrapper}>
+                                                                    <Text style={styles.dText}>đ</Text>
+                                                                    <Text style={styles.priceText}>
+                                                                        {cart_item.product_variant?.product?.unit_price ?? 0}
+                                                                    </Text>
+                                                                </View>
+                                                            </View>
+                                                            <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                                <TouchableOpacity>
+                                                                    <Ionicons name="trash-outline" size={20} color={CommonColors.red} />
+                                                                </TouchableOpacity>
+                                                                <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
+                                                                    Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}
                                                                 </Text>
                                                             </View>
                                                         </View>
-                                                        <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                            <TouchableOpacity>
-                                                                <Ionicons name="trash-outline" size={20} color={CommonColors.red} />
-                                                            </TouchableOpacity>
-                                                            <Text style={styles.stockQuantityText}>Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}</Text>
-                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                        ))
+                                            )
+                                        })
                                     }
                                 </View>
                                 <View style={styles.devider}></View>
                                 <View style={styles.promotionWrapper}>
                                     <TouchableOpacity style={styles.promotionItem}>
                                         <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
-                                        <Text style={styles.promotionText}>Voucher</Text>
+                                        <Text style={styles.promotionText}>Voucher không giới hạn</Text>
+
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.promotionItem}>
                                         <MaterialCommunityIcons name="truck-delivery-outline" size={24} color={CommonColors.green} />
@@ -197,7 +246,13 @@ const CartScreen = (props: Props) => {
                         {calculatePaymentTotal().toLocaleString('vi-VN')}
                     </Text>
                 </View>
-                <TouchableOpacity style={styles.checkoutBtn}>
+                <TouchableOpacity
+                    disabled={shouldDisableCheckout}
+                    style={[
+                        styles.checkoutBtn,
+                        shouldDisableCheckout && { opacity: 0.7 }
+                    ]}
+                >
                     <Text style={styles.checkoutBtnText}>Thanh toán</Text>
                 </TouchableOpacity>
             </Animated.View>

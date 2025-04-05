@@ -1,13 +1,15 @@
 import { CommonColors } from "@/src/common/resource/colors";
+import { useEffect } from "react";
 import { TouchableOpacity } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 
 type Props = {
     stateChecked: boolean,
-    toggleCheckedFunc: (isChecked: boolean) => void
+    toggleCheckedFunc: (isChecked: boolean) => void,
+    disabled?: boolean
 }
 
-const CheckboxComponent = ({ stateChecked, toggleCheckedFunc }: Props) => {
+const CheckboxComponent = ({ stateChecked, toggleCheckedFunc, disabled }: Props) => {
 
     return (
         <TouchableOpacity>
@@ -16,9 +18,22 @@ const CheckboxComponent = ({ stateChecked, toggleCheckedFunc }: Props) => {
                 fillColor={CommonColors.primary}
                 unFillColor={CommonColors.white}
                 isChecked={stateChecked}
-                onPress={(isChecked: boolean) => toggleCheckedFunc(isChecked)}
-                iconStyle={{ borderColor: CommonColors.primary, borderRadius: 3 }}
-                innerIconStyle={{ borderWidth: 1, borderRadius: 3 }}
+                disabled={disabled}
+                onPress={(isChecked: boolean) => !disabled && toggleCheckedFunc(isChecked)}
+                iconStyle={{
+                    borderColor: CommonColors.primary,
+                    backgroundColor: disabled
+                        ? CommonColors.extraLightGray
+                        : stateChecked
+                            ? CommonColors.primary
+                            : CommonColors.white,
+                    borderRadius: 3
+                }}
+                innerIconStyle={{
+                    borderWidth: 1,
+                    borderRadius: 3,
+                    borderColor: stateChecked ? 'transparent' : CommonColors.gray
+                }}
             />
         </TouchableOpacity>
     )
