@@ -92,6 +92,26 @@ const CartScreen = (props: Props) => {
         }))
     }
 
+    const calculatePaymentTotal = (): number => {
+        let total = 0;
+
+        cart?.cart_shops.forEach(cartShop => {
+            const shopChecked = cartChecked[cartShop.id];
+            if (!shopChecked) {
+                return;
+            }
+
+            cartShop.cart_items.forEach(cart_item => {
+                if (shopChecked.cart_items[cart_item.id]) {
+                    const price = (cart_item.product_variant?.product?.unit_price ?? 0) * cart_item.quantity;
+                    total += price;
+                }
+            })
+        })
+
+        return total;
+    }
+
     const headerHeight = useHeaderHeight();
     return (
         <>
@@ -167,7 +187,7 @@ const CartScreen = (props: Props) => {
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.promotionItem}>
                                         <MaterialCommunityIcons name="truck-delivery-outline" size={24} color={CommonColors.green} />
-                                        <Text style={styles.promotionText}>Miễn phí vận chuyện cho đơn hàng 0đ</Text>
+                                        <Text style={styles.promotionText}>Miễn phí vận chuyển cho đơn hàng 0đ</Text>
                                     </TouchableOpacity>
                                 </View>
                             </Animated.View>
@@ -178,7 +198,7 @@ const CartScreen = (props: Props) => {
             {/* Thanh toán */}
             <Animated.View style={styles.footer} entering={FadeInDown.delay(500).duration(500).springify()}>
                 <View style={styles.priceInfoWrapper}>
-                    <Text style={styles.totalText}>Total: đ100</Text>
+                    <Text style={styles.totalText}>Total: đ{calculatePaymentTotal().toLocaleString()}</Text>
                 </View>
                 <TouchableOpacity style={styles.checkoutBtn}>
                     <Text style={styles.checkoutBtnText}>Thanh toán (5)</Text>
