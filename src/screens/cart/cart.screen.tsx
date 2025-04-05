@@ -181,6 +181,35 @@ const CartScreen = (props: Props) => {
         console.log(newOrder);
     }
 
+    const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
+        setCart(prevCart => {
+            if (!prevCart) return prevCart;
+
+            const updatedCartShops = prevCart.cart_shops.map(
+                cart_shop => {
+                    if (cart_shop.id !== cart_shop_id) {
+                        return cart_shop;
+                    }
+
+                    const updatedItems = cart_shop.cart_items.filter(
+                        item => item.id !== cart_item_id
+                    );
+
+                    return {
+                        ...cart_shop,
+                        cart_items: updatedItems
+                    }
+                }
+            ) // Loại bỏ cart_shop nếu không còn cart_items
+                .filter(cart_shop => cart_shop.cart_items.length > 0);
+
+            return {
+                ...prevCart,
+                cart_shops: updatedCartShops
+            } as CartModel
+        })
+    }
+
     const headerHeight = useHeaderHeight();
     const shouldDisableCheckout = isCartEmpty() || isAnySelectedOutOfStock();
     return (
@@ -247,7 +276,7 @@ const CartScreen = (props: Props) => {
                                                                     max={cart_item.product_variant?.stock_quantity ?? 99}
                                                                     onQuantityChange={(newQuantity) => handleUpdateCartItemQuantity(item.id, cart_item.id, newQuantity)}
                                                                 />
-                                                                <TouchableOpacity>
+                                                                <TouchableOpacity onPress={() => handleRemoveCartItem(item.id, cart_item.id)}>
                                                                     <Ionicons name="trash-outline" size={25} color={CommonColors.red} />
                                                                 </TouchableOpacity>
                                                             </View>
