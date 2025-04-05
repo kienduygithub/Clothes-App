@@ -2,8 +2,8 @@ import { UserModel } from "@/src/data/model/user.model";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export class AppConfig {
-    private domain = "http://192.168.1.105:3000/api";
-    private preImage = "http://192.168.1.105:3000/";
+    private domain = "http://192.168.1.108:3000/api";
+    private preImage = "http://192.168.1.108:3000/";
 
     constructor() { }
 

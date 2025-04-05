@@ -53,7 +53,7 @@ const CartStyle = StyleSheet.create({
 
 
     cartShopWrapper: {
-        width: width,
+        width: '100%',
         backgroundColor: 'white',
         borderRadius: 10
     },
@@ -139,6 +139,10 @@ const CartStyle = StyleSheet.create({
     },
     promotionText: {
         fontSize: 15
+    },
+    stockQuantityText: {
+        fontSize: 14,
+        color: CommonColors.lightGray
     }
 });
 

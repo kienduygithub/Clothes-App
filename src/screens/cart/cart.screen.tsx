@@ -1,7 +1,7 @@
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native"
+import { Dimensions, FlatList, Image, Text, TouchableOpacity, View } from "react-native"
 import CartStyle from "./cart.style";
 import { useCallback, useState } from "react";
-import { CartChecked, CartItemType } from "@/src/data/types/global";
+import { CartChecked } from "@/src/data/types/global";
 import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack } from "expo-router";
@@ -11,7 +11,6 @@ import { CartModel } from "@/src/data/model/cart.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
-import BouncyCheckbox from "react-native-bouncy-checkbox";
 import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 
 type Props = {}
@@ -111,6 +110,7 @@ const CartScreen = (props: Props) => {
     }
 
     const headerHeight = useHeaderHeight();
+    const { width: widthScreen } = Dimensions.get('window');
     return (
         <>
             <Stack.Screen
@@ -160,9 +160,12 @@ const CartScreen = (props: Props) => {
                                                                 </Text>
                                                             </View>
                                                         </View>
-                                                        <TouchableOpacity>
-                                                            <Ionicons name="trash-outline" size={20} color={CommonColors.red} />
-                                                        </TouchableOpacity>
+                                                        <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                            <TouchableOpacity>
+                                                                <Ionicons name="trash-outline" size={20} color={CommonColors.red} />
+                                                            </TouchableOpacity>
+                                                            <Text style={styles.stockQuantityText}>Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}</Text>
+                                                        </View>
                                                     </View>
                                                 </View>
                                             </View>
@@ -172,7 +175,7 @@ const CartScreen = (props: Props) => {
                                 <View style={styles.devider}></View>
                                 <View style={styles.promotionWrapper}>
                                     <TouchableOpacity style={styles.promotionItem}>
-                                        <Ionicons name="ticket-outline" size={24} color="#FF0000" />
+                                        <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
                                         <Text style={styles.promotionText}>Voucher</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.promotionItem}>

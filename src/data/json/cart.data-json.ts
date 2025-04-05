@@ -22,6 +22,7 @@ export class CartData {
                                         "unit_price": 200000,
                                     },
                                     "image_url": "product_variants/1742103107567-product_1.png",
+                                    "stock_quantity": 1
                                 },
                                 "quantity": 2
                             },
@@ -35,6 +36,7 @@ export class CartData {
                                         "unit_price": 350000,
                                     },
                                     "image_url": "product_variants/1742103107567-product_2.png",
+                                    "stock_quantity": 2
                                 },
                                 "quantity": 1
                             }
@@ -57,6 +59,7 @@ export class CartData {
                                         "unit_price": 800000,
                                     },
                                     "image_url": "product_variants/1742645243088-short_product_8.png",
+                                    "stock_quantity": 3
                                 },
                                 "quantity": 1
                             }
