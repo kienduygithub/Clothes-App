@@ -12,6 +12,7 @@ import { AppConfig } from "@/src/common/config/app.config";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
+import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 
 type Props = {}
 
@@ -53,8 +54,6 @@ const CartScreen = (props: Props) => {
     }, [])
 
     const handleToggleCartShop = (cartShopId: number, cartItems: { id: number }[], isChecked: boolean) => {
-        // const isChecked = cartChecked?.[cartShopId]?.checked ?? false;
-
         const updatedItems = cartItems.reduce((sum, item) => {
             sum[item.id] = isChecked
             return sum;
@@ -74,7 +73,6 @@ const CartScreen = (props: Props) => {
             checked: false,
             cart_items: {}
         };
-        // const isCartItemChecked = shopChecked.cart_items[cartItemId] ?? false;
 
         const updatedItems = {
             ...shopChecked.cart_items,
@@ -136,38 +134,20 @@ const CartScreen = (props: Props) => {
                         renderItem={({ index, item }) => (
                             <Animated.View style={styles.cartShopWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
                                 <View style={styles.cartShopHeader}>
-                                    <TouchableOpacity>
-                                        <BouncyCheckbox
-                                            size={24}
-                                            fillColor={CommonColors.primary}
-                                            unFillColor={CommonColors.white}
-                                            isChecked={!!cartChecked[item.id]?.checked}
-                                            onPress={(isChecked: boolean) => {
-                                                handleToggleCartShop(item.id, item.cart_items, isChecked);
-                                            }}
-                                            iconStyle={{ borderColor: CommonColors.primary, borderRadius: 3 }}
-                                            innerIconStyle={{ borderWidth: 1, borderRadius: 3 }}
-                                        />
-                                    </TouchableOpacity>
-                                    <Text style={styles.shopNameText}>{item.shop?.shop_name ?? 'ABC'}</Text>
+                                    <CheckboxComponent
+                                        stateChecked={!!cartChecked[item.id]?.checked}
+                                        toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, item.cart_items, isChecked)}
+                                    />
+                                    <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
                                 </View>
                                 <View style={styles.listCartItemWrapper}>
                                     {item.cart_items.length > 0 &&
                                         item.cart_items.map((cart_item, index) => (
                                             <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
-                                                <TouchableOpacity>
-                                                    <BouncyCheckbox
-                                                        size={24}
-                                                        fillColor={CommonColors.primary}
-                                                        unFillColor={CommonColors.white}
-                                                        isChecked={!!cartChecked?.[item.id]?.cart_items?.[cart_item.id]}
-                                                        onPress={(isChecked: boolean) => {
-                                                            handleToggleCartItem(item.id, cart_item.id, isChecked);
-                                                        }}
-                                                        iconStyle={{ borderColor: CommonColors.primary, borderRadius: 3 }}
-                                                        innerIconStyle={{ borderWidth: 1, borderRadius: 3 }}
-                                                    />
-                                                </TouchableOpacity>
+                                                <CheckboxComponent
+                                                    stateChecked={!!cartChecked?.[item.id]?.cart_items?.[cart_item.id]}
+                                                    toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
+                                                />
                                                 <View style={styles.cartItemInfo}>
                                                     <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
                                                     <View style={styles.cartItemContent}>
