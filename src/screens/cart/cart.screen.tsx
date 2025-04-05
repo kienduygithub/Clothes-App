@@ -22,6 +22,8 @@ const CartScreen = (props: Props) => {
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartModel>();
     const [cartChecked, setCartChecked] = useState<CartChecked>({});
+    const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
+    const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
 
     useFocusEffect(
         useCallback(() => {
@@ -53,65 +55,65 @@ const CartScreen = (props: Props) => {
         fetchCartByUser();
     }, [])
 
-    const handleToggleCartShop = (cartShopId: number, cartItems: { id: number }[], isChecked: boolean) => {
-        const updatedItems = cartItems.reduce((sum, item) => {
-            sum[item.id] = isChecked
-            return sum;
-        }, {} as { [cartItemId: number]: boolean })
+    const handleToggleCartShop = (cartShopId: number, isChecked: boolean) => {
+        setSelectedCartShops(prev => {
+            const updatedShops = { ...prev, [cartShopId]: isChecked };
 
-        setCartChecked(prev => ({
-            ...prev,
-            [cartShopId]: {
-                checked: isChecked,
-                cart_items: updatedItems
-            }
-        }))
+            // Cập nhật tất cả cart_items trong cartShop này
+            setSelectedItems(prevItems => {
+                const updatedItems = { ...prevItems };
+                const cartShop = cart?.cart_shops?.find(shop => shop.id === cartShopId);
+                if (cartShop) {
+                    cartShop.cart_items.forEach(item => {
+                        updatedItems[`${cartShopId}-${item.id}`] = isChecked;
+                    });
+                }
+
+                return updatedItems;
+            });
+
+            return updatedShops;
+        });
     }
 
     const handleToggleCartItem = (cartShopId: number, cartItemId: number, isChecked: boolean) => {
-        const shopChecked = cartChecked[cartShopId] ?? {
-            checked: false,
-            cart_items: {}
-        };
+        setSelectedItems(prev => {
+            const updated = {
+                ...prev,
+                [`${cartShopId}-${cartItemId}`]: isChecked
+            };
 
-        const updatedItems = {
-            ...shopChecked.cart_items,
-            [cartItemId]: isChecked
-        }
-
-        const isListCartItemChecked = Object.values(updatedItems).every(Boolean);
-
-        setCartChecked(prev => ({
-            ...prev,
-            [cartShopId]: {
-                checked: isListCartItemChecked,
-                cart_items: updatedItems
+            const cart_shop = cart?.cart_shops.find(cartShop => cartShop.id === cartShopId);
+            if (cart_shop) {
+                const isAllCartItemSelected = cart_shop.cart_items.every(item => updated[`${cartShopId}-${item.id}`])
+                setSelectedCartShops(prevCartShops => ({
+                    ...prevCartShops,
+                    [cartShopId]: isAllCartItemSelected
+                }))
             }
-        }))
+
+            return updated;
+        })
     }
 
     const handleUpdateCartItemQuantity = (cart_shop_id: number, cart_item_id: number, new_quantity: number) => {
-        setCart(prev => {
-            const updatedCartShops = prev?.cart_shops.map(
-                (cart_shop) => {
-                    if (cart_shop.id !== cart_shop_id) {
-                        return cart_shop;
-                    }
+        setCart(prevCart => {
+            const updatedCart = { ...prevCart } as CartModel;
+            const cartShop = updatedCart.cart_shops?.find(
+                shop => shop.id === cart_shop_id
+            );
 
-                    const updatedCartItems = cart_shop.cart_items.map(
-                        cart_item => {
-                            if (cart_item.id !== cart_item_id) {
-                                return cart_item;
-                            }
+            if (cartShop) {
+                const cartItem = cartShop.cart_items.find(
+                    item => item.id === cart_item_id
+                );
 
-                            return { ...cart_item, quantity: new_quantity } as CartItemModel;
-                        }
-                    );
-
-                    return { ...cart_shop, cart_items: updatedCartItems } as CartShopModel;
+                if (cartItem) {
+                    cartItem.quantity = new_quantity;
                 }
-            )
-            return { ...prev, cart_shops: updatedCartShops } as CartModel;
+            }
+
+            return updatedCart;
         });
     }
 
@@ -119,13 +121,8 @@ const CartScreen = (props: Props) => {
         let total = 0;
 
         cart?.cart_shops.forEach(cartShop => {
-            const shopChecked = cartChecked[cartShop.id];
-            if (!shopChecked) {
-                return;
-            }
-
             cartShop.cart_items.forEach(cart_item => {
-                if (shopChecked.cart_items[cart_item.id]) {
+                if (selectedItems[`${cartShop.id}-${cart_item.id}`]) {
                     const price = (cart_item.product_variant?.product?.unit_price ?? 0) * cart_item.quantity;
                     total += price;
                 }
@@ -143,47 +140,31 @@ const CartScreen = (props: Props) => {
         });
     }
 
-    const isAnyItemChecked = () => {
-        return Object.values(cartChecked).some(
-            cart_shop =>
-                cart_shop.checked ||
-                Object.values(cart_shop.cart_items || {}).some(Boolean)
+    const isCartEmpty = () => {
+        return cart?.cart_shops.every(
+            cart_shop => cart_shop.cart_items.every(
+                cart_item => !selectedItems[`${cart_shop.id}-${cart_item.id}`]
+            )
         )
     }
 
     const isAnySelectedOutOfStock = () => {
-        return Object.entries(cartChecked).some(
-            ([cartShopId, cartShopData]) => {
-                const cart_shop = cart?.cart_shops.find(item => item.id.toString() === cartShopId.toString());
-                if (!cart_shop || !cartShopData.cart_items) {
-                    return false;
-                }
-
-                return Object.entries(cartShopData.cart_items).some(
-                    ([cartItemId, isChecked]) => {
-                        if (!isChecked) return false;
-
-                        const cartItem = cart_shop.cart_items.find(
-                            (cart_item: any) => cart_item.id.toString() === cartItemId.toString()
-                        );
-
-                        if (!cartItem) return false;
-
-                        return cartItem.quantity > (cartItem.product_variant?.stock_quantity ?? 0);
-                    }
-                )
-            }
+        return cart?.cart_shops.some(
+            cart_shop => cart_shop.cart_items.some(
+                cart_item =>
+                    selectedItems[`${cart_shop.id}-${cart_item.id}`]
+                    && cart_item.quantity > (cart_item.product_variant?.stock_quantity ?? 0)
+            )
         )
     }
 
     const handleCheckout = async () => {
-        console.log(cart);
-        if (!isAnyItemChecked) {
+        if (isCartEmpty()) {
             console.log('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
             return;
         }
 
-        if (!isAnySelectedOutOfStock) {
+        if (isAnySelectedOutOfStock()) {
             console.log('Một số sản phẩm không đủ số lượng để thanh toán');
             return;
         }
@@ -191,13 +172,17 @@ const CartScreen = (props: Props) => {
         const newOrder = cart?.cart_shops.map(
             (cart_shop) => ({
                 id: cart_shop.id,
-                shop_id: cart_shop.shop?.id,
+                shop: cart_shop.shop,
+                cart_items: cart_shop.cart_items.filter(
+                    cart_item => selectedItems[`${cart_shop.id}-${cart_item.id}`]
+                )
             })
-        )
+        );
+        console.log(newOrder);
     }
 
     const headerHeight = useHeaderHeight();
-    const shouldDisableCheckout = !isAnyItemChecked() || isAnySelectedOutOfStock();
+    const shouldDisableCheckout = isCartEmpty() || isAnySelectedOutOfStock();
     return (
         <>
             <Stack.Screen
@@ -222,8 +207,8 @@ const CartScreen = (props: Props) => {
                             <Animated.View style={styles.cartShopWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
                                 <View style={styles.cartShopHeader}>
                                     <CheckboxComponent
-                                        stateChecked={!!cartChecked[item.id]?.checked}
-                                        toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, item.cart_items, isChecked)}
+                                        stateChecked={selectedCartShops[item.id]}
+                                        toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, isChecked)}
                                         disabled={isShopOutOfStock(item.cart_items)}
                                     />
                                     <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
@@ -235,7 +220,7 @@ const CartScreen = (props: Props) => {
                                             return (
                                                 <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
                                                     <CheckboxComponent
-                                                        stateChecked={!!cartChecked?.[item.id]?.cart_items?.[cart_item.id]}
+                                                        stateChecked={selectedItems[`${item.id}-${cart_item.id}`]}
                                                         toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
                                                         disabled={isOutOfStock}
                                                     />
