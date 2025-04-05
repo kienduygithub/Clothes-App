@@ -69,6 +69,9 @@ const CartStyle = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 5,
     },
+    checkboxChecked: {
+        backgroundColor: CommonColors.primary,
+    },
     shopNameText: {
         fontSize: 16,
         fontWeight: '700'

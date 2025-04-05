@@ -46,3 +46,12 @@ export interface SizeType {
     id: number,
     size_code: string,
 }
+
+type CartChecked = {
+    [cartShopId: number]: {
+        checked: boolean;
+        cart_items: {
+            [cartItemId: number]: boolean;
+        }
+    }
+}
