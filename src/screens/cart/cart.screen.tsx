@@ -176,6 +176,26 @@ const CartScreen = (props: Props) => {
         )
     }
 
+    const handleCheckout = async () => {
+        console.log(cart);
+        if (!isAnyItemChecked) {
+            console.log('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
+            return;
+        }
+
+        if (!isAnySelectedOutOfStock) {
+            console.log('Một số sản phẩm không đủ số lượng để thanh toán');
+            return;
+        }
+
+        const newOrder = cart?.cart_shops.map(
+            (cart_shop) => ({
+                id: cart_shop.id,
+                shop_id: cart_shop.shop?.id,
+            })
+        )
+    }
+
     const headerHeight = useHeaderHeight();
     const shouldDisableCheckout = !isAnyItemChecked() || isAnySelectedOutOfStock();
     return (
@@ -285,6 +305,7 @@ const CartScreen = (props: Props) => {
                         styles.checkoutBtn,
                         shouldDisableCheckout && { opacity: 0.7 }
                     ]}
+                    onPress={() => handleCheckout()}
                 >
                     <Text style={styles.checkoutBtnText}>Thanh toán</Text>
                 </TouchableOpacity>
