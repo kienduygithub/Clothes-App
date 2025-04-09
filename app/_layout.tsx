@@ -1,4 +1,5 @@
 import { Fonts } from '@/src/common/resource/fonts';
+import { ToastProvider } from '@/src/customize/toast.context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -45,40 +46,42 @@ export default function RootLayout() {
 function RootLayoutNav() {
 
   return (
-    <>
-      <StatusBar style='auto' />
-      <Stack>
-        <Stack.Screen name="index" />
-        <Stack.Screen
-          name="(routes)/welcome-intro/index"
-          options={{
-            headerShown: false
-          }}
-        />
-        <Stack.Screen
-          name="(routes)/sign-in/index"
-          options={{
-            headerShown: false,
-            presentation: 'modal'
-          }}
-        />
-        <Stack.Screen
-          name="(routes)/sign-up/index"
-          options={{
-            headerShown: false,
-            presentation: 'modal'
-          }}
-        />
-        <Stack.Screen
-          name="(routes)/product-details/index"
-        />
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false
-          }}
-        />
-      </Stack>
-    </>
+    <ToastProvider>
+      <>
+        <StatusBar style='auto' />
+        <Stack>
+          <Stack.Screen name="index" />
+          <Stack.Screen
+            name="(routes)/welcome-intro/index"
+            options={{
+              headerShown: false
+            }}
+          />
+          <Stack.Screen
+            name="(routes)/sign-in/index"
+            options={{
+              headerShown: false,
+              presentation: 'modal'
+            }}
+          />
+          <Stack.Screen
+            name="(routes)/sign-up/index"
+            options={{
+              headerShown: false,
+              presentation: 'modal'
+            }}
+          />
+          <Stack.Screen
+            name="(routes)/product-details/index"
+          />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false
+            }}
+          />
+        </Stack>
+      </>
+    </ToastProvider>
   );
 }

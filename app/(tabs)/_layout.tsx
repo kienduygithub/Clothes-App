@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { TabConfig } from '@/src/common/resource/tab.config';
 import { Fonts } from '@/src/common/resource/fonts';
 import { AppConfig } from '@/src/common/config/app.config';
+import { ToastProvider } from '@/src/customize/toast.context';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {

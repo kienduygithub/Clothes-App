@@ -10,7 +10,6 @@ import { CategoryModel } from "@/src/data/model/category.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import * as CategoryManagement from "../../data/management/category.management";
 import * as ProductManagement from "../../data/management/product.management";
-import axios from "axios";
 import { ProductModel } from "@/src/data/model/product.model";
 
 const HomeScreen = () => {
@@ -19,7 +18,6 @@ const HomeScreen = () => {
     const [refreshCategory, setRefreshCategory] = useState(false);
     const [refreshCProduct, setRefreshProduct] = useState(false);
     const [products, setProducts] = useState<ProductModel[]>([]);
-    const [saleProducts, setSaleProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
 
     useEffect(() => {
