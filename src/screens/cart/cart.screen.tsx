@@ -103,7 +103,6 @@ const CartScreen = (props: Props) => {
         new_quantity: number
     ) => {
         try {
-            console.log(new_quantity);
             await CartManagement.updateQuantityCartItem(cart_item_id, new_quantity);
             setCart(prevCart => {
                 const updatedCart = { ...prevCart } as CartModel;

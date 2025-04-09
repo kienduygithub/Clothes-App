@@ -27,12 +27,16 @@ const QuantityProductComponent = ({
     // }, [quantity])
 
     useEffect(() => {
+        setQuantity(initialQuantity);
+    }, [initialQuantity])
+
+    useEffect(() => {
         if (resetQuantity) {
             setQuantity(min);
             onQuantityChange?.(min);
             setResetQuantity?.(false);
         }
-    }, [resetQuantity])
+    }, [resetQuantity, min, onQuantityChange, setResetQuantity]);
 
     const handleIncrease = () => {
         if (quantity < max) {
