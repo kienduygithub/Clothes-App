@@ -22,17 +22,9 @@ const QuantityProductComponent = ({
 }: Props) => {
     const [quantity, setQuantity] = useState(initialQuantity);
 
-    useEffect(() => {
-        console.log(quantity);
-        setQuantity(initialQuantity);
-    }, [])
-
-    useEffect(() => {
-        /** Chả để làm gì cả, chỉ để nó nhận initialQuantity */
-        if (initialQuantity !== quantity) {
-            setQuantity(initialQuantity);
-        }
-    }, [quantity])
+    // useEffect(() => {
+    //     /** Chả để làm gì cả, chỉ để nó nhận initialQuantity */
+    // }, [quantity])
 
     useEffect(() => {
         if (resetQuantity) {

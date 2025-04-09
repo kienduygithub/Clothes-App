@@ -60,7 +60,7 @@ export const updateQuantityCartItem = async (item_id: number, quantity: number) 
         const response = await ServiceCore.PUT(
             `${domain}`,
             `cart/${cart_id}/item/${item_id}/quantity`,
-            quantity
+            { quantity: quantity }
         );
         return response;
     } catch (error) {

@@ -12,10 +12,12 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 import QuantityProductComponent from "@/src/components/quantity-product/quantity-product.comp";
+import { useToast } from "@/src/customize/toast.context";
 
 type Props = {}
 
 const CartScreen = (props: Props) => {
+    const { showToast } = useToast();
     const [preImage, setPreImage] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -42,6 +44,7 @@ const CartScreen = (props: Props) => {
             setCart(response);
         } catch (error) {
             console.log(error);
+            showToast('Hệ thống đang bận', "error");
         }
 
         setRefreshing(false);
@@ -94,25 +97,36 @@ const CartScreen = (props: Props) => {
         })
     }
 
-    const handleUpdateCartItemQuantity = (cart_shop_id: number, cart_item_id: number, new_quantity: number) => {
-        setCart(prevCart => {
-            const updatedCart = { ...prevCart } as CartModel;
-            const cartShop = updatedCart.cart_shops?.find(
-                shop => shop.id === cart_shop_id
-            );
-
-            if (cartShop) {
-                const cartItem = cartShop.cart_items.find(
-                    item => item.id === cart_item_id
+    const handleUpdateCartItemQuantity = async (
+        cart_shop_id: number,
+        cart_item_id: number,
+        new_quantity: number
+    ) => {
+        try {
+            console.log(new_quantity);
+            await CartManagement.updateQuantityCartItem(cart_item_id, new_quantity);
+            setCart(prevCart => {
+                const updatedCart = { ...prevCart } as CartModel;
+                const cartShop = updatedCart.cart_shops?.find(
+                    shop => shop.id === cart_shop_id
                 );
 
-                if (cartItem) {
-                    cartItem.quantity = new_quantity;
-                }
-            }
+                if (cartShop) {
+                    const cartItem = cartShop.cart_items.find(
+                        item => item.id === cart_item_id
+                    );
 
-            return updatedCart;
-        });
+                    if (cartItem) {
+                        cartItem.quantity = new_quantity;
+                    }
+                }
+
+                return updatedCart;
+            });
+        } catch (error) {
+            console.log(error);
+            showToast('Hệ thống đang bận', "error");
+        }
     }
 
     const calculatePaymentTotal = (): number => {
