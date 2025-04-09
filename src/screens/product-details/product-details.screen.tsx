@@ -18,6 +18,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import { useToast } from "@/src/customize/toast.context"
 import * as CartManagement from "../../data/management/cart.management";
+import { ErrorModel } from "@/src/common/model/error.model"
 
 type Props = {};
 
@@ -104,10 +105,15 @@ const ProductDetailScreen = (props: Props) => {
             await CartManagement.addCartItem(variant, quantity);
             showToast("Đã thêm sản phẩm vào giỏ hàng", "success");
             sheetRef.current?.close();
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Xảy ra lỗi. Thử lại sau", "error");
-            sheetRef.current?.close();
+            if (error?.message?.includes("Vượt quá số lượng hàng tồn kho")) {
+                showToast("Quá số lượng tồn kho có thể thêm!", "error");
+            } else {
+                showToast("Hệ thống đang bận", "error");
+                sheetRef.current?.close();
+            }
+
         }
     }
 

@@ -1,3 +1,4 @@
+import { ErrorModel } from "@/src/common/model/error.model";
 import { CartModel } from "../model/cart.model";
 import { ProductVariantModel } from "../model/product_variant.model";
 import * as CartService from "../service/cart.service";
@@ -24,7 +25,7 @@ export const addCartItem = async (product_variant: ProductVariantModel, quantity
         await CartService.addCartItem(product_variant, quantity);
         return true;
     } catch (error) {
-        throw error;
+        throw error as ErrorModel;
     }
 }
 

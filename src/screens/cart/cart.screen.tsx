@@ -193,32 +193,39 @@ const CartScreen = (props: Props) => {
     }
 
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
-        setCart(prevCart => {
-            if (!prevCart) return prevCart;
+        try {
+            await CartManagement.removeCartItem(cart_item_id);
+            setCart(prevCart => {
+                if (!prevCart) return prevCart;
 
-            const updatedCartShops = prevCart.cart_shops.map(
-                cart_shop => {
-                    if (cart_shop.id !== cart_shop_id) {
-                        return cart_shop;
+                const updatedCartShops = prevCart.cart_shops.map(
+                    cart_shop => {
+                        if (cart_shop.id !== cart_shop_id) {
+                            return cart_shop;
+                        }
+
+                        const updatedItems = cart_shop.cart_items.filter(
+                            item => item.id !== cart_item_id
+                        );
+
+                        return {
+                            ...cart_shop,
+                            cart_items: updatedItems
+                        }
                     }
+                ) // Loại bỏ cart_shop nếu không còn cart_items
+                    .filter(cart_shop => cart_shop.cart_items.length > 0);
 
-                    const updatedItems = cart_shop.cart_items.filter(
-                        item => item.id !== cart_item_id
-                    );
-
-                    return {
-                        ...cart_shop,
-                        cart_items: updatedItems
-                    }
-                }
-            ) // Loại bỏ cart_shop nếu không còn cart_items
-                .filter(cart_shop => cart_shop.cart_items.length > 0);
-
-            return {
-                ...prevCart,
-                cart_shops: updatedCartShops
-            } as CartModel
-        })
+                return {
+                    ...prevCart,
+                    cart_shops: updatedCartShops
+                } as CartModel
+            })
+            showToast('Loại bỏ sản phẩm thành công', "success");
+        } catch (error) {
+            console.log(error);
+            showToast('Hệ thống đang bận', "error");
+        }
     }
 
     const headerHeight = useHeaderHeight();
