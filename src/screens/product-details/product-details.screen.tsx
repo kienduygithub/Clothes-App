@@ -16,6 +16,8 @@ import ShopProductListComponent from "./comp/shop-product-list/shop-product-list
 import SelectVariantComponent from "@/src/components/select-variant/select-variant.component"
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
+import { useToast } from "@/src/customize/toast.context"
+import * as CartManagement from "../../data/management/cart.management";
 
 type Props = {};
 
@@ -23,6 +25,7 @@ const { width, height } = Dimensions.get('window');
 
 const ProductDetailScreen = (props: Props) => {
     const { id } = useLocalSearchParams();
+    const { showToast } = useToast();
     const [cartPosition, setCartPosition] = useState({ x: width - 50, y: 50 });
     const [preImage, setPreImage] = useState('');
     const [product, setProduct] = useState<ProductModel>();
@@ -96,8 +99,16 @@ const ProductDetailScreen = (props: Props) => {
         setIsOpenBottomSheet(true);
     }, [])
 
-    const handleAddToCart = (variant: ProductVariantModel, quantity: number) => {
-        sheetRef.current?.close();
+    const handleAddToCart = async (variant: ProductVariantModel, quantity: number) => {
+        try {
+            await CartManagement.addCartItem(variant, quantity);
+            showToast("Đã thêm sản phẩm vào giỏ hàng", "success");
+            sheetRef.current?.close();
+        } catch (error) {
+            console.log(error);
+            showToast("Xảy ra lỗi. Thử lại sau", "error");
+            sheetRef.current?.close();
+        }
     }
 
     return (

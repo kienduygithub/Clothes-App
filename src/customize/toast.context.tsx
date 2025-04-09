@@ -48,9 +48,9 @@ export const ToastProvider = ({ children }: Props) => {
             useNativeDriver: true,
         }).start();
 
-        // timeoutRef.current = setTimeout(() => {
-        //     hideToast();
-        // }, 2000);
+        timeoutRef.current = setTimeout(() => {
+            hideToast();
+        }, 2000);
     }
 
     const getIcon = () => {

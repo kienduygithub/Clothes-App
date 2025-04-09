@@ -2,11 +2,9 @@ import { AppConfig } from "@/src/common/config/app.config";
 import { ServiceCore } from "@/src/common/service/service.core";
 import { ProductVariantModel } from "../model/product_variant.model";
 import { CartItemModel } from "../model/cart.model";
-import { CartData } from "../json/cart.data-json";
 
 export const fetchCartByUser = async () => {
     try {
-        return JSON.parse(new CartData().getCartDateJSON());
         const domain = new AppConfig().getDomain();
         const userInfo = await new AppConfig().getUserInfo();
         const cart_id = userInfo.cart_id;

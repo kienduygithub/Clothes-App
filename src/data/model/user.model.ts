@@ -6,6 +6,7 @@ export class UserModel {
     phone: string;
     address: string;
     image_url: string;
+    cart_id: number;
     roles: string;
 
     constructor(
@@ -16,6 +17,7 @@ export class UserModel {
         phone?: string,
         address?: string,
         image_url?: string,
+        cart_id?: number,
         roles?: string,
     ) {
         this.id = id ?? 0;
@@ -25,6 +27,7 @@ export class UserModel {
         this.phone = phone ?? '';
         this.address = address ?? '';
         this.image_url = image_url ?? '';
+        this.cart_id = cart_id ?? 0;
         this.roles = roles ?? '';
     }
 
@@ -37,6 +40,7 @@ export class UserModel {
         model.phone = data?.phone ?? '';
         model.address = data?.address ?? '';
         model.image_url = data?.image_url ?? '';
+        model.cart_id = data?.cart_id ?? 0;
         model.roles = data?.roles ?? '';
 
         return model;

@@ -1,5 +1,5 @@
 import { Text, TouchableOpacity, View } from "react-native";
-import SignInStyle from "./styles/sign-in.style";
+import SignInStyle from "./sign-in.style";
 import { Link, router } from "expo-router";
 import InputField from "@/src/components/inputField/inputField.comp";
 import { CommonColors } from "@/src/common/resource/colors";
@@ -39,12 +39,7 @@ const SignInScreen = () => {
         try {
             let data = new AuthModel(email, password);
             const response = await AuthManagement.signIn(data);
-            const userInfo = new UserModel();
-            userInfo.id = response?.info?.id;
-            userInfo.name = response?.info?.name;
-            userInfo.email = response?.info?.email;
-            userInfo.image_url = response?.info?.image_url;
-            userInfo.roles = response?.info?.roles;
+            const userInfo = new UserModel().convertObj(response?.info);
             await new AppConfig().setAccessToken(response.access_token);
             await new AppConfig().setRefreshToken(response.refresh_token);
             await new AppConfig().setUserInfo(userInfo);

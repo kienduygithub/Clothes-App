@@ -1,7 +1,6 @@
 import { Dimensions, FlatList, Image, Text, TouchableOpacity, View } from "react-native"
 import CartStyle from "./cart.style";
 import { useCallback, useState } from "react";
-import { CartChecked } from "@/src/data/types/global";
 import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack } from "expo-router";
@@ -21,7 +20,6 @@ const CartScreen = (props: Props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartModel>();
-    const [cartChecked, setCartChecked] = useState<CartChecked>({});
     const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
     const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
 
