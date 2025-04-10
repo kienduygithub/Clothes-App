@@ -4,7 +4,7 @@ import { CartItemModel } from "@/src/data/model/cart.model";
 import { ProductModel } from "@/src/data/model/product.model";
 import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 import { ColorType, SizeType } from "@/src/data/types/global";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ProductManagement from "@/src/data/management/product.management";
 import { useToast } from "@/src/customize/toast.context";
@@ -23,15 +23,20 @@ const VariantSelectComponent = ({
     const [colors, setColors] = useState<ColorType[]>([]);
     const [product, setProduct] = useState<ProductModel>(); /** API */
     const [variants, setVariants] = useState<ProductVariantModel[]>([]); /** API */
-    const [selectedSize, setSelectedSize] = useState<number | null>(selectedCartItem?.product_variant?.size?.id ?? null);
-    const [selectedColor, setSelectedColor] = useState<number | null>(selectedCartItem?.product_variant?.color?.id ?? null);
+    const [selectedSize, setSelectedSize] = useState<number | null>(null);
+    const [selectedColor, setSelectedColor] = useState<number | null>(null);
     const [stockQuantity, setStockQuantity] = useState<number>(0);
     const [quantity, setQuantity] = useState(selectedCartItem?.quantity ?? 1);
     const [resetQuantity, setResetQuantity] = useState(false);
     const [loading, setLoading] = useState(false);
+    const isInitialLoad = useRef(false);
 
     useEffect(() => {
         if (selectedCartItem) {
+            isInitialLoad.current = true;
+            setSelectedColor(selectedCartItem.product_variant?.color?.id ?? null);
+            setSelectedSize(selectedCartItem.product_variant?.size?.id ?? null);
+            setQuantity(selectedCartItem.quantity ?? 1);
             fetchData();
         }
     }, [selectedCartItem])
@@ -41,6 +46,12 @@ const VariantSelectComponent = ({
     }, [variants])
 
     useEffect(() => {
+        if (isInitialLoad.current) {
+            /** Nếu là lần đầu tiên, chỉ đặt stockQuantity dựa trên selectedCartItem */
+            isInitialLoad.current = false; /** Sau lần đầu thì bỏ qua */
+            return;
+        }
+
         if (!selectedColor && !selectedSize || !selectedColor && selectedSize) {
             const total = variants.reduce(
                 (stock: number, variant: ProductVariantModel) => {
@@ -94,10 +105,15 @@ const VariantSelectComponent = ({
             const response = await ProductManagement.fetchProductVariantByProductId(selectedCartItem?.product_variant?.product?.id ?? 0);
             setVariants(response);
             if (selectedColor && selectedSize) {
-                const total = variants.find(
-                    v => v.color?.id === selectedColor && v.size?.id === selectedSize
-                )?.stock_quantity ?? 0;
-                setStockQuantity(total);
+                const initialColorId = selectedCartItem?.product_variant?.color?.id;
+                const initialSizeId = selectedCartItem?.product_variant?.size?.id;
+                const variant = response.find(
+                    v => v.color?.id === initialColorId && v.size?.id === initialSizeId
+                )
+
+                if (variant) {
+                    setStockQuantity(variant.stock_quantity);
+                }
             }
         } catch (error) {
             throw error;
