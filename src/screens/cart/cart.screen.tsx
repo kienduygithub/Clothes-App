@@ -3,7 +3,7 @@ import CartStyle from "./cart.style";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as CartManagement from "../../data/management/cart.management";
 import { CartItemModel, CartModel, CartShopModel } from "@/src/data/model/cart.model";
@@ -230,6 +230,7 @@ const CartScreen = (props: Props) => {
 
     const headerHeight = useHeaderHeight();
     const shouldDisableCheckout = isCartEmpty() || isAnySelectedOutOfStock();
+
     return (
         <>
             <Stack.Screen
@@ -320,6 +321,21 @@ const CartScreen = (props: Props) => {
                             </Animated.View>
                         )}
                     />
+                )}
+                {cart && cart.cart_shops.length === 0 && (
+                    <Animated.View style={styles.emptyCartContainer}>
+                        <Image
+                            style={styles.emptyCartImage}
+                            source={require('@/assets/images/icon_empty_cart.png')}
+                        />
+                        <Text style={styles.emptyCartText}>Giỏ hàng của bạn còn trống</Text>
+                        <TouchableOpacity
+                            style={styles.shopNowButton}
+                            onPress={() => router.navigate("/(tabs)")}
+                        >
+                            <Text style={styles.shopNowButtonText}>Mua sắm ngay</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
                 )}
             </View>
             {/* Thanh toán */}

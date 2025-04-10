@@ -143,7 +143,38 @@ const CartStyle = StyleSheet.create({
     stockQuantityText: {
         fontSize: 14,
         color: CommonColors.lightGray
-    }
+    },
+
+    // Empty cart
+    emptyCartContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 50,
+    },
+    emptyCartImage: {
+        width: 150, // Giảm kích thước cho hợp lý hơn
+        height: 150,
+    },
+    emptyCartText: {
+        fontSize: 16,
+        color: CommonColors.lightGray,
+        marginTop: 20,
+        fontFamily: Fonts.POPPINS_REGULAR, // Đồng bộ font nếu có
+    },
+    shopNowButton: {
+        marginTop: 20,
+        backgroundColor: CommonColors.primary,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+    },
+    shopNowButtonText: {
+        fontSize: 15,
+        color: CommonColors.white,
+        fontWeight: '500',
+        fontFamily: Fonts.POPPINS_MEDIUM,
+    },
 });
 
 export default CartStyle;
