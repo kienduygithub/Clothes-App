@@ -30,7 +30,6 @@ const SelectVariantComponent = ({
     const [selectedSize, setSelectedSize] = useState<number | null>(null);
     const [selectedColor, setSelectedColor] = useState<number | null>(null);
     const [stockQuantity, setStockQuantity] = useState<number>(0);
-    const [displayVariantImage, setDisplayVariantImage] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [resetQuantity, setResetQuantity] = useState(false);
 

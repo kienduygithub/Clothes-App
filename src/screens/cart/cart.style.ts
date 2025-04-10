@@ -50,7 +50,16 @@ const CartStyle = StyleSheet.create({
         lineHeight: 24,
         fontFamily: Fonts.POPPINS_MEDIUM
     },
-
+    changeVariantBtn: {
+        minWidth: 80,
+        maxWidth: 120,
+        height: 30,
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        borderRadius: 3,
+        backgroundColor: CommonColors.extraLightGray
+    },
 
     cartShopWrapper: {
         width: '100%',

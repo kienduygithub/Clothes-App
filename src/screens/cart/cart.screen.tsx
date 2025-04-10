@@ -8,7 +8,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as CartManagement from "../../data/management/cart.management";
 import { CartItemModel, CartModel, CartShopModel } from "@/src/data/model/cart.model";
 import { AppConfig } from "@/src/common/config/app.config";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 import QuantityProductComponent from "@/src/components/quantity-product/quantity-product.comp";
@@ -26,9 +26,10 @@ const CartScreen = (props: Props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartModel>();
+    const [selectedCartItem, setSelectedCartItem] = useState<CartItemModel | null>(null);
     const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
     const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
-    const sheetRef = useRef<BottomSheet>(null);
+    const sheetVarientSelectRef = useRef<BottomSheet>(null);
     const snapPoints = ["50%"];
 
     useFocusEffect(
@@ -234,9 +235,22 @@ const CartScreen = (props: Props) => {
         }
     }
 
-    const handleSnapPress = useCallback((index: number) => {
-        sheetRef.current?.snapToIndex(index);
-    }, [])
+    const openVariantSelect = (cart_item: CartItemModel) => {
+        setSelectedCartItem(cart_item);
+        openSheet("variant", 1);
+    }
+
+    const openSheet = useCallback((sheetType: "variant", index: number) => {
+        if (sheetType === "variant") {
+            sheetVarientSelectRef.current?.snapToIndex(index);
+        }
+    }, []);
+
+    const handleSheetChange = (index: number) => {
+        if (index === -1) {
+            setSelectedCartItem(null);
+        }
+    }
 
     const headerHeight = useHeaderHeight();
     const shouldDisableCheckout = isCartEmpty() || isAnySelectedOutOfStock();
@@ -273,49 +287,56 @@ const CartScreen = (props: Props) => {
                                         <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
                                     </View>
                                     <View style={styles.listCartItemWrapper}>
-                                        {item.cart_items.length > 0 &&
-                                            item.cart_items.map((cart_item, index) => {
-                                                const isOutOfStock = cart_item.quantity > (cart_item.product_variant?.stock_quantity ?? 0);
-                                                return (
-                                                    <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
-                                                        <CheckboxComponent
-                                                            stateChecked={selectedItems[`${item.id}-${cart_item.id}`]}
-                                                            toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
-                                                            disabled={isOutOfStock}
-                                                        />
-                                                        {/* Thông tin cart item */}
-                                                        <View style={styles.cartItemInfo}>
-                                                            <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
-                                                            <View style={styles.cartItemContent}>
-                                                                <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
-                                                                <View style={styles.cartItemPriceAndQuantity}>
-                                                                    <View style={styles.priceWrapper}>
-                                                                        <Text style={styles.dText}>đ</Text>
-                                                                        <Text style={styles.priceText}>
-                                                                            {cart_item.product_variant?.product?.unit_price ?? 0}
-                                                                        </Text>
-                                                                    </View>
-                                                                    <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
-                                                                        Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}
+                                        {item.cart_items.map((cart_item, index) => {
+                                            const isOutOfStock = cart_item.quantity > (cart_item.product_variant?.stock_quantity ?? 0);
+                                            return (
+                                                <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
+                                                    <CheckboxComponent
+                                                        stateChecked={selectedItems[`${item.id}-${cart_item.id}`]}
+                                                        toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
+                                                        disabled={isOutOfStock}
+                                                    />
+                                                    {/* Thông tin cart item */}
+                                                    <View style={styles.cartItemInfo}>
+                                                        <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
+                                                        <View style={styles.cartItemContent}>
+                                                            <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
+                                                            <TouchableOpacity
+                                                                style={styles.changeVariantBtn}
+                                                                onPress={() => openVariantSelect(cart_item)}
+                                                            >
+                                                                <Text>
+                                                                    {`Màu ${cart_item.product_variant?.color?.color_name}, Size ${cart_item.product_variant?.size?.size_code}`}
+                                                                </Text>
+                                                                <MaterialIcons name="keyboard-arrow-down" size={18} color="black" />
+                                                            </TouchableOpacity>
+                                                            <View style={styles.cartItemPriceAndQuantity}>
+                                                                <View style={styles.priceWrapper}>
+                                                                    <Text style={styles.dText}>đ</Text>
+                                                                    <Text style={styles.priceText}>
+                                                                        {cart_item.product_variant?.product?.unit_price ?? 0}
                                                                     </Text>
                                                                 </View>
-                                                                <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                                    <QuantityProductComponent
-                                                                        initialQuantity={cart_item.quantity}
-                                                                        min={1}
-                                                                        max={cart_item.product_variant?.stock_quantity ?? 99}
-                                                                        onQuantityChange={(newQuantity) => handleUpdateCartItemQuantity(item.id, cart_item.id, newQuantity)}
-                                                                    />
-                                                                    <TouchableOpacity onPress={() => handleRemoveCartItem(item.id, cart_item.id)}>
-                                                                        <Ionicons name="trash-outline" size={25} color={CommonColors.red} />
-                                                                    </TouchableOpacity>
-                                                                </View>
+                                                                <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
+                                                                    Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}
+                                                                </Text>
+                                                            </View>
+                                                            <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                                <QuantityProductComponent
+                                                                    initialQuantity={cart_item.quantity}
+                                                                    min={1}
+                                                                    max={cart_item.product_variant?.stock_quantity ?? 99}
+                                                                    onQuantityChange={(newQuantity) => handleUpdateCartItemQuantity(item.id, cart_item.id, newQuantity)}
+                                                                />
+                                                                <TouchableOpacity onPress={() => handleRemoveCartItem(item.id, cart_item.id)}>
+                                                                    <Ionicons name="trash-outline" size={25} color={CommonColors.red} />
+                                                                </TouchableOpacity>
                                                             </View>
                                                         </View>
                                                     </View>
-                                                )
-                                            })
-                                        }
+                                                </View>
+                                            )
+                                        })}
                                     </View>
                                     <View style={styles.devider}></View>
                                     <View style={styles.promotionWrapper}>
@@ -371,16 +392,20 @@ const CartScreen = (props: Props) => {
                 </Animated.View>
                 {/* Bottom sheet */}
                 <BottomSheet
-                    ref={sheetRef}
+                    ref={sheetVarientSelectRef}
                     snapPoints={snapPoints}
                     enablePanDownToClose={true}
-                    index={1}
+                    index={-1}
                     backdropComponent={(props) => (
                         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
                     )}
+                    onChange={handleSheetChange}
                 >
                     <BottomSheetView>
-                        <VariantSelectComponent />
+                        <VariantSelectComponent
+                            selectedCartItem={selectedCartItem}
+                            preImage={preImage}
+                        />
                     </BottomSheetView>
                 </BottomSheet>
             </GestureHandlerRootView>
