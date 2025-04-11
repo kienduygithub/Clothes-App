@@ -35,6 +35,22 @@ const CouponSelectComponent = ({
         }
     }
 
+    const handleSaveCoupon = async (coupon_id: number) => {
+        try {
+            await CouponManagement.saveCouponMobile(coupon_id);
+            setCoupons((prevCoupons) =>
+                prevCoupons.map((coupon) =>
+                    coupon.id === coupon_id
+                        ? { ...coupon, is_saved: true, is_used: false } as CouponModel
+                        : coupon
+                )
+            );
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        }
+    }
+
     const renderEmptyCoupons = () => {
         return (
             <View style={styles.messageContainer}>
@@ -78,6 +94,7 @@ const CouponSelectComponent = ({
                             <CouponItemComponent
                                 item={item}
                                 preImage={preImage}
+                                onSaveCoupon={(coupon_id) => handleSaveCoupon(coupon_id)}
                             />
                         </View>
                     )}

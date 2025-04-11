@@ -4,12 +4,14 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 type Props = {
     item: CouponModel,
-    preImage: string
+    preImage: string,
+    onSaveCoupon: (coupon_id: number) => void
 }
 
 const CouponItemComponent = ({
     item,
-    preImage
+    preImage,
+    onSaveCoupon
 }: Props) => {
 
     const formatCurrency = (value: number) => {
@@ -34,6 +36,10 @@ const CouponItemComponent = ({
             : "Không xác định";
 
         return `HSD: ${from} - ${to}`;
+    }
+
+    const handleSave = () => {
+        onSaveCoupon(item.id);
     }
 
     return (
@@ -74,7 +80,10 @@ const CouponItemComponent = ({
                         </Text>
                     </TouchableOpacity>
                 ) : (
-                    <TouchableOpacity style={[styles.actionButton, styles.saveButton]}>
+                    <TouchableOpacity
+                        onPress={() => handleSave()}
+                        style={[styles.actionButton, styles.saveButton]}
+                    >
                         <Text style={styles.actionButtonText}>Lưu</Text>
                     </TouchableOpacity>
                 )}
