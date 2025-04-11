@@ -7,16 +7,26 @@ import { ColorType, SizeType } from "@/src/data/types/global";
 import { useEffect, useRef, useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ProductManagement from "@/src/data/management/product.management";
+import * as CartManagement from "@/src/data/management/cart.management";
 import { useToast } from "@/src/customize/toast.context";
 
 type Props = {
+    selectedCartShopId: number,
     selectedCartItem: CartItemModel | null,
     preImage: string,
+    setChangeVariantCartItem: (
+        cart_shop_id: number,
+        cart_item_id: number,
+        variant: ProductVariantModel,
+        newQuantity: number
+    ) => void
 }
 
 const VariantSelectComponent = ({
+    selectedCartShopId = 0,
     selectedCartItem,
-    preImage = ""
+    preImage = "",
+    setChangeVariantCartItem
 }: Props) => {
     const { showToast } = useToast();
     const [sizes, setSizes] = useState<SizeType[]>([]);
@@ -86,7 +96,7 @@ const VariantSelectComponent = ({
             setLoading(false);
         } catch (error) {
             console.log(error);
-            showToast("Hệ thống đang bận, quay lại sau", "error");
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
             setLoading(false);
         }
     }
@@ -159,6 +169,39 @@ const VariantSelectComponent = ({
 
     const handleSelectColor = (id: number) => {
         setSelectedColor((prev) => (prev === id ? null : id));
+    }
+
+    const onSubmit = async () => {
+
+        if (!selectedColor && !selectedSize) {
+            showToast("Vui lòng chọn đầy đủ màu sắc và kích cỡ", "error");
+            return;
+        }
+
+        if (!selectedCartItem || selectedCartShopId === 0) {
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            return;
+        }
+
+        try {
+            const variant = variants.find(v => v.color?.id === selectedColor && v.size?.id === selectedSize);
+            if (variant) {
+                await CartManagement.updateCartItem(selectedCartItem?.id ?? 0, variant, quantity);
+                setChangeVariantCartItem(selectedCartShopId, selectedCartItem?.id ?? 0, variant, quantity);
+                showToast("Thay đổi sản phẩm thành công", "success");
+            }
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        }
+    }
+
+    if (loading) {
+        return (
+            <View>
+                <Text>No data</Text>
+            </View>
+        )
     }
 
     if (!product) {
@@ -245,8 +288,9 @@ const VariantSelectComponent = ({
             <View style={{ paddingHorizontal: 20 }}>
                 <TouchableOpacity
                     style={styles.buttonAddCart}
+                    onPress={() => onSubmit()}
                 >
-                    <Text style={styles.buttonAddCartText}>Thêm vào giỏ hàng</Text>
+                    <Text style={styles.buttonAddCartText}>Xác nhận</Text>
                 </TouchableOpacity>
             </View>
         </View>

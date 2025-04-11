@@ -16,6 +16,7 @@ import { useToast } from "@/src/customize/toast.context";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import VariantSelectComponent from "./comp/variant-select/variant-select.component";
+import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 
 
 type Props = {}
@@ -26,6 +27,7 @@ const CartScreen = (props: Props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartModel>();
+    const [selectedCartShopId, setSelectedCartShopId] = useState<number>(0);
     const [selectedCartItem, setSelectedCartItem] = useState<CartItemModel | null>(null);
     const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
     const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
@@ -235,9 +237,40 @@ const CartScreen = (props: Props) => {
         }
     }
 
-    const openVariantSelect = (cart_item: CartItemModel) => {
+    const openVariantSelect = (cart_shop_id: number, cart_item: CartItemModel) => {
+        setSelectedCartShopId(cart_shop_id);
         setSelectedCartItem(cart_item);
         openSheet("variant", 1);
+    }
+
+    const handleChangeVariantCartItem = (
+        cart_shop_id: number,
+        cart_item_id: number,
+        variant: ProductVariantModel,
+        quantity: number
+    ) => {
+        setCart(prevCart => {
+            const updatedCart = { ...prevCart } as CartModel;
+            const cartShop = updatedCart.cart_shops?.find(
+                shop => shop.id === cart_shop_id
+            );
+
+            if (cartShop) {
+                const cartItem = cartShop.cart_items.find(
+                    item => item.id === cart_item_id
+                );
+
+                if (cartItem) {
+                    cartItem.product_variant = variant;
+                    cartItem.quantity = quantity;
+                }
+            }
+
+            return updatedCart;
+        });
+        setSelectedCartItem(null);
+        setSelectedCartShopId(0);
+        sheetVarientSelectRef.current?.close();
     }
 
     const openSheet = useCallback((sheetType: "variant", index: number) => {
@@ -249,6 +282,7 @@ const CartScreen = (props: Props) => {
     const handleSheetChange = (index: number) => {
         if (index === -1) {
             setSelectedCartItem(null);
+            setSelectedCartShopId(0);
         }
     }
 
@@ -303,7 +337,7 @@ const CartScreen = (props: Props) => {
                                                             <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
                                                             <TouchableOpacity
                                                                 style={styles.changeVariantBtn}
-                                                                onPress={() => openVariantSelect(cart_item)}
+                                                                onPress={() => openVariantSelect(item.id, cart_item)}
                                                             >
                                                                 <Text>
                                                                     {`Màu ${cart_item.product_variant?.color?.color_name}, Size ${cart_item.product_variant?.size?.size_code}`}
@@ -404,7 +438,9 @@ const CartScreen = (props: Props) => {
                     <BottomSheetView>
                         <VariantSelectComponent
                             selectedCartItem={selectedCartItem}
+                            selectedCartShopId={selectedCartShopId}
                             preImage={preImage}
+                            setChangeVariantCartItem={handleChangeVariantCartItem}
                         />
                     </BottomSheetView>
                 </BottomSheet>
