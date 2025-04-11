@@ -470,6 +470,7 @@ const CartScreen = (props: Props) => {
                     <BottomSheetView>
                         <CouponSelectComponent
                             selectedCartShop={selectedCartShop}
+                            preImage={preImage}
                         />
                     </BottomSheetView>
                 </BottomSheet>
