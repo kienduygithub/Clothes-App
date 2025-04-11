@@ -1,5 +1,6 @@
 import { DiscountTypes } from "@/src/common/resource/discount_type";
 import { ShopModel } from "./shop.model";
+import moment from "moment";
 
 export class CouponModel {
     id: number;
@@ -69,5 +70,34 @@ export class CouponModel {
         return model;
     }
 
+    isValid(): boolean {
+        const now = new Date();
+        return this.valid_from && this.valid_to
+            ? now >= this.valid_from && now <= this.valid_to
+            : false;
+    }
 
+    getFormattedValidFrom(format: string = 'DD/MM/YYYY'): string {
+        return this.valid_from ? moment(this.valid_from).format(format) : '';
+    }
+
+    getFormattedValidTo(format: string = 'DD/MM/YYYY'): string {
+        return this.valid_to ? moment(this.valid_to).format(format) : '';
+    }
+
+    getUsageStatus(): string {
+        if (this.max_usage === -1) {
+            return 'Không giới hạn';
+        }
+
+        return `Đã dùng ${this.times_used}/${this.max_usage} lần`;
+    }
+
+    hasUnlimitedUsage(): boolean {
+        return this.max_usage === -1;
+    }
+
+    canBeUsed(): boolean {
+        return this.hasUnlimitedUsage() || this.times_used < this.max_usage;
+    }
 }
