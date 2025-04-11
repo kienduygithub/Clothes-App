@@ -52,7 +52,7 @@ const CartStyle = StyleSheet.create({
     },
     changeVariantBtn: {
         minWidth: 80,
-        maxWidth: 120,
+        maxWidth: 150,
         height: 30,
         flexDirection: 'row',
         justifyContent: 'space-evenly',

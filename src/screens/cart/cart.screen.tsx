@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import VariantSelectComponent from "./comp/variant-select/variant-select.component";
 import { ProductVariantModel } from "@/src/data/model/product_variant.model";
+import CouponSelectComponent from "./comp/coupon-select/coupon-select.component";
 
 
 type Props = {}
@@ -27,11 +28,13 @@ const CartScreen = (props: Props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [cart, setCart] = useState<CartModel>();
+    const [selectedCartShop, setSelectedCartShop] = useState<CartShopModel | null>(null);
     const [selectedCartShopId, setSelectedCartShopId] = useState<number>(0);
     const [selectedCartItem, setSelectedCartItem] = useState<CartItemModel | null>(null);
     const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
     const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
     const sheetVarientSelectRef = useRef<BottomSheet>(null);
+    const sheetCouponSelectRef = useRef<BottomSheet>(null);
     const snapPoints = ["50%"];
 
     useFocusEffect(
@@ -273,14 +276,22 @@ const CartScreen = (props: Props) => {
         sheetVarientSelectRef.current?.close();
     }
 
-    const openSheet = useCallback((sheetType: "variant", index: number) => {
+    const openCouponSelect = (cartShop: CartShopModel) => {
+        setSelectedCartShop(cartShop);
+        openSheet("coupon", 1);
+    }
+
+    const openSheet = useCallback((sheetType: "variant" | "coupon", index: number) => {
         if (sheetType === "variant") {
             sheetVarientSelectRef.current?.snapToIndex(index);
+        } else if (sheetType === "coupon") {
+            sheetCouponSelectRef.current?.snapToIndex(index);
         }
     }, []);
 
     const handleSheetChange = (index: number) => {
         if (index === -1) {
+            setSelectedCartShop(null);
             setSelectedCartItem(null);
             setSelectedCartShopId(0);
         }
@@ -374,10 +385,12 @@ const CartScreen = (props: Props) => {
                                     </View>
                                     <View style={styles.devider}></View>
                                     <View style={styles.promotionWrapper}>
-                                        <TouchableOpacity style={styles.promotionItem}>
+                                        <TouchableOpacity
+                                            style={styles.promotionItem}
+                                            onPress={() => openCouponSelect(item)}
+                                        >
                                             <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
                                             <Text style={styles.promotionText}>Voucher không giới hạn</Text>
-
                                         </TouchableOpacity>
                                         <TouchableOpacity style={styles.promotionItem}>
                                             <MaterialCommunityIcons name="truck-delivery-outline" size={24} color={CommonColors.green} />
@@ -441,6 +454,22 @@ const CartScreen = (props: Props) => {
                             selectedCartShopId={selectedCartShopId}
                             preImage={preImage}
                             setChangeVariantCartItem={handleChangeVariantCartItem}
+                        />
+                    </BottomSheetView>
+                </BottomSheet>
+                <BottomSheet
+                    ref={sheetCouponSelectRef}
+                    snapPoints={snapPoints}
+                    enablePanDownToClose={true}
+                    index={1}
+                    backdropComponent={(props) => (
+                        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+                    )}
+                    onChange={handleSheetChange}
+                >
+                    <BottomSheetView>
+                        <CouponSelectComponent
+                            selectedCartShop={selectedCartShop}
                         />
                     </BottomSheetView>
                 </BottomSheet>
