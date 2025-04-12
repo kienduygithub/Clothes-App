@@ -2,6 +2,7 @@ import { ErrorModel } from "@/src/common/model/error.model";
 import { CartModel } from "../model/cart.model";
 import { ProductVariantModel } from "../model/product_variant.model";
 import * as CartService from "../service/cart.service";
+import { CartShopFinalType } from "../types/global";
 
 export const fetchCartByUser = async () => {
     try {
@@ -65,9 +66,21 @@ export const removeCartShop = async (cart_shop_id: number) => {
     }
 }
 
-export const paymentCart = async () => {
+export const paymentCart = async (
+    address_id: number | null,
+    cart_shops: CartShopFinalType[],
+    subtotal: number,
+    discount: number,
+    final_total: number
+) => {
     try {
-        await CartService.paymentCart();
+        await CartService.paymentCart(
+            address_id,
+            cart_shops,
+            subtotal,
+            discount,
+            final_total
+        );
         return true;
     } catch (error) {
         throw error;

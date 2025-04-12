@@ -290,10 +290,20 @@ const CartScreen = (props: Props) => {
         /** Tính tổng Final */
         const final_total = subTotal - discount;
 
-        console.log(listCartShopFinal);
-        console.log(subTotal);
-        console.log(discount);
-        console.log(final_total);
+        try {
+            await CartManagement.paymentCart(
+                null, /** Bổ sung sau */
+                listCartShopFinal,
+                subTotal,
+                discount,
+                final_total
+            );
+            showToast("Thanh toán thành công", "success");
+            router.navigate('/(tabs)');
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        }
     }
 
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
