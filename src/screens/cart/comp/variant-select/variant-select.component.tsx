@@ -9,6 +9,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ProductManagement from "@/src/data/management/product.management";
 import * as CartManagement from "@/src/data/management/cart.management";
 import { useToast } from "@/src/customize/toast.context";
+import { formatPriceRender } from "@/src/common/utils/currency.helper";
 
 type Props = {
     selectedCartShopId: number,
@@ -237,7 +238,7 @@ const VariantSelectComponent = ({
                 <View style={styles.unitPriceAndStockWrapper}>
                     <View style={styles.unitPriceWrapper}>
                         <Text style={styles.dText}>đ</Text>
-                        <Text style={styles.unitPriceText}>{product.unit_price}</Text>
+                        <Text style={styles.unitPriceText}>{formatPriceRender(product.unit_price)}</Text>
                     </View>
                     <Text style={styles.stockText}>
                         Hàng tồn: {stockQuantity}

@@ -19,6 +19,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/botto
 import { useToast } from "@/src/customize/toast.context"
 import * as CartManagement from "../../data/management/cart.management";
 import { ErrorModel } from "@/src/common/model/error.model"
+import { formatPriceRender } from "@/src/common/utils/currency.helper"
 
 type Props = {};
 
@@ -165,7 +166,7 @@ const ProductDetailScreen = (props: Props) => {
                             <Animated.View style={styles.metaInfoWrapper} entering={FadeInDown.delay(800).duration(500)}>
                                 <View style={styles.priceAndRatingWrapper}>
                                     <View style={styles.priceWrapper}>
-                                        <Text style={styles.price}>đ{product.unit_price}</Text>
+                                        <Text style={styles.price}>đ{formatPriceRender(product.unit_price)}</Text>
                                     </View>
                                     <View style={styles.ratingWrapper}>
                                         <FontAwesome name="star" size={18} color={CommonColors.yellow} />

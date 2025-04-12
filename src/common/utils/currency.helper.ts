@@ -4,3 +4,7 @@ export const formatCurrency = (value: number) => {
         currency: "VND"
     }).format(value);
 }
+
+export const formatPriceRender = (value: number) => {
+    return parseFloat(value.toString()).toLocaleString('vi-VN');
+}

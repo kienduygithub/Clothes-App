@@ -6,6 +6,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { Link, router } from "expo-router";
 import { ProductModel } from "@/src/data/model/product.model";
 import { useEffect } from "react";
+import { formatPriceRender } from "@/src/common/utils/currency.helper";
 
 type Props = {
     item: ProductModel,
@@ -34,7 +35,7 @@ const ProductItemComponent = ({ item, index, preImage, productType }: Props) => 
                                 <FontAwesome name="heart-o" size={18} color={CommonColors.black} />
                             </TouchableOpacity>
                             <View style={styles.productInfo}>
-                                <Text style={styles.price}>${item.unit_price}</Text>
+                                <Text style={styles.price}>đ{formatPriceRender(item.unit_price)}</Text>
                                 <View style={styles.ratingWrapper}>
                                     <FontAwesome name="star" size={18} color={CommonColors.yellow} />
                                     <Text style={styles.ratingTxt}>{Number(item.rating).toFixed(1)}</Text>

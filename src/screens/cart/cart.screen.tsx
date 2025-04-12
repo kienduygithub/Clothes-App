@@ -20,7 +20,7 @@ import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 import CouponSelectComponent from "./comp/coupon-select/coupon-select.component";
 import { CouponModel } from "@/src/data/model/coupon.model";
 import * as CouponManagement from "@/src/data/management/coupon.management";
-import { formatCurrency } from "@/src/common/utils/currency.helper";
+import { formatCurrency, formatPriceRender } from "@/src/common/utils/currency.helper";
 import { DiscountTypes } from "@/src/common/resource/discount_type";
 import Scissors from "@/assets/images/icon_scissors.svg";
 import { CartShopFinalType } from "@/src/data/types/global";
@@ -527,7 +527,7 @@ const CartScreen = (props: Props) => {
                                                                     <View style={styles.priceWrapper}>
                                                                         <Text style={styles.dText}>đ</Text>
                                                                         <Text style={styles.priceText}>
-                                                                            {parseFloat(cart_item.product_variant?.product?.unit_price.toString() ?? '0')}
+                                                                            {formatPriceRender(cart_item.product_variant?.product?.unit_price ?? 0)}
                                                                         </Text>
                                                                     </View>
                                                                     <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
@@ -609,7 +609,7 @@ const CartScreen = (props: Props) => {
                         <Text style={{ fontSize: 15 }}>Thành tiền: </Text>
                         <Text style={styles.dText}>đ</Text>
                         <Text style={styles.priceText}>
-                            {calculatePaymentTotal().toLocaleString('vi-VN')}
+                            {formatPriceRender(calculatePaymentTotal())}
                         </Text>
                     </View>
                     <TouchableOpacity

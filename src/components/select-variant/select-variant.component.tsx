@@ -5,6 +5,7 @@ import { ColorType, SizeType } from "@/src/data/types/global";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QuantityProductComponent from "../quantity-product/quantity-product.comp";
+import { formatPriceRender } from "@/src/common/utils/currency.helper";
 
 type Props = {
     product: ProductModel,
@@ -172,7 +173,7 @@ const SelectVariantComponent = ({
                     <View style={styles.unitPriceAndStockWrapper}>
                         <View style={styles.unitPriceWrapper}>
                             <Text style={styles.dText}>đ</Text>
-                            <Text style={styles.unitPriceText}>{product.unit_price}</Text>
+                            <Text style={styles.unitPriceText}>{formatPriceRender(product.unit_price)}</Text>
                         </View>
                         <Text style={styles.stockText}>
                             Hàng tồn: {stockQuantity}
