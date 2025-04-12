@@ -1,3 +1,4 @@
+import { CouponModel } from "./coupon.model";
 import { ProductVariantModel } from "./product_variant.model";
 import { ShopModel } from "./shop.model";
 
@@ -32,15 +33,18 @@ export class CartShopModel {
     id: number;
     shop: ShopModel | undefined;
     cart_items: CartItemModel[];
+    selectedCoupon?: CouponModel | null;
 
     constructor(
         id?: number,
         shop?: ShopModel,
-        cart_items?: CartItemModel[]
+        cart_items?: CartItemModel[],
+        selectedCoupon?: CouponModel
     ) {
         this.id = id ?? 0;
         this.shop = shop ?? undefined;
         this.cart_items = cart_items ?? [];
+        this.selectedCoupon = selectedCoupon ?? null;
     }
 
     convertObj(data: any) {
@@ -50,6 +54,7 @@ export class CartShopModel {
         obj.cart_items = data?.cart_items?.map(
             (item: any) => new CartItemModel().convertObj(item)
         ) ?? [];
+        obj.selectedCoupon = data?.selected_coupon ? new CouponModel().convertObj(data?.selected_coupon) : null;
 
         return obj;
     }

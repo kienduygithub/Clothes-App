@@ -5,13 +5,17 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 type Props = {
     item: CouponModel,
     preImage: string,
-    onSaveCoupon: (coupon_id: number) => void
+    onSaveCoupon: (coupon_id: number) => void,
+    onUseCoupon?: () => void,
+    selectedCouponId?: number
 }
 
 const CouponItemComponent = ({
     item,
     preImage,
-    onSaveCoupon
+    onSaveCoupon,
+    onUseCoupon,
+    selectedCouponId
 }: Props) => {
 
     const formatCurrency = (value: number) => {
@@ -42,6 +46,8 @@ const CouponItemComponent = ({
         onSaveCoupon(item.id);
     }
 
+    const isApplied = selectedCouponId === item.id;
+
     return (
         <View style={styles.couponCard}>
             {/* Phần hình ảnh */}
@@ -70,13 +76,15 @@ const CouponItemComponent = ({
             <View style={styles.couponAction}>
                 {item.is_used ? (
                     <Text style={styles.usedText}>Đã sử dụng</Text>
+                ) : isApplied ? (
+                    <Text style={styles.appliedText}>Đang áp dụng</Text>
                 ) : item.is_saved ? (
                     <TouchableOpacity
                         style={[styles.actionButton, styles.saveButton]}
-                        disabled={!item.is_used}
+                        onPress={onUseCoupon}
                     >
                         <Text style={styles.actionButtonText}>
-                            {!item.is_used ? "Sử dụng" : "Hết hiệu lực"}
+                            Sử dụng
                         </Text>
                     </TouchableOpacity>
                 ) : (
@@ -166,6 +174,11 @@ const styles = StyleSheet.create({
     usedText: {
         color: CommonColors.gray,
         fontSize: 13,
+    },
+    appliedText: {
+        color: CommonColors.primary,
+        fontSize: 13,
+        fontWeight: '500',
     },
 })
 

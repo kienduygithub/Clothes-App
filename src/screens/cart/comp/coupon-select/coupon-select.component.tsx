@@ -9,13 +9,15 @@ import * as CouponManagement from "@/src/data/management/coupon.management";
 import CouponItemComponent from "../coupon-item/coupon-item.component";
 
 type Props = {
+    preImage: string,
     selectedCartShop: CartShopModel | null,
-    preImage: string
+    onSelectCoupon?: (cart_shop_id: number, coupon: CouponModel) => void
 }
 
 const CouponSelectComponent = ({
+    preImage = "",
     selectedCartShop = null,
-    preImage = ""
+    onSelectCoupon
 }: Props) => {
     const { showToast } = useToast();
     const [coupons, setCoupons] = useState<CouponModel[]>([]);
@@ -95,6 +97,10 @@ const CouponSelectComponent = ({
                                 item={item}
                                 preImage={preImage}
                                 onSaveCoupon={(coupon_id) => handleSaveCoupon(coupon_id)}
+                                onUseCoupon={() =>
+                                    onSelectCoupon?.(selectedCartShop?.id ?? 0, item)
+                                }
+                                selectedCouponId={selectedCartShop?.selectedCoupon?.id}
                             />
                         </View>
                     )}

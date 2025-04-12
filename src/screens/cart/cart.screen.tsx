@@ -18,6 +18,7 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/botto
 import VariantSelectComponent from "./comp/variant-select/variant-select.component";
 import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 import CouponSelectComponent from "./comp/coupon-select/coupon-select.component";
+import { CouponModel } from "@/src/data/model/coupon.model";
 
 
 type Props = {}
@@ -281,6 +282,22 @@ const CartScreen = (props: Props) => {
         openSheet("coupon", 1);
     }
 
+    const handleApplyCoupon = (cart_shop_id: number, coupon: CouponModel) => {
+        setCart((prevCart) => {
+            const updatedCart = { ...prevCart } as CartModel;
+            const cartShop = updatedCart.cart_shops.find(
+                (cart_shop) => cart_shop.id === cart_shop_id
+            );
+            if (cartShop) {
+                cartShop.selectedCoupon = coupon;
+            }
+            return updatedCart;
+        })
+        setSelectedCartShop(null);
+        sheetCouponSelectRef.current?.close();
+        showToast("Áp dụng coupon thành công", "success");
+    }
+
     const openSheet = useCallback((sheetType: "variant" | "coupon", index: number) => {
         if (sheetType === "variant") {
             sheetVarientSelectRef.current?.snapToIndex(index);
@@ -390,7 +407,13 @@ const CartScreen = (props: Props) => {
                                             onPress={() => openCouponSelect(item)}
                                         >
                                             <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
-                                            <Text style={styles.promotionText}>Voucher không giới hạn</Text>
+                                            <Text style={styles.promotionText}>
+                                                {
+                                                    item.selectedCoupon
+                                                        ? `Đang áp dụng: ${item.selectedCoupon.name}`
+                                                        : 'Thêm voucher khuyến mãi'
+                                                }
+                                            </Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity style={styles.promotionItem}>
                                             <MaterialCommunityIcons name="truck-delivery-outline" size={24} color={CommonColors.green} />
@@ -461,7 +484,7 @@ const CartScreen = (props: Props) => {
                     ref={sheetCouponSelectRef}
                     snapPoints={snapPoints}
                     enablePanDownToClose={true}
-                    index={1}
+                    index={-1}
                     backdropComponent={(props) => (
                         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
                     )}
@@ -469,8 +492,9 @@ const CartScreen = (props: Props) => {
                 >
                     <BottomSheetView>
                         <CouponSelectComponent
-                            selectedCartShop={selectedCartShop}
                             preImage={preImage}
+                            selectedCartShop={selectedCartShop}
+                            onSelectCoupon={handleApplyCoupon}
                         />
                     </BottomSheetView>
                 </BottomSheet>
