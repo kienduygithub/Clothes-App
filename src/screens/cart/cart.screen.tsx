@@ -22,7 +22,7 @@ import { CouponModel } from "@/src/data/model/coupon.model";
 import * as CouponManagement from "@/src/data/management/coupon.management";
 import { formatCurrency } from "@/src/common/utils/currency.helper";
 import { DiscountTypes } from "@/src/common/resource/discount_type";
-
+import Scissors from "@/assets/images/icon_scissors.svg";
 type Props = {}
 
 const CartScreen = (props: Props) => {
@@ -350,6 +350,25 @@ const CartScreen = (props: Props) => {
         }
     }
 
+    const handleRemoveCouponFromCartShop = async (cart_shop_id: number) => {
+        try {
+            await CouponManagement.removeCouponFromCartShopMobile(cart_shop_id);
+            setCart((prevCart) => {
+                const updatedCart = { ...prevCart } as CartModel;
+                const cartShop = updatedCart.cart_shops.find(
+                    (cart_shop) => cart_shop.id === cart_shop_id
+                );
+                if (cartShop) {
+                    cartShop.selectedCoupon = null;
+                }
+                return updatedCart;
+            })
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        }
+    }
+
     const openSheet = useCallback((sheetType: "variant" | "coupon", index: number) => {
         if (sheetType === "variant") {
             sheetVarientSelectRef.current?.snapToIndex(index);
@@ -454,10 +473,20 @@ const CartScreen = (props: Props) => {
                                     </View>
                                     <View style={styles.devider}></View>
                                     <View style={styles.promotionWrapper}>
+                                        {item.selectedCoupon && (
+                                            <TouchableOpacity
+                                                style={styles.promotionItem}
+                                                onPress={() => handleRemoveCouponFromCartShop(item.id)}
+                                            >
+                                                <Scissors height={20}></Scissors>
+                                                <Text style={styles.promotionText}>Bỏ Voucher</Text>
+                                            </TouchableOpacity>
+                                        )}
                                         <TouchableOpacity
                                             style={styles.promotionItem}
                                             onPress={() => openCouponSelect(item)}
                                         >
+                                            {/* <IconVoucher/> */}
                                             <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
                                             <Text style={styles.promotionText}>
                                                 {
