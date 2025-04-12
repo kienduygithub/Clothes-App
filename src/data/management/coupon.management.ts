@@ -21,3 +21,12 @@ export const saveCouponMobile = async (coupon_id: number) => {
         throw error;
     }
 }
+
+export const applyCouponCartShopMobile = async (cart_shop_id: number, coupon_id: number) => {
+    try {
+        await CouponService.applyCouponCartShopMobile(cart_shop_id, coupon_id);
+        return true;
+    } catch (error) {
+        throw error;
+    }
+}

@@ -19,7 +19,7 @@ import VariantSelectComponent from "./comp/variant-select/variant-select.compone
 import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 import CouponSelectComponent from "./comp/coupon-select/coupon-select.component";
 import { CouponModel } from "@/src/data/model/coupon.model";
-
+import * as CouponManagement from "@/src/data/management/coupon.management";
 
 type Props = {}
 
@@ -282,20 +282,33 @@ const CartScreen = (props: Props) => {
         openSheet("coupon", 1);
     }
 
-    const handleApplyCoupon = (cart_shop_id: number, coupon: CouponModel) => {
-        setCart((prevCart) => {
-            const updatedCart = { ...prevCart } as CartModel;
-            const cartShop = updatedCart.cart_shops.find(
-                (cart_shop) => cart_shop.id === cart_shop_id
-            );
-            if (cartShop) {
-                cartShop.selectedCoupon = coupon;
+    const handleApplyCoupon = async (cart_shop_id: number, coupon: CouponModel) => {
+        try {
+            await CouponManagement.applyCouponCartShopMobile(cart_shop_id, coupon.id);
+            setCart((prevCart) => {
+                const updatedCart = { ...prevCart } as CartModel;
+                const cartShop = updatedCart.cart_shops.find(
+                    (cart_shop) => cart_shop.id === cart_shop_id
+                );
+                if (cartShop) {
+                    cartShop.selectedCoupon = coupon;
+                }
+                return updatedCart;
+            })
+        } catch (error: any) {
+            console.log(error);
+            switch (error?.message) {
+                case 'Coupon không tồn tại, đã hết hạn, hết lượt dùng, hoặc chưa được lưu':
+                    showToast('Oops! Mã không tồn tại, đã hết hạn, hết lượt dùng', 'error');
+                    return;
+                case 'Tổng giá trị không đủ':
+                    showToast('Oops! Giá trị tối thiếu của đơn hàng không đạt yêu cầu', "error");
+                    return;
+                default:
+                    showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
             }
-            return updatedCart;
-        })
-        setSelectedCartShop(null);
-        sheetCouponSelectRef.current?.close();
-        showToast("Áp dụng coupon thành công", "success");
+
+        }
     }
 
     const openSheet = useCallback((sheetType: "variant" | "coupon", index: number) => {

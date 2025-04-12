@@ -27,3 +27,17 @@ export const saveCouponMobile = async (coupon_id: number) => {
         throw error;
     }
 }
+
+export const applyCouponCartShopMobile = async (cart_shop_id: number, coupon_id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.POST(
+            `${domain}`,
+            `cart/cart-shop/${cart_shop_id}/coupon/${coupon_id}/mobile`,
+            {}
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
