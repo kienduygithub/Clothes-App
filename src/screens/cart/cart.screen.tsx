@@ -229,6 +229,10 @@ const CartScreen = (props: Props) => {
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
         try {
             await CartManagement.removeCartItem(cart_item_id);
+            let updatedCartShop = cart?.cart_shops.find(cart_shop => cart_shop.id === cart_shop_id);
+            if (updatedCartShop && updatedCartShop.selectedCoupon) {
+                await CouponManagement.removeCouponFromCartShopMobile(cart_shop_id);
+            }
             setCart(prevCart => {
                 if (!prevCart) return prevCart;
 
@@ -237,6 +241,8 @@ const CartScreen = (props: Props) => {
                         if (cart_shop.id !== cart_shop_id) {
                             return cart_shop;
                         }
+
+                        cart_shop.selectedCoupon = null;
 
                         const updatedItems = cart_shop.cart_items.filter(
                             item => item.id !== cart_item_id

@@ -41,3 +41,17 @@ export const applyCouponCartShopMobile = async (cart_shop_id: number, coupon_id:
         throw error;
     }
 }
+
+export const removeCouponFromCartShopMobile = async (cart_shop_id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.PUT(
+            `${domain}`,
+            `cart/cart-shop/${cart_shop_id}/coupon/mobile`,
+            {}
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

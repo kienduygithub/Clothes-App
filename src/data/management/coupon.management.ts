@@ -30,3 +30,12 @@ export const applyCouponCartShopMobile = async (cart_shop_id: number, coupon_id:
         throw error;
     }
 }
+
+export const removeCouponFromCartShopMobile = async (cart_shop_id: number) => {
+    try {
+        await CouponService.removeCouponFromCartShopMobile(cart_shop_id);
+        return true;
+    } catch (error) {
+        throw error;
+    }
+}
