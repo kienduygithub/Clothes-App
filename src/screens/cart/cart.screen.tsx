@@ -208,8 +208,11 @@ const CartScreen = (props: Props) => {
     /** Kiểm tra min_order_value */
     const calculateCartShopTotal = (cartShop: CartShopModel): number => {
         return cartShop.cart_items.reduce((sum, item) => {
-            const price = (item.product_variant?.product?.unit_price ?? 0) * item.quantity;
-            return sum + price;
+            if (selectedItems[`${cartShop.id}-${item.id}`]) {
+                const price = (item.product_variant?.product?.unit_price ?? 0) * item.quantity;
+                return sum + price;
+            }
+            return sum;
         }, 0);
     };
 
@@ -221,6 +224,15 @@ const CartScreen = (props: Props) => {
 
         if (isAnySelectedOutOfStock()) {
             console.log('Một số sản phẩm không đủ số lượng để thanh toán');
+            return;
+        }
+
+        const invalidCoupons = cart?.cart_shops.some(
+            cart_shop => cart_shop.selectedCoupon && calculateCartShopTotal(cart_shop) < cart_shop.selectedCoupon.min_order_value
+        );
+
+        if (invalidCoupons) {
+            showToast(`Một số Voucher không thể sử dụng, cân nhắc bỏ Voucher hoặc tăng giá trị đơn hàng`, "error");
             return;
         }
 
