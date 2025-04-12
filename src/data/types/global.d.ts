@@ -1,3 +1,7 @@
+import { CartItemModel } from "../model/cart.model";
+import { CouponModel } from "../model/coupon.model";
+import { ShopModel } from "../model/shop.model";
+
 export interface ProductType {
     id: number;
     title: string;
@@ -47,11 +51,12 @@ export interface SizeType {
     size_code: string,
 }
 
-type CartChecked = {
-    [cartShopId: number]: {
-        checked: boolean;
-        cart_items: {
-            [cartItemId: number]: boolean;
-        }
-    }
+type CartShopFinalType = {
+    cart_shop_id: number;
+    shop: ShopModel;
+    cart_items: CartItemModel[];
+    selected_coupon: CouponModel;
+    shop_total: number;
+    shop_discount: number;
+    shop_final_total: number;
 }

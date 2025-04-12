@@ -23,6 +23,8 @@ import * as CouponManagement from "@/src/data/management/coupon.management";
 import { formatCurrency } from "@/src/common/utils/currency.helper";
 import { DiscountTypes } from "@/src/common/resource/discount_type";
 import Scissors from "@/assets/images/icon_scissors.svg";
+import { CartShopFinalType } from "@/src/data/types/global";
+import { ShopModel } from "@/src/data/model/shop.model";
 
 type Props = {}
 
@@ -236,16 +238,62 @@ const CartScreen = (props: Props) => {
             return;
         }
 
-        const newOrder = cart?.cart_shops.map(
-            (cart_shop) => ({
-                id: cart_shop.id,
-                shop: cart_shop.shop,
-                cart_items: cart_shop.cart_items.filter(
+        let subTotal = 0;
+        let discount = 0;
+        const listCartShopFinal: CartShopFinalType[] = cart?.cart_shops.map(
+            (cart_shop) => {
+                const listCartItemFinal = cart_shop.cart_items.filter(
                     cart_item => selectedItems[`${cart_shop.id}-${cart_item.id}`]
                 )
-            })
-        );
-        console.log(newOrder);
+
+                /** Tính ShopTotal cho CartShop */
+                const shopTotalFinal = listCartItemFinal.reduce((sum, item) => {
+                    const price = (item.product_variant?.product?.unit_price ?? 0) * item.quantity;
+                    return sum + price;
+                }, 0);
+
+                /** Tính tiền khấu trừ từ Coupon (nếu có và hợp lệ) */
+                let shopDiscount = 0;
+                if (cart_shop.selectedCoupon && shopTotalFinal >= cart_shop.selectedCoupon.min_order_value) {
+                    const selectedCouponByCartShop = cart_shop.selectedCoupon;
+                    if (selectedCouponByCartShop.discount_type === DiscountTypes.PERCENTAGE) {
+                        shopDiscount = (shopTotalFinal * selectedCouponByCartShop.discount_value) / 100;
+                        if (selectedCouponByCartShop.max_discount && shopDiscount > selectedCouponByCartShop.max_discount) {
+                            shopDiscount = selectedCouponByCartShop.max_discount;
+                        }
+                    } else if (selectedCouponByCartShop.discount_type === DiscountTypes.FIXED) {
+                        shopDiscount = selectedCouponByCartShop.discount_value;
+                    }
+                }
+
+                /** Cộng vào subtotal và discount */
+                subTotal += shopTotalFinal;
+                discount += shopDiscount;
+
+                return {
+                    cart_shop_id: cart_shop.id,
+                    shop: cart_shop.shop ?? new ShopModel(),
+                    cart_items: listCartItemFinal,
+                    selected_coupon: cart_shop.selectedCoupon ? cart_shop.selectedCoupon : null,
+                    shop_total: shopTotalFinal,
+                    shop_discount: shopDiscount,
+                    shop_final_total: shopTotalFinal - shopDiscount
+                } as CartShopFinalType
+            }
+        ) ?? [];
+
+        if (!listCartShopFinal || listCartShopFinal.length === 0) {
+            showToast('Không có sản phẩm nào được chọn để thanh toán', "error");
+            return;
+        }
+
+        /** Tính tổng Final */
+        const final_total = subTotal - discount;
+
+        console.log(listCartShopFinal);
+        console.log(subTotal);
+        console.log(discount);
+        console.log(final_total);
     }
 
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
