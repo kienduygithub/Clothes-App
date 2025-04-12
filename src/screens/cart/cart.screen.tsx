@@ -205,6 +205,14 @@ const CartScreen = (props: Props) => {
         )
     }
 
+    /** Kiểm tra min_order_value */
+    const calculateCartShopTotal = (cartShop: CartShopModel): number => {
+        return cartShop.cart_items.reduce((sum, item) => {
+            const price = (item.product_variant?.product?.unit_price ?? 0) * item.quantity;
+            return sum + price;
+        }, 0);
+    };
+
     const handleCheckout = async () => {
         if (isCartEmpty()) {
             console.log('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
@@ -231,10 +239,7 @@ const CartScreen = (props: Props) => {
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
         try {
             await CartManagement.removeCartItem(cart_item_id);
-            let updatedCartShop = cart?.cart_shops.find(cart_shop => cart_shop.id === cart_shop_id);
-            if (updatedCartShop && updatedCartShop.selectedCoupon) {
-                await CouponManagement.removeCouponFromCartShopMobile(cart_shop_id);
-            }
+
             setCart(prevCart => {
                 if (!prevCart) return prevCart;
 
@@ -243,8 +248,6 @@ const CartScreen = (props: Props) => {
                         if (cart_shop.id !== cart_shop_id) {
                             return cart_shop;
                         }
-
-                        cart_shop.selectedCoupon = null;
 
                         const updatedItems = cart_shop.cart_items.filter(
                             item => item.id !== cart_item_id
@@ -283,8 +286,6 @@ const CartScreen = (props: Props) => {
         variant: ProductVariantModel,
         quantity: number
     ) => {
-        await handleRemoveCouponFromCartShop(cart_item_id);
-
         setCart(prevCart => {
             const updatedCart = { ...prevCart } as CartModel;
             const cartShop = updatedCart.cart_shops?.find(
@@ -292,10 +293,6 @@ const CartScreen = (props: Props) => {
             );
 
             if (cartShop) {
-                if (cartShop.selectedCoupon) {
-                    cartShop.selectedCoupon = null;
-                }
-
                 const cartItem = cartShop.cart_items.find(
                     item => item.id === cart_item_id
                 );
@@ -419,100 +416,105 @@ const CartScreen = (props: Props) => {
                             ItemSeparatorComponent={() => (
                                 <View style={{ height: 20 }}></View>
                             )}
-                            renderItem={({ index, item }) => (
-                                <Animated.View style={styles.cartShopWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
-                                    <View style={styles.cartShopHeader}>
-                                        <CheckboxComponent
-                                            stateChecked={selectedCartShops[item.id]}
-                                            toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, isChecked)}
-                                            disabled={isShopOutOfStock(item.cart_items)}
-                                        />
-                                        <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
-                                    </View>
-                                    <View style={styles.listCartItemWrapper}>
-                                        {item.cart_items.map((cart_item, index) => {
-                                            const isOutOfStock = cart_item.quantity > (cart_item.product_variant?.stock_quantity ?? 0);
-                                            return (
-                                                <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
-                                                    <CheckboxComponent
-                                                        stateChecked={selectedItems[`${item.id}-${cart_item.id}`]}
-                                                        toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
-                                                        disabled={isOutOfStock}
-                                                    />
-                                                    {/* Thông tin cart item */}
-                                                    <View style={styles.cartItemInfo}>
-                                                        <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
-                                                        <View style={styles.cartItemContent}>
-                                                            <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
-                                                            <TouchableOpacity
-                                                                style={styles.changeVariantBtn}
-                                                                onPress={() => openVariantSelect(item.id, cart_item, item.cart_items)}
-                                                            >
-                                                                <Text>
-                                                                    {`Màu ${cart_item.product_variant?.color?.color_name}, Size ${cart_item.product_variant?.size?.size_code}`}
-                                                                </Text>
-                                                                <MaterialIcons name="keyboard-arrow-down" size={18} color="black" />
-                                                            </TouchableOpacity>
-                                                            <View style={styles.cartItemPriceAndQuantity}>
-                                                                <View style={styles.priceWrapper}>
-                                                                    <Text style={styles.dText}>đ</Text>
-                                                                    <Text style={styles.priceText}>
-                                                                        {parseFloat(cart_item.product_variant?.product?.unit_price.toString() ?? '0')}
+                            renderItem={({ index, item }) => {
+                                const shopTotal = calculateCartShopTotal(item);
+                                const isCouponValid = item.selectedCoupon ? shopTotal >= item.selectedCoupon.min_order_value : true;
+                                return (
+                                    <Animated.View style={styles.cartShopWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
+                                        <View style={styles.cartShopHeader}>
+                                            <CheckboxComponent
+                                                stateChecked={selectedCartShops[item.id]}
+                                                toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, isChecked)}
+                                                disabled={isShopOutOfStock(item.cart_items)}
+                                            />
+                                            <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
+                                        </View>
+                                        <View style={styles.listCartItemWrapper}>
+                                            {item.cart_items.map((cart_item, index) => {
+                                                const isOutOfStock = cart_item.quantity > (cart_item.product_variant?.stock_quantity ?? 0);
+                                                return (
+                                                    <View key={`item-${cart_item.id}-${index}`} style={styles.cartItemWrapper}>
+                                                        <CheckboxComponent
+                                                            stateChecked={selectedItems[`${item.id}-${cart_item.id}`]}
+                                                            toggleCheckedFunc={(isChecked) => handleToggleCartItem(item.id, cart_item.id, isChecked)}
+                                                            disabled={isOutOfStock}
+                                                        />
+                                                        {/* Thông tin cart item */}
+                                                        <View style={styles.cartItemInfo}>
+                                                            <Image style={styles.cartItemImage} source={{ uri: `${preImage}/${cart_item.product_variant?.image_url}` }} />
+                                                            <View style={styles.cartItemContent}>
+                                                                <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
+                                                                <TouchableOpacity
+                                                                    style={styles.changeVariantBtn}
+                                                                    onPress={() => openVariantSelect(item.id, cart_item, item.cart_items)}
+                                                                >
+                                                                    <Text>
+                                                                        {`Màu ${cart_item.product_variant?.color?.color_name}, Size ${cart_item.product_variant?.size?.size_code}`}
+                                                                    </Text>
+                                                                    <MaterialIcons name="keyboard-arrow-down" size={18} color="black" />
+                                                                </TouchableOpacity>
+                                                                <View style={styles.cartItemPriceAndQuantity}>
+                                                                    <View style={styles.priceWrapper}>
+                                                                        <Text style={styles.dText}>đ</Text>
+                                                                        <Text style={styles.priceText}>
+                                                                            {parseFloat(cart_item.product_variant?.product?.unit_price.toString() ?? '0')}
+                                                                        </Text>
+                                                                    </View>
+                                                                    <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
+                                                                        Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}
                                                                     </Text>
                                                                 </View>
-                                                                <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
-                                                                    Còn lại: {cart_item.product_variant?.stock_quantity ?? 0}
-                                                                </Text>
-                                                            </View>
-                                                            <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                                <QuantityProductComponent
-                                                                    initialQuantity={cart_item.quantity}
-                                                                    min={1}
-                                                                    max={cart_item.product_variant?.stock_quantity ?? 99}
-                                                                    onQuantityChange={(newQuantity) => handleUpdateCartItemQuantity(item.id, cart_item.id, newQuantity)}
-                                                                />
-                                                                <TouchableOpacity onPress={() => handleRemoveCartItem(item.id, cart_item.id)}>
-                                                                    <Ionicons name="trash-outline" size={25} color={CommonColors.red} />
-                                                                </TouchableOpacity>
+                                                                <View style={{ width: 200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                                    <QuantityProductComponent
+                                                                        initialQuantity={cart_item.quantity}
+                                                                        min={1}
+                                                                        max={cart_item.product_variant?.stock_quantity ?? 99}
+                                                                        onQuantityChange={(newQuantity) => handleUpdateCartItemQuantity(item.id, cart_item.id, newQuantity)}
+                                                                    />
+                                                                    <TouchableOpacity onPress={() => handleRemoveCartItem(item.id, cart_item.id)}>
+                                                                        <Ionicons name="trash-outline" size={25} color={CommonColors.red} />
+                                                                    </TouchableOpacity>
+                                                                </View>
                                                             </View>
                                                         </View>
                                                     </View>
-                                                </View>
-                                            )
-                                        })}
-                                    </View>
-                                    <View style={styles.devider}></View>
-                                    <View style={styles.promotionWrapper}>
-                                        {item.selectedCoupon && (
+                                                )
+                                            })}
+                                        </View>
+                                        <View style={styles.devider}></View>
+                                        <View style={styles.promotionWrapper}>
+                                            {item.selectedCoupon && (
+                                                <TouchableOpacity
+                                                    style={styles.promotionItem}
+                                                    onPress={() => handleRemoveCouponFromCartShop(item.id)}
+                                                >
+                                                    <Scissors height={20}></Scissors>
+                                                    <Text style={styles.promotionText}>Bỏ Voucher</Text>
+                                                </TouchableOpacity>
+                                            )}
                                             <TouchableOpacity
                                                 style={styles.promotionItem}
-                                                onPress={() => handleRemoveCouponFromCartShop(item.id)}
+                                                onPress={() => openCouponSelect(item)}
                                             >
-                                                <Scissors height={20}></Scissors>
-                                                <Text style={styles.promotionText}>Bỏ Voucher</Text>
+                                                <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
+                                                <Text style={[styles.promotionText, !isCouponValid && { color: CommonColors.lightGray }]}>
+                                                    {
+                                                        item.selectedCoupon
+                                                            ? isCouponValid
+                                                                ? `Đang áp dụng: ${item.selectedCoupon.name}`
+                                                                : `Không thể sử dụng Voucher ${item.selectedCoupon.name}`
+                                                            : 'Thêm Voucher ưu đãi'
+                                                    }
+                                                </Text>
                                             </TouchableOpacity>
-                                        )}
-                                        <TouchableOpacity
-                                            style={styles.promotionItem}
-                                            onPress={() => openCouponSelect(item)}
-                                        >
-                                            {/* <IconVoucher/> */}
-                                            <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
-                                            <Text style={styles.promotionText}>
-                                                {
-                                                    item.selectedCoupon
-                                                        ? `Đang áp dụng: ${item.selectedCoupon.name}`
-                                                        : 'Thêm voucher khuyến mãi'
-                                                }
-                                            </Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.promotionItem}>
-                                            <MaterialCommunityIcons name="truck-delivery-outline" size={24} color={CommonColors.green} />
-                                            <Text style={styles.promotionText}>Miễn phí vận chuyển cho đơn hàng 0đ</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </Animated.View>
-                            )}
+                                            <TouchableOpacity style={styles.promotionItem}>
+                                                <MaterialCommunityIcons name="truck-delivery-outline" size={24} color={CommonColors.green} />
+                                                <Text style={styles.promotionText}>Miễn phí vận chuyển cho đơn hàng 0đ</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </Animated.View>
+                                )
+                            }}
                         />
                     )}
                     {cart && cart.cart_shops.length === 0 && (
