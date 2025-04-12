@@ -13,6 +13,7 @@ import { useToast } from "@/src/customize/toast.context";
 type Props = {
     selectedCartShopId: number,
     selectedCartItem: CartItemModel | null,
+    selectedCartItems: CartItemModel[],
     preImage: string,
     setChangeVariantCartItem: (
         cart_shop_id: number,
@@ -25,6 +26,7 @@ type Props = {
 const VariantSelectComponent = ({
     selectedCartShopId = 0,
     selectedCartItem,
+    selectedCartItems,
     preImage = "",
     setChangeVariantCartItem
 }: Props) => {
@@ -33,6 +35,7 @@ const VariantSelectComponent = ({
     const [colors, setColors] = useState<ColorType[]>([]);
     const [product, setProduct] = useState<ProductModel>(); /** API */
     const [variants, setVariants] = useState<ProductVariantModel[]>([]); /** API */
+    const [otherCartItems, setOtherCartItems] = useState<CartItemModel[]>([]);
     const [selectedSize, setSelectedSize] = useState<number | null>(null);
     const [selectedColor, setSelectedColor] = useState<number | null>(null);
     const [stockQuantity, setStockQuantity] = useState<number>(0);
@@ -48,6 +51,9 @@ const VariantSelectComponent = ({
             setSelectedSize(selectedCartItem.product_variant?.size?.id ?? null);
             setQuantity(selectedCartItem.quantity ?? 1);
             fetchData();
+            setOtherCartItems(selectedCartItems.filter(
+                (cart_item) => cart_item.product_variant?.id !== selectedCartItem.product_variant?.id
+            ))
         }
     }, [selectedCartItem])
 
@@ -186,6 +192,15 @@ const VariantSelectComponent = ({
         try {
             const variant = variants.find(v => v.color?.id === selectedColor && v.size?.id === selectedSize);
             if (variant) {
+                const isExistVariantInCartItems = otherCartItems.some(
+                    (cart_item) => cart_item.product_variant?.id === variant.id
+                );
+
+                if (isExistVariantInCartItems) {
+                    showToast("Oops! Sản phẩm đã tồn tại, không thể thay đổi", "error");
+                    return;
+                }
+
                 await CartManagement.updateCartItem(selectedCartItem?.id ?? 0, variant, quantity);
                 setChangeVariantCartItem(selectedCartShopId, selectedCartItem?.id ?? 0, variant, quantity);
                 showToast("Thay đổi sản phẩm thành công", "success");

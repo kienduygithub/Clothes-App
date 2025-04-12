@@ -23,6 +23,7 @@ import * as CouponManagement from "@/src/data/management/coupon.management";
 import { formatCurrency } from "@/src/common/utils/currency.helper";
 import { DiscountTypes } from "@/src/common/resource/discount_type";
 import Scissors from "@/assets/images/icon_scissors.svg";
+
 type Props = {}
 
 const CartScreen = (props: Props) => {
@@ -34,6 +35,7 @@ const CartScreen = (props: Props) => {
     const [selectedCartShop, setSelectedCartShop] = useState<CartShopModel | null>(null);
     const [selectedCartShopId, setSelectedCartShopId] = useState<number>(0);
     const [selectedCartItem, setSelectedCartItem] = useState<CartItemModel | null>(null);
+    const [selectedCartItems, setSelectedCartItems] = useState<CartItemModel[]>([]);
     const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
     const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
     const sheetVarientSelectRef = useRef<BottomSheet>(null);
@@ -268,18 +270,21 @@ const CartScreen = (props: Props) => {
         }
     }
 
-    const openVariantSelect = (cart_shop_id: number, cart_item: CartItemModel) => {
+    const openVariantSelect = (cart_shop_id: number, cart_item: CartItemModel, cart_items: CartItemModel[]) => {
         setSelectedCartShopId(cart_shop_id);
         setSelectedCartItem(cart_item);
+        setSelectedCartItems(cart_items);
         openSheet("variant", 1);
     }
 
-    const handleChangeVariantCartItem = (
+    const handleChangeVariantCartItem = async (
         cart_shop_id: number,
         cart_item_id: number,
         variant: ProductVariantModel,
         quantity: number
     ) => {
+        await handleRemoveCouponFromCartShop(cart_item_id);
+
         setCart(prevCart => {
             const updatedCart = { ...prevCart } as CartModel;
             const cartShop = updatedCart.cart_shops?.find(
@@ -287,6 +292,10 @@ const CartScreen = (props: Props) => {
             );
 
             if (cartShop) {
+                if (cartShop.selectedCoupon) {
+                    cartShop.selectedCoupon = null;
+                }
+
                 const cartItem = cartShop.cart_items.find(
                     item => item.id === cart_item_id
                 );
@@ -381,6 +390,7 @@ const CartScreen = (props: Props) => {
         if (index === -1) {
             setSelectedCartShop(null);
             setSelectedCartItem(null);
+            setSelectedCartItems([]);
             setSelectedCartShopId(0);
         }
     }
@@ -436,7 +446,7 @@ const CartScreen = (props: Props) => {
                                                             <Text style={styles.cartItemNameText}>{cart_item.product_variant?.product?.product_name}</Text>
                                                             <TouchableOpacity
                                                                 style={styles.changeVariantBtn}
-                                                                onPress={() => openVariantSelect(item.id, cart_item)}
+                                                                onPress={() => openVariantSelect(item.id, cart_item, item.cart_items)}
                                                             >
                                                                 <Text>
                                                                     {`Màu ${cart_item.product_variant?.color?.color_name}, Size ${cart_item.product_variant?.size?.size_code}`}
@@ -556,6 +566,7 @@ const CartScreen = (props: Props) => {
                         <VariantSelectComponent
                             selectedCartItem={selectedCartItem}
                             selectedCartShopId={selectedCartShopId}
+                            selectedCartItems={selectedCartItems}
                             preImage={preImage}
                             setChangeVariantCartItem={handleChangeVariantCartItem}
                         />
