@@ -20,6 +20,8 @@ import { ProductVariantModel } from "@/src/data/model/product_variant.model";
 import CouponSelectComponent from "./comp/coupon-select/coupon-select.component";
 import { CouponModel } from "@/src/data/model/coupon.model";
 import * as CouponManagement from "@/src/data/management/coupon.management";
+import { formatCurrency } from "@/src/common/utils/currency.helper";
+import { DiscountTypes } from "@/src/common/resource/discount_type";
 
 type Props = {}
 
@@ -145,12 +147,31 @@ const CartScreen = (props: Props) => {
         let total = 0;
 
         cart?.cart_shops.forEach(cartShop => {
+            let shopTotal = 0;
             cartShop.cart_items.forEach(cart_item => {
                 if (selectedItems[`${cartShop.id}-${cart_item.id}`]) {
                     const price = (cart_item.product_variant?.product?.unit_price ?? 0) * cart_item.quantity;
-                    total += price;
+                    shopTotal += price;
                 }
-            })
+            });
+            /** Cart Shop có chọn KM */
+            if (cartShop.selectedCoupon) {
+                const coupon = cartShop.selectedCoupon;
+                if (shopTotal >= coupon.min_order_value) {
+                    let discount = 0;
+                    if (coupon.discount_type === DiscountTypes.PERCENTAGE) {
+                        discount = (shopTotal * coupon.discount_value) / 100;
+                        if (coupon.max_discount && discount > coupon.max_discount) {
+                            discount = coupon.max_discount;
+                        }
+                    } else if (coupon.discount_type === DiscountTypes.FIXED) {
+                        discount = coupon.discount_value;
+                    }
+                    shopTotal -= discount;
+                }
+            }
+
+            total += shopTotal;
         })
 
         return total;
@@ -283,6 +304,18 @@ const CartScreen = (props: Props) => {
     }
 
     const handleApplyCoupon = async (cart_shop_id: number, coupon: CouponModel) => {
+        const shopTotal = selectedCartShop!.cart_items.reduce(
+            (sum, item) =>
+                selectedItems[`${selectedCartShop!.id}-${item.id}`]
+                    ? sum + (item.product_variant?.product?.unit_price ?? 0) * item.quantity
+                    : sum,
+            0
+        );
+        if (shopTotal < coupon.min_order_value) {
+            showToast(`Đơn hàng cần tối thiểu ${formatCurrency(coupon.min_order_value)}`, "error");
+            return;
+        }
+
         try {
             await CouponManagement.applyCouponCartShopMobile(cart_shop_id, coupon.id);
             setCart((prevCart) => {
@@ -389,7 +422,7 @@ const CartScreen = (props: Props) => {
                                                                 <View style={styles.priceWrapper}>
                                                                     <Text style={styles.dText}>đ</Text>
                                                                     <Text style={styles.priceText}>
-                                                                        {cart_item.product_variant?.product?.unit_price ?? 0}
+                                                                        {parseFloat(cart_item.product_variant?.product?.unit_price.toString() ?? '0')}
                                                                     </Text>
                                                                 </View>
                                                                 <Text style={[styles.stockQuantityText, isOutOfStock && { color: CommonColors.red }]}>
