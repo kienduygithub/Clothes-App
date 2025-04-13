@@ -37,6 +37,23 @@ export class OrderModel {
         this.payment_date = payment_date ? new Date(payment_date) : null;
         this.created_at = created_at ? new Date(created_at) : null;
     }
+
+    convertObj(data: any) {
+        const model = new OrderModel();
+        model.id = data?.id ?? 0;
+        model.user = data?.user ? new UserModel().convertObj(data.user) : undefined;
+        model.address = data?.address ? new AddressModel().convertObj(data.address) : undefined;
+        model.order_shops = data?.order_shops?.map(
+            (order_shop: any) => new OrderShopModel().convertObj(order_shop)
+        ) ?? [];
+        model.total_price = data?.total_price ?? 0;
+        model.status = data?.status ?? OrderStatus.COMPLETED;
+        model.status_changed_at = data?.status_changed_at ? new Date(data.status_changed_at) : null;
+        model.payment_date = data?.payment_date ? new Date(data.payment_date) : null;
+        model.created_at = data?.createdAt ? new Date(data.createdAt) : null;
+
+        return model;
+    }
 }
 
 export class OrderShopModel {
@@ -67,7 +84,18 @@ export class OrderShopModel {
     }
 
     convertObj(data: any) {
+        const model = new OrderShopModel();
+        model.id = data?.id ?? 0;
+        model.shop = data?.shop ? new ShopModel().convertObj(data.shop) : undefined;
+        model.order_items = data?.order_items?.map(
+            (order_item: any) => new OrderItemModel().convertObj(order_item)
+        ) ?? [];
+        model.coupon = data?.coupon ? new CouponModel().convertObj(data.coupon) : undefined;
+        model.subtotal = data?.subtotal ?? 0;
+        model.discount = data?.discount ?? 0;
+        model.final_total = data?.final_total ?? 0;
 
+        return model;
     }
 }
 

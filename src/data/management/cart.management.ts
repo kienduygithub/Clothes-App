@@ -3,6 +3,7 @@ import { CartModel } from "../model/cart.model";
 import { ProductVariantModel } from "../model/product_variant.model";
 import * as CartService from "../service/cart.service";
 import { CartShopFinalType } from "../types/global";
+import { OrderModel } from "../model/order.model";
 
 export const fetchCartByUser = async () => {
     try {
@@ -74,14 +75,17 @@ export const paymentCart = async (
     final_total: number
 ) => {
     try {
-        await CartService.paymentCart(
+        const result = await CartService.paymentCart(
             address_id,
             cart_shops,
             subtotal,
             discount,
             final_total
         );
-        return true;
+        const response: OrderModel[] = result?.orders?.map(
+            (order: any) => new OrderModel().convertObj(order)
+        ) ?? [];
+        return response[0];
     } catch (error) {
         throw error;
     }

@@ -11,6 +11,8 @@ import { Feather, FontAwesome5, FontAwesome6, Ionicons } from "@expo/vector-icon
 import { CommonColors } from "@/src/common/resource/colors";
 import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 import { PaymentMethod } from "@/src/common/resource/payment_method";
+import { useToast } from "@/src/customize/toast.context";
+import * as CartManagement from "@/src/data/management/cart.management";
 
 type Props = {}
 
@@ -22,8 +24,9 @@ const PaymentScreen = (props: Props) => {
         discount: number;
         final_total: number;
     };
-    const [preImage, setPreImage] = useState("");
     const parsedCartShops: CartShopFinalType[] = JSON.parse(cart_shops);
+    const { showToast } = useToast();
+    const [preImage, setPreImage] = useState("");
     const [usePaymentMethod, setUsePaymentMethod] = useState(PaymentMethod.COD);
 
     useEffect(() => {
@@ -40,6 +43,28 @@ const PaymentScreen = (props: Props) => {
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
+    }
+
+    const onHandleOrder = async () => {
+        try {
+            const orderSuccess = await CartManagement.paymentCart(
+                null, /** Bổ sung sau */
+                parsedCartShops,
+                subtotal,
+                discount,
+                final_total
+            );
+
+            router.navigate({
+                pathname: '/(routes)/payment-success',
+                params: {
+                    order_info: JSON.stringify(orderSuccess)
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        }
     }
 
     return (
@@ -235,7 +260,7 @@ const PaymentScreen = (props: Props) => {
                     </Text>
                     <Text style={styles.footerSavings}>Tiết kiệm đ{formatPriceRender(discount)}</Text>
                 </View>
-                <TouchableOpacity style={styles.orderButton}>
+                <TouchableOpacity style={styles.orderButton} onPress={() => onHandleOrder()}>
                     <Text style={styles.orderButtonText}>ĐẶT HÀNG</Text>
                 </TouchableOpacity>
             </View>

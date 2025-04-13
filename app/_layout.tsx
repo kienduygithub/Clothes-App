@@ -50,10 +50,17 @@ function RootLayoutNav() {
       <>
         <StatusBar style='auto' />
         <Stack>
-          <Stack.Screen name="index" />
+          <Stack.Screen
+            name="index"
+            options={{
+              title: 'Trang chủ',
+              headerShown: false
+            }}
+          />
           <Stack.Screen
             name="(routes)/welcome-intro/index"
             options={{
+              title: 'Welcome',
               headerShown: false
             }}
           />
@@ -71,9 +78,27 @@ function RootLayoutNav() {
               presentation: 'modal'
             }}
           />
+
           <Stack.Screen
             name="(routes)/product-details/index"
           />
+
+          <Stack.Screen
+            name="(routes)/payment/index"
+            options={{
+              title: 'Thanh toán',
+              headerShown: false,
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/payment-success/index"
+            options={{
+              title: 'Thanh toán thành công',
+              headerShown: false,
+            }}
+          />
+
           <Stack.Screen
             name="(tabs)"
             options={{
