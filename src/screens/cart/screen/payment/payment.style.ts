@@ -57,7 +57,6 @@ const PaymentStyle = StyleSheet.create({
     addressText: {
         fontSize: 14,
         color: '#555',
-        marginLeft: 23,
     },
     shopName: {
         fontSize: 16,

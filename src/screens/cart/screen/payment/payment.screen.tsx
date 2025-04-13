@@ -54,17 +54,20 @@ const PaymentScreen = (props: Props) => {
             <View style={styles.safeArea}>
                 <ScrollView
                     style={styles.scrollView}
+                    showsVerticalScrollIndicator={false}
                 >
                     {/* Phần 1: Địa chỉ */}
                     <View style={styles.section}>
-                        <TouchableOpacity>
-                            <View style={styles.row}>
-                                <Ionicons name="location-sharp" size={18} color={CommonColors.primary} />
+                        <TouchableOpacity
+                            style={{ flexDirection: 'row', gap: 5 }}
+                        >
+                            <Ionicons name="location-sharp" size={18} color={CommonColors.primary} />
+                            <View>
                                 <Text style={styles.sectionTitle}>Kiến duy (+84) 839 822 333</Text>
+                                <Text style={styles.addressText}>
+                                    Dạ Hợp 12 Tầng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình
+                                </Text>
                             </View>
-                            <Text style={styles.addressText}>
-                                Dạ Hợp 12 Tầng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình
-                            </Text>
                         </TouchableOpacity>
                     </View>
 
