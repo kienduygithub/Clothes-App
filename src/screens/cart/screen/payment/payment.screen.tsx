@@ -54,7 +54,7 @@ const PaymentScreen = (props: Props) => {
                 discount,
                 final_total
             );
-
+            router.dismissAll();
             router.navigate({
                 pathname: '/(routes)/payment-success',
                 params: {
