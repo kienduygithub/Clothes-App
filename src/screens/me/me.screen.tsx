@@ -3,7 +3,7 @@ import MeStyle from "./me.style";
 
 import { useHeaderHeight } from "@react-navigation/elements";
 import { router, Stack } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import { useEffect, useState } from "react";
 import { UserModel } from "@/src/data/model/user.model";
@@ -70,6 +70,10 @@ const MeScreen = (props: Props) => {
                     <TouchableOpacity style={styles.button}>
                         <Ionicons name="heart-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Danh sách mong muốn</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/address')}>
+                        <FontAwesome name="address-card-o" size={20} color={CommonColors.black} />
+                        <Text style={styles.buttonText}>Danh sách địa chỉ</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button}>
                         <Ionicons name="card-outline" size={20} color={CommonColors.black} />

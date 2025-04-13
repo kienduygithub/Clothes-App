@@ -100,6 +100,23 @@ function RootLayoutNav() {
           />
 
           <Stack.Screen
+            name="(routes)/address/index"
+            options={{
+              title: 'Địa chỉ người dùng',
+              headerTitleAlign: 'center'
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/cru-address/index"
+            options={{
+              title: 'CRU địa chỉ người dùng',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
             name="(tabs)"
             options={{
               headerShown: false
