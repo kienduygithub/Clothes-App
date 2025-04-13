@@ -30,6 +30,14 @@ const PaymentScreen = (props: Props) => {
         fetchPreImage();
     }, [])
 
+    const calculateTotalProduct = () => {
+        let total = 0;
+        parsedCartShops.forEach(
+            cart_shop => total += cart_shop.cart_items.length
+        )
+        return total;
+    }
+
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
     }
@@ -77,7 +85,11 @@ const PaymentScreen = (props: Props) => {
                             <View style={styles.row}>
                                 <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 5 }}>
                                     <Feather name="shopping-bag" size={20} color="black" />
-                                    <Text style={styles.shopName}>
+                                    <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        style={styles.shopName}
+                                    >
                                         {/* <Text style={styles.favoriteLabel}>Yêu thích</Text>{' '} */}
                                         {cartShop.shop.shop_name}
                                     </Text>
@@ -90,7 +102,11 @@ const PaymentScreen = (props: Props) => {
                                         style={styles.productImage}
                                     />
                                     <View style={styles.productDetails}>
-                                        <Text style={styles.productName}>
+                                        <Text
+                                            numberOfLines={1}
+                                            ellipsizeMode="tail"
+                                            style={styles.productName}
+                                        >
                                             {item.product_variant?.product?.product_name}
                                         </Text>
                                         <Text style={styles.variant}>
@@ -106,6 +122,17 @@ const PaymentScreen = (props: Props) => {
                                     </View>
                                 </View>
                             ))}
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
+                                <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
+                                <Text
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    style={{ maxWidth: '90%' }}
+                                >
+                                    {cartShop.selected_coupon.name}
+                                </Text>
+                                <Text style={styles.quantity}>x1</Text>
+                            </View>
                         </View>
                     ))}
 
@@ -126,9 +153,9 @@ const PaymentScreen = (props: Props) => {
                         <View style={styles.devider}></View>
                         <View style={[styles.row, { paddingHorizontal: 15 }]}>
                             <Text style={[styles.sectionTitle, { fontWeight: '400' }]}>
-                                Tổng số tiền (1 sản phẩm)
+                                Tổng số tiền ({calculateTotalProduct()} sản phẩm)
                             </Text>
-                            <Text style={[styles.totalAmount, { color: CommonColors.black }]}>đ{formatPriceRender(final_total)}</Text>
+                            <Text style={[styles.totalAmount, { color: CommonColors.black }]}>đ{formatPriceRender(subtotal)}</Text>
                         </View>
                     </View>
 

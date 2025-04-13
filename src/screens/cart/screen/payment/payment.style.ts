@@ -61,6 +61,8 @@ const PaymentStyle = StyleSheet.create({
     shopName: {
         fontSize: 16,
         fontWeight: 'bold',
+        maxWidth: '100%',
+        paddingRight: 20
     },
     favoriteLabel: {
         color: '#FF6347',
@@ -82,6 +84,7 @@ const PaymentStyle = StyleSheet.create({
     productName: {
         fontSize: 14,
         color: '#333',
+        maxWidth: '90%'
     },
     variant: {
         fontSize: 12,
