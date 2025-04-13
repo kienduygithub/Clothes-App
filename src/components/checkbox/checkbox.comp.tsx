@@ -6,10 +6,16 @@ import BouncyCheckbox from "react-native-bouncy-checkbox";
 type Props = {
     stateChecked: boolean,
     toggleCheckedFunc: (isChecked: boolean) => void,
-    disabled?: boolean
+    disabled?: boolean,
+    circle?: boolean
 }
 
-const CheckboxComponent = ({ stateChecked, toggleCheckedFunc, disabled }: Props) => {
+const CheckboxComponent = ({
+    stateChecked,
+    toggleCheckedFunc,
+    disabled,
+    circle
+}: Props) => {
 
     return (
         <TouchableOpacity>
@@ -27,11 +33,11 @@ const CheckboxComponent = ({ stateChecked, toggleCheckedFunc, disabled }: Props)
                         : stateChecked
                             ? CommonColors.primary
                             : CommonColors.white,
-                    borderRadius: 3
+                    borderRadius: circle ? '50%' : 3
                 }}
                 innerIconStyle={{
                     borderWidth: 1,
-                    borderRadius: 3,
+                    borderRadius: circle ? '50%' : 3,
                     borderColor: stateChecked ? 'transparent' : CommonColors.gray
                 }}
             />

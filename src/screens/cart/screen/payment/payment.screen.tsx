@@ -9,6 +9,8 @@ import { CartShopFinalType } from "@/src/data/types/global";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather, FontAwesome5, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
+import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
+import { PaymentMethod } from "@/src/common/resource/payment_method";
 
 type Props = {}
 
@@ -22,7 +24,7 @@ const PaymentScreen = (props: Props) => {
     };
     const [preImage, setPreImage] = useState("");
     const parsedCartShops: CartShopFinalType[] = JSON.parse(cart_shops);
-    const [useShopeeCoins, setUseShopeeCoins] = useState(false);
+    const [usePaymentMethod, setUsePaymentMethod] = useState(PaymentMethod.COD);
 
     useEffect(() => {
         fetchPreImage();
@@ -132,15 +134,41 @@ const PaymentScreen = (props: Props) => {
                         <View style={styles.row}>
                             <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
                         </View>
-                        <View style={styles.paymentMethod}>
-                            <View style={styles.paymentMethodOption}>
-                                <FontAwesome6 name="money-check" size={20} color={CommonColors.primary} />
-                                <Text style={styles.paymentMethodText}>Thanh toán khi nhận hàng</Text>
-                            </View>
-                            <View style={styles.paymentMethodOption}>
-                                <FontAwesome6 name="money-check" size={20} color={CommonColors.primary} />
-                                <Text style={styles.paymentMethodText}>Thanh toán ngay</Text>
-                            </View>
+                        <View style={[styles.paymentMethod, { gap: 5 }]}>
+                            <TouchableOpacity
+                                style={{ position: 'relative' }}
+                                onPress={() => setUsePaymentMethod(PaymentMethod.COD)}
+                            >
+                                <View style={styles.paymentMethodOption}>
+                                    <FontAwesome6 name="money-check" size={20} color={CommonColors.primary} />
+                                    <Text style={styles.paymentMethodText}>
+                                        Thanh toán khi nhận hàng
+                                    </Text>
+                                </View>
+                                <View style={{ position: 'absolute', right: -15, top: 0 }}>
+                                    <CheckboxComponent
+                                        stateChecked={usePaymentMethod === PaymentMethod.COD}
+                                        toggleCheckedFunc={(isChecked) => setUsePaymentMethod(PaymentMethod.COD)}
+                                        circle={true}
+                                    />
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ position: 'relative' }}
+                                onPress={() => setUsePaymentMethod(PaymentMethod.PAID)}
+                            >
+                                <View style={styles.paymentMethodOption}>
+                                    <FontAwesome6 name="money-check" size={20} color={CommonColors.primary} />
+                                    <Text style={styles.paymentMethodText}>Thanh toán ngay</Text>
+                                </View>
+                                <View style={{ position: 'absolute', right: -15, top: 0 }}>
+                                    <CheckboxComponent
+                                        stateChecked={usePaymentMethod === PaymentMethod.PAID}
+                                        toggleCheckedFunc={(isChecked) => setUsePaymentMethod(PaymentMethod.PAID)}
+                                        circle={true}
+                                    />
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </View>
 
@@ -153,7 +181,9 @@ const PaymentScreen = (props: Props) => {
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.detailLabel}>Giảm giá chiết khấu</Text>
-                            <Text style={styles.detailValue}>-đ{formatPriceRender(discount)}</Text>
+                            <Text style={[styles.detailValue, { color: CommonColors.primary }]}>
+                                -đ{formatPriceRender(discount)}
+                            </Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.detailLabel}>Tổng thanh toán</Text>

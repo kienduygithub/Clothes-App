@@ -134,7 +134,6 @@ const PaymentStyle = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginVertical: 5,
     },
     paymentMethodText: {
         fontSize: 14,
