@@ -291,15 +291,23 @@ const CartScreen = (props: Props) => {
         const final_total = subTotal - discount;
 
         try {
-            await CartManagement.paymentCart(
-                null, /** Bổ sung sau */
-                listCartShopFinal,
-                subTotal,
-                discount,
-                final_total
-            );
-            showToast("Thanh toán thành công", "success");
-            router.navigate('/(tabs)');
+            // await CartManagement.paymentCart(
+            //     null, /** Bổ sung sau */
+            //     listCartShopFinal,
+            //     subTotal,
+            //     discount,
+            //     final_total
+            // );
+            // showToast("Thanh toán thành công", "success");
+            router.navigate({
+                pathname: '/(routes)/payment',
+                params: {
+                    cart_shops: JSON.stringify(listCartShopFinal),
+                    subtotal: subTotal,
+                    discount: discount,
+                    final_total: final_total
+                }
+            });
         } catch (error) {
             console.log(error);
             showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
