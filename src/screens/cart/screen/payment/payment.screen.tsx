@@ -7,7 +7,8 @@ import { formatPriceRender } from "@/src/common/utils/currency.helper";
 import { AppConfig } from "@/src/common/config/app.config";
 import { CartShopFinalType } from "@/src/data/types/global";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather, FontAwesome5, FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { CommonColors } from "@/src/common/resource/colors";
 
 type Props = {}
 
@@ -54,12 +55,15 @@ const PaymentScreen = (props: Props) => {
                 >
                     {/* Phần 1: Địa chỉ */}
                     <View style={styles.section}>
-                        <View style={styles.row}>
-                            <Text style={styles.sectionTitle}>Kiện duy (+84) 839 822 333</Text>
-                        </View>
-                        <Text style={styles.addressText}>
-                            Dạ Hợp 12 Tầng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình
-                        </Text>
+                        <TouchableOpacity>
+                            <View style={styles.row}>
+                                <Ionicons name="location-sharp" size={18} color={CommonColors.primary} />
+                                <Text style={styles.sectionTitle}>Kiến duy (+84) 839 822 333</Text>
+                            </View>
+                            <Text style={styles.addressText}>
+                                Dạ Hợp 12 Tầng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
                     {/* Phần 2: Chi tiết sản phẩm */}
@@ -85,8 +89,8 @@ const PaymentScreen = (props: Props) => {
                                             {item.product_variant?.product?.product_name}
                                         </Text>
                                         <Text style={styles.variant}>
-                                            {item.product_variant?.color?.color_name}{' '}
-                                            {item.product_variant?.size?.size_code}
+                                            Màu {item.product_variant?.color?.color_name}{', '}
+                                            Size {item.product_variant?.size?.size_code}
                                         </Text>
                                         <View style={styles.priceRow}>
                                             <Text style={styles.price}>
@@ -101,62 +105,64 @@ const PaymentScreen = (props: Props) => {
                     ))}
 
                     {/* Phần 3: Phương thức vận chuyển */}
-                    <View style={styles.section}>
-                        <View style={styles.row}>
-                            <Text style={styles.sectionTitle}>Phương thức vận chuyển</Text>
+                    <View style={[styles.section, { paddingHorizontal: 0 }]}>
+                        <View style={{ paddingHorizontal: 15 }}>
+                            <View style={styles.row}>
+                                <Text style={styles.sectionTitle}>Phương thức vận chuyển</Text>
+                            </View>
+                            <View style={styles.shippingOption}>
+                                <Text style={styles.shippingMethod}>NHANH - TIẾT KIỆM</Text>
+                                <FontAwesome5 name="wind" size={15} color='#00CED1' />
+                            </View>
+                            <Text style={styles.shippingDetails}>
+                                Đảm bảo nhận hàng nhanh chóng và tiết kiệm
+                            </Text>
                         </View>
-                        <View style={styles.shippingOption}>
-                            <Text style={styles.shippingMethod}>NHANH - TIẾT KIỆM</Text>
+                        <View style={styles.devider}></View>
+                        <View style={[styles.row, { paddingHorizontal: 15 }]}>
+                            <Text style={[styles.sectionTitle, { fontWeight: '400' }]}>
+                                Tổng số tiền (1 sản phẩm)
+                            </Text>
+                            <Text style={[styles.totalAmount, { color: CommonColors.black }]}>đ{formatPriceRender(final_total)}</Text>
                         </View>
-                        <Text style={styles.shippingDetails}>
-                            Đảm bảo nhận hàng nhanh chóng và tiết kiệm
-                        </Text>
                     </View>
 
-                    {/* Phần 4: Tổng số tiền */}
-                    <View style={styles.section}>
-                        <View style={styles.row}>
-                            <Text style={styles.sectionTitle}>Tổng số tiền (1 sản phẩm)</Text>
-                            <Text style={styles.totalAmount}>đ{formatPriceRender(final_total)}</Text>
-                        </View>
-                    </View>
-
-                    {/* Phần 5: Phương thức thanh toán */}
+                    {/* Phần 4: Phương thức thanh toán */}
                     <View style={styles.section}>
                         <View style={styles.row}>
                             <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
                         </View>
                         <View style={styles.paymentMethod}>
                             <View style={styles.paymentMethodOption}>
+                                <FontAwesome6 name="money-check" size={20} color={CommonColors.primary} />
                                 <Text style={styles.paymentMethodText}>Thanh toán khi nhận hàng</Text>
                             </View>
                             <View style={styles.paymentMethodOption}>
+                                <FontAwesome6 name="money-check" size={20} color={CommonColors.primary} />
                                 <Text style={styles.paymentMethodText}>Thanh toán ngay</Text>
                             </View>
                         </View>
                     </View>
 
-                    {/* Phần 6: Chi tiết thanh toán */}
+                    {/* Phần 5: Chi tiết thanh toán */}
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Chi tiết thanh toán</Text>
-                        <View style={styles.row}>
+                        <View style={[styles.row, { marginTop: 10 }]}>
                             <Text style={styles.detailLabel}>Tổng tiền hàng</Text>
                             <Text style={styles.detailValue}>đ{formatPriceRender(subtotal)}</Text>
                         </View>
                         <View style={styles.row}>
-                            <Text style={styles.detailLabel}>Tổng tiền phí vận chuyển</Text>
-                            <Text style={styles.detailValue}>đ0</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.detailLabel}>Giảm giá phí vận chuyển</Text>
+                            <Text style={styles.detailLabel}>Giảm giá chiết khấu</Text>
                             <Text style={styles.detailValue}>-đ{formatPriceRender(discount)}</Text>
                         </View>
                         <View style={styles.row}>
                             <Text style={styles.detailLabel}>Tổng thanh toán</Text>
                             <Text style={styles.totalAmount}>đ{formatPriceRender(final_total)}</Text>
                         </View>
+                    </View>
+                    <View style={{ paddingHorizontal: 15 }}>
                         <Text style={styles.termsNote}>
-                            Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo Điều khoản Fashion Zone.
+                            Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo <Text style={{ color: CommonColors.primary }}>Điều khoản Fashion Zone.</Text>
                         </Text>
                     </View>
                 </ScrollView>

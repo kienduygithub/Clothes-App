@@ -27,6 +27,7 @@ const PaymentStyle = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#F5F5F5',
+        paddingHorizontal: 10
     },
     container: {
         flex: 1,
@@ -40,6 +41,7 @@ const PaymentStyle = StyleSheet.create({
         backgroundColor: '#FFF',
         padding: 15,
         marginBottom: 10,
+        borderRadius: 12
     },
     row: {
         flexDirection: 'row',
@@ -51,12 +53,11 @@ const PaymentStyle = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         flex: 1,
-        marginLeft: 5,
     },
     addressText: {
         fontSize: 14,
         color: '#555',
-        marginLeft: 25,
+        marginLeft: 23,
     },
     shopName: {
         fontSize: 16,
@@ -104,7 +105,8 @@ const PaymentStyle = StyleSheet.create({
     },
     shippingOption: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 10,
         marginVertical: 5,
     },
     shippingMethod: {
@@ -117,7 +119,7 @@ const PaymentStyle = StyleSheet.create({
         color: '#333',
     },
     shippingDetails: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#555',
     },
     totalAmount: {
@@ -151,7 +153,6 @@ const PaymentStyle = StyleSheet.create({
     termsNote: {
         fontSize: 12,
         color: '#888',
-        marginTop: 10,
     },
     footer: {
         flexDirection: 'row',
@@ -182,6 +183,12 @@ const PaymentStyle = StyleSheet.create({
         fontSize: 16,
         color: '#FFF',
         fontWeight: 'bold',
+    },
+    devider: {
+        marginVertical: 15,
+        height: 1,
+        width: '100%',
+        backgroundColor: CommonColors.extraLightGray
     },
 });
 
