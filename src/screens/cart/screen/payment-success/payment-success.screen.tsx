@@ -4,6 +4,8 @@ import { formatDate } from "@/src/common/utils/time.helper";
 import { OrderModel } from "@/src/data/model/order.model";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
+import { router } from "expo-router";
+import { useEffect } from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 type Props = {}
@@ -14,6 +16,16 @@ const PaymentSuccessScreen = (props: Props) => {
         order_info: string,
     };
     const parsedOrderInfo: OrderModel = JSON.parse(order_info);
+
+    const navigateToOrderDetail = () => {
+        router.dismissAll();
+        router.navigate('/(tabs)');
+    }
+
+    const backHome = () => {
+        router.dismissAll();
+        router.navigate('/(tabs)');
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -37,7 +49,7 @@ const PaymentSuccessScreen = (props: Props) => {
                 </View>
                 <View style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Thời gian:</Text>
-                    <Text style={styles.detailValue}>{formatDate(parsedOrderInfo?.created_at ?? new Date())}</Text>
+                    <Text style={styles.detailValue}>{formatDate(new Date(parsedOrderInfo?.created_at ?? new Date()))}</Text>
                 </View>
                 <View style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Tổng tiền:</Text>
@@ -47,10 +59,10 @@ const PaymentSuccessScreen = (props: Props) => {
 
             {/* Action Buttons */}
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, styles.primaryButton]}>
+                <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={navigateToOrderDetail}>
                     <Text style={styles.buttonText}>Xem chi tiết đơn hàng</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, styles.secondaryButton]}>
+                <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={backHome}>
                     <Text style={[styles.buttonText, styles.secondaryButtonText]}>Tiếp tục mua sắm</Text>
                 </TouchableOpacity>
             </View>
@@ -118,17 +130,17 @@ const styles = StyleSheet.create({
     },
     button: {
         paddingVertical: 15,
-        borderRadius: 25,
+        borderRadius: 5,
         alignItems: 'center',
         marginBottom: 15,
     },
     primaryButton: {
-        backgroundColor: '#ff5722', // Shopee-like orange
+        backgroundColor: CommonColors.primary
     },
     secondaryButton: {
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#ff5722',
+        borderColor: CommonColors.primary,
     },
     buttonText: {
         fontSize: 16,
@@ -136,7 +148,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     secondaryButtonText: {
-        color: '#ff5722',
+        color: CommonColors.primary
     },
 });
 

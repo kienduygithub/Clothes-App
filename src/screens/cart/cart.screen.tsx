@@ -579,8 +579,8 @@ const CartScreen = (props: Props) => {
                                                     {
                                                         item.selectedCoupon
                                                             ? isCouponValid
-                                                                ? `Đang áp dụng: ${item.selectedCoupon.name}`
-                                                                : `Không thể sử dụng Voucher ${item.selectedCoupon.name}`
+                                                                ? `Đang áp dụng: ${item?.selectedCoupon?.name}`
+                                                                : `Không thể sử dụng Voucher ${item.selectedCoupon?.name}`
                                                             : 'Thêm Voucher ưu đãi'
                                                     }
                                                 </Text>

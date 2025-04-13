@@ -54,11 +54,13 @@ const PaymentScreen = (props: Props) => {
                 discount,
                 final_total
             );
+            console.log(orderSuccess);
             router.dismissAll();
             router.navigate({
                 pathname: '/(routes)/payment-success',
                 params: {
-                    order_info: JSON.stringify(orderSuccess)
+                    order_info: JSON.stringify(orderSuccess),
+                    id: 1
                 }
             });
         } catch (error) {
@@ -147,17 +149,19 @@ const PaymentScreen = (props: Props) => {
                                     </View>
                                 </View>
                             ))}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
-                                <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
-                                <Text
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail"
-                                    style={{ maxWidth: '90%' }}
-                                >
-                                    {cartShop.selected_coupon.name}
-                                </Text>
-                                <Text style={styles.quantity}>x1</Text>
-                            </View>
+                            {cartShop?.selected_coupon && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 15 }}>
+                                    <Ionicons name="ticket-outline" size={24} color={CommonColors.red} />
+                                    <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        style={{ maxWidth: '90%' }}
+                                    >
+                                        {cartShop.selected_coupon.name}
+                                    </Text>
+                                    <Text style={styles.quantity}>x1</Text>
+                                </View>
+                            )}
                         </View>
                     ))}
 

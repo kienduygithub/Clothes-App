@@ -82,6 +82,7 @@ export const paymentCart = async (
             discount,
             final_total
         );
+        console.log(result);
         const response: OrderModel[] = result?.orders?.map(
             (order: any) => new OrderModel().convertObj(order)
         ) ?? [];
