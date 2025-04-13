@@ -39,6 +39,15 @@ export class AddressModel {
 
         return model;
     }
+
+    convertToExecute(data: AddressModel) {
+        return {
+            city_id: data.city?.id,
+            district_id: data.district?.id,
+            ward_id: data.ward?.id,
+            address_detail: data.address_detail,
+        }
+    }
 }
 
 export class CityModel {
