@@ -1,14 +1,14 @@
-import { FlatList, Text, TextInput, View } from "react-native"
-import CRUAddressStyle from "./cru-address.style";
-import { useForm, Controller } from "react-hook-form";
-import { useEffect, useState } from "react";
-import { AddressType } from "@/src/common/resource/address";
-import * as AddressManagement from "@/src/data/management/address.management";
-import { useToast } from "@/src/customize/toast.context";
-import { CityModel, DistrictModel, WardModel } from "@/src/data/model/address.model";
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity } from "react-native";
-import { router } from "expo-router";
+import React, { useState, useEffect, useRef } from 'react';
+import { Animated, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import * as AddressManagement from '@/src/data/management/address.management';
+import { useToast } from '@/src/customize/toast.context';
+import { CityModel, DistrictModel, WardModel } from '@/src/data/model/address.model';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { AddressType } from '@/src/common/resource/address';
+import CRUAddressStyle from './cru-address.style';
+import CustomBottomSheet from '@/src/components/custom-bottom-sheet/custom-bottom-sheet.component';
 
 type FormData = {
     name: string;
@@ -18,9 +18,9 @@ type FormData = {
     ward: number;
     address_details: string;
     address_type: string;
-}
+};
 
-type Props = {}
+type Props = {};
 
 const CRUAddressScreen = (props: Props) => {
     const { showToast } = useToast();
@@ -28,16 +28,17 @@ const CRUAddressScreen = (props: Props) => {
     const [districts, setDistricts] = useState<DistrictModel[]>([]);
     const [wards, setWards] = useState<WardModel[]>([]);
     const [step, setStep] = useState<'province' | 'district' | 'ward'>('province');
-    const [selectedProvinceName, setSelectedProvinceName] = useState<string>('');
-    const [selectedDistrictName, setSelectedDistrictName] = useState<string>('');
+    const [selectedProvince, setSelectedProvince] = useState<CityModel | null>(null);
+    const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(null);
+    const [selectedWard, setSelectedWard] = useState<WardModel | null>(null);
+    const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
 
     const {
         control,
         handleSubmit,
-        formState: { errors, dirtyFields },
+        formState: { errors },
         setValue,
         watch,
-        resetField
     } = useForm<FormData>({
         defaultValues: {
             name: '',
@@ -46,19 +47,33 @@ const CRUAddressScreen = (props: Props) => {
             district: -1,
             ward: -1,
             address_details: '',
-            address_type: AddressType.HOUSE
+            address_type: AddressType.HOUSE,
         },
         mode: 'onChange',
-        reValidateMode: 'onChange'
+        reValidateMode: 'onChange',
     });
 
     const province = watch('province');
     const district = watch('district');
+    const ward = watch('ward');
     const address_type = watch('address_type');
+
+    // Animation for active step
+    const fadeAnimProvince = useRef(new Animated.Value(1)).current;
+    const fadeAnimDistrict = useRef(new Animated.Value(1)).current;
+    const fadeAnimWard = useRef(new Animated.Value(1)).current;
+
+    const openAddressBottomSheet = () => {
+        setIsBottomSheetVisible(true);
+    };
+
+    const closeAddressBottomSheet = () => {
+        setIsBottomSheetVisible(false);
+    };
 
     useEffect(() => {
         fetchCities();
-    }, [])
+    }, []);
 
     const fetchCities = async () => {
         try {
@@ -66,16 +81,17 @@ const CRUAddressScreen = (props: Props) => {
             setCities(response);
         } catch (error) {
             console.log(error);
-            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
         }
-    }
+    };
 
     const fetchDistrictsByCityId = async (cityId: number) => {
         try {
             const response = await AddressManagement.fetchDistrictsByCityId(cityId);
             setDistricts(response);
         } catch (error) {
-            throw error;
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
         }
     };
 
@@ -84,34 +100,44 @@ const CRUAddressScreen = (props: Props) => {
             const response = await AddressManagement.fetchWardsByDistrictId(districtId);
             setWards(response);
         } catch (error) {
-            throw error;
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
         }
     };
 
     const handleProvinceSelect = async (city: CityModel) => {
         try {
-            setValue('province', city.id);
-            setValue('district', -1);
-            setValue('ward', -1);
-            setSelectedProvinceName(city.name);
+            setValue('province', city.id, { shouldValidate: true });
+            setSelectedProvince(city);
             setDistricts([]);
             setWards([]);
+            if (!selectedDistrict) {
+                setValue('district', -1, { shouldValidate: true });
+                setValue('ward', -1, { shouldValidate: true });
+                setSelectedDistrict(null);
+                setSelectedWard(null);
+            }
             await fetchDistrictsByCityId(city.id);
             setStep('district');
+            animateStep('district');
         } catch (error) {
             console.log(error);
             showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
         }
-    }
+    };
 
     const handleDistrictSelect = async (dist: DistrictModel) => {
         try {
-            setValue('district', dist.id);
-            setValue('ward', -1);
-            setSelectedDistrictName(dist.name);
+            setValue('district', dist.id, { shouldValidate: true });
+            setSelectedDistrict(dist);
             setWards([]);
+            if (!selectedWard) {
+                setValue('ward', -1, { shouldValidate: true });
+                setSelectedWard(null);
+            }
             await fetchWardsByDistrictId(dist.id);
             setStep('ward');
+            animateStep('ward');
         } catch (error) {
             console.log(error);
             showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
@@ -119,20 +145,53 @@ const CRUAddressScreen = (props: Props) => {
     };
 
     const handleWardSelect = (ward: WardModel) => {
-        setValue('ward', ward.id);
+        setValue('ward', ward.id, { shouldValidate: true });
+        setSelectedWard(ward);
+        closeAddressBottomSheet();
     };
 
-    const handleBack = () => {
-        if (step === 'ward') {
-            setStep('district');
-            setValue('ward', -1);
-        } else if (step === 'district') {
+    const handleBreadcrumbPress = (targetStep: 'province' | 'district') => {
+        if (targetStep === 'province') {
             setStep('province');
-            setValue('district', -1);
-            setValue('ward', -1);
-            setDistricts([]);
-            setWards([]);
+            animateStep('province');
+        } else if (targetStep === 'district') {
+            setStep('district');
+            animateStep('district');
         }
+    };
+
+    const handleReset = () => {
+        setStep('province');
+        setSelectedProvince(null);
+        setSelectedDistrict(null);
+        setSelectedWard(null);
+        setValue('province', -1, { shouldValidate: true });
+        setValue('district', -1, { shouldValidate: true });
+        setValue('ward', -1, { shouldValidate: true });
+        setDistricts([]);
+        setWards([]);
+        animateStep('province');
+    };
+
+    const animateStep = (activeStep: 'province' | 'district' | 'ward') => {
+        const animations = [
+            Animated.timing(fadeAnimProvince, {
+                toValue: activeStep === 'province' ? 1 : 0.5,
+                duration: 200,
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnimDistrict, {
+                toValue: activeStep === 'district' ? 1 : 0.5,
+                duration: 200,
+                useNativeDriver: true,
+            }),
+            Animated.timing(fadeAnimWard, {
+                toValue: activeStep === 'ward' ? 1 : 0.5,
+                duration: 200,
+                useNativeDriver: true,
+            }),
+        ];
+        Animated.parallel(animations).start();
     };
 
     const onSubmit = (data: FormData) => {
@@ -142,9 +201,68 @@ const CRUAddressScreen = (props: Props) => {
         };
         console.log('Form data:', formData);
         showToast('Địa chỉ đã được lưu!', 'success');
+        router.back();
     };
 
-    console.log(control.getFieldState("phone"));
+    const getFullAddress = () => {
+        const parts = [];
+        if (selectedWard) parts.push(selectedWard.name);
+        if (selectedDistrict) parts.push(selectedDistrict.name);
+        if (selectedProvince) parts.push(selectedProvince.name);
+        return parts.length > 0 ? parts.join(', ') : 'Chọn Tỉnh/Thành phố, Quận/Huyện, Phường/Xã';
+    };
+
+    const renderStep = (currentStep: 'province' | 'district' | 'ward') => {
+        if (currentStep === 'province') {
+            return (
+                <View style={styles.stepContainer}>
+                    <Text style={styles.sectionTitle}>Tỉnh/Thành phố</Text>
+                    {cities.map((item) => (
+                        <TouchableOpacity
+                            key={item.id.toString()}
+                            style={styles.listItem}
+                            onPress={() => handleProvinceSelect(item)}
+                        >
+                            <Text style={styles.listItemText}>{item.name}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        } else if (currentStep === 'district') {
+            return (
+                <View style={styles.stepContainer}>
+                    <Text style={styles.sectionTitle}>Quận/Huyện</Text>
+                    {districts.map((item) => (
+                        <TouchableOpacity
+                            key={item.id.toString()}
+                            style={styles.listItem}
+                            onPress={() => handleDistrictSelect(item)}
+                        >
+                            <Text style={styles.listItemText}>{item.name}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        } else if (currentStep === 'ward') {
+            return (
+                <View style={styles.stepContainer}>
+                    <Text style={styles.sectionTitle}>Phường/Xã</Text>
+                    {wards.map((item) => (
+                        <TouchableOpacity
+                            key={item.id.toString()}
+                            style={styles.listItem}
+                            onPress={() => handleWardSelect(item)}
+                        >
+                            <Text style={styles.listItemText}>{item.name}</Text>
+                            {ward === item.id && <Text style={styles.checkmark}>✓</Text>}
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            );
+        }
+        return null;
+    };
+
     return (
         <>
             {/* Header */}
@@ -170,9 +288,9 @@ const CRUAddressScreen = (props: Props) => {
                                 onChangeText={(text) => onChange(text)}
                                 onBlur={onBlur}
                                 placeholder="Nhập tên nguồn nhận"
-                                autoComplete="off" // Tắt autocomplete
-                                autoCorrect={false} // Tắt tự động sửa lỗi
-                                spellCheck={false} // Tắt kiểm tra chính tả
+                                autoComplete="off"
+                                autoCorrect={false}
+                                spellCheck={false}
                             />
                         )}
                     />
@@ -184,12 +302,7 @@ const CRUAddressScreen = (props: Props) => {
 
                 {/* Số điện thoại */}
                 <Text style={styles.label}>Số điện thoại *</Text>
-                <View
-                    style={[
-                        styles.inputContainer,
-                        errors.phone && styles.inputError, // Thêm viền đỏ khi có lỗi
-                    ]}
-                >
+                <View style={[styles.inputContainer, errors.phone && styles.inputError]}>
                     <View style={styles.phonePrefix}>
                         <Text style={styles.phonePrefixText}>+84</Text>
                     </View>
@@ -212,104 +325,35 @@ const CRUAddressScreen = (props: Props) => {
                                 keyboardType="phone-pad"
                                 placeholder="Nhập số điện thoại"
                                 maxLength={9}
+                                autoComplete="off"
+                                autoCorrect={false}
+                                spellCheck={false}
                             />
                         )}
                     />
                 </View>
                 {errors.phone && <Text style={styles.error}>{errors.phone.message}</Text>}
 
-                {/* Chọn địa chỉ phân cấp */}
-                <Text style={styles.label}>Thành phố *</Text>
-                <View
-                    style={[
-                        styles.locationContainer,
-                        (errors.province || errors.district || errors.ward) && styles.inputError, // Thêm viền đỏ khi có lỗi
-                    ]}
-                >
-                    <View style={styles.breadcrumb}>
-                        {selectedProvinceName && (
-                            <>
-                                <Text style={styles.breadcrumbArrow}>•</Text>
-                                <Text style={styles.breadcrumbText}>{selectedProvinceName}</Text>
-                            </>
-                        )}
-                        {selectedDistrictName && (
-                            <>
-                                <Text style={styles.breadcrumbArrow}>•</Text>
-                                <Text style={styles.breadcrumbText}>{selectedDistrictName}</Text>
-                            </>
-                        )}
+                {/* Tỉnh/Thành phố, Quận/Huyện, Phường/Xã */}
+                <Text style={styles.label}>Tỉnh/Thành phố, Quận/Huyện, Phường/Xã *</Text>
+                <TouchableOpacity onPress={openAddressBottomSheet}>
+                    <View
+                        style={[
+                            styles.inputContainer,
+                            (errors.province || errors.district || errors.ward) && styles.inputError,
+                        ]}
+                    >
+                        <Text style={styles.addressText}>{getFullAddress()}</Text>
+                        <Ionicons name="chevron-forward" size={20} color="black" />
                     </View>
-                    <View style={styles.listContainer}>
-                        {step !== 'province' && (
-                            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                                <Text style={styles.backButtonText}>←</Text>
-                            </TouchableOpacity>
-                        )}
-
-                        {step === 'province' && (
-                            <FlatList
-                                data={cities}
-                                keyExtractor={(item) => item.id.toString()}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.listItem}
-                                        onPress={() => handleProvinceSelect(item)}
-                                    >
-                                        <Text style={styles.listItemText}>{item.name}</Text>
-                                        {province === item.id && <Text style={styles.checkmark}>✓</Text>}
-                                    </TouchableOpacity>
-                                )}
-                            />
-                        )}
-
-                        {step === 'district' && (
-                            <FlatList
-                                data={districts}
-                                keyExtractor={(item) => item.id.toString()}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.listItem}
-                                        onPress={() => handleDistrictSelect(item)}
-                                    >
-                                        <Text style={styles.listItemText}>{item.name}</Text>
-                                        {district === item.id && <Text style={styles.checkmark}>✓</Text>}
-                                    </TouchableOpacity>
-                                )}
-                            />
-                        )}
-
-                        {step === 'ward' && (
-                            <FlatList
-                                data={wards}
-                                keyExtractor={(item) => item.id.toString()}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.listItem}
-                                        onPress={() => handleWardSelect(item)}
-                                    >
-                                        <Text style={styles.listItemText}>{item.name}</Text>
-                                        {watch('ward') === item.id && <Text style={styles.checkmark}>✓</Text>}
-                                    </TouchableOpacity>
-                                )}
-                            />
-                        )}
-                    </View>
-                </View>
+                </TouchableOpacity>
                 {(errors.province || errors.district || errors.ward) && (
-                    <Text style={styles.error}>
-                        {errors.province?.message || errors.district?.message || errors.ward?.message}
-                    </Text>
+                    <Text style={styles.error}>Vui lòng chọn đầy đủ Tỉnh/Thành phố, Quận/Huyện, Phường/Xã</Text>
                 )}
 
                 {/* Tên đường/tòa nhà */}
                 <Text style={styles.label}>Tên đường/tòa nhà *</Text>
-                <View
-                    style={[
-                        styles.inputContainer,
-                        errors.address_details && styles.inputError, // Thêm viền đỏ khi có lỗi
-                    ]}
-                >
+                <View style={[styles.inputContainer, errors.address_details && styles.inputError]}>
                     <Controller
                         control={control}
                         name="address_details"
@@ -321,6 +365,9 @@ const CRUAddressScreen = (props: Props) => {
                                 onChangeText={(text) => onChange(text)}
                                 onBlur={onBlur}
                                 placeholder="Nhập tên đường/tòa nhà"
+                                autoComplete="off"
+                                autoCorrect={false}
+                                spellCheck={false}
                             />
                         )}
                     />
@@ -334,7 +381,9 @@ const CRUAddressScreen = (props: Props) => {
                         style={[styles.addressTypeButton, address_type === AddressType.HOUSE && styles.addressTypeSelected]}
                         onPress={() => setValue('address_type', AddressType.HOUSE, { shouldValidate: true })}
                     >
-                        <Text style={[styles.addressTypeText, address_type === AddressType.HOUSE && styles.addressTypeTextSelected]}>
+                        <Text
+                            style={[styles.addressTypeText, address_type === AddressType.HOUSE && styles.addressTypeTextSelected]}
+                        >
                             Nhà
                         </Text>
                     </TouchableOpacity>
@@ -342,7 +391,9 @@ const CRUAddressScreen = (props: Props) => {
                         style={[styles.addressTypeButton, address_type === AddressType.OFFICE && styles.addressTypeSelected]}
                         onPress={() => setValue('address_type', AddressType.OFFICE, { shouldValidate: true })}
                     >
-                        <Text style={[styles.addressTypeText, address_type === AddressType.OFFICE && styles.addressTypeTextSelected]}>
+                        <Text
+                            style={[styles.addressTypeText, address_type === AddressType.OFFICE && styles.addressTypeTextSelected]}
+                        >
                             Văn phòng
                         </Text>
                     </TouchableOpacity>
@@ -354,9 +405,66 @@ const CRUAddressScreen = (props: Props) => {
                     <Text style={styles.saveButtonText}>Lưu</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Custom Bottom Sheet */}
+            <CustomBottomSheet isVisible={isBottomSheetVisible} onClose={closeAddressBottomSheet}>
+                <View style={styles.bottomSheetContainer}>
+                    <View style={styles.bottomSheetHeader}>
+                        <Text style={styles.breadcrumbText}>Khu vực được chọn</Text>
+                        <TouchableOpacity onPress={handleReset}>
+                            <Text style={styles.resetButton}>Thiết lập lại</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.breadcrumb}>
+                        {selectedProvince && (
+                            <TouchableOpacity onPress={() => handleBreadcrumbPress('province')}>
+                                <Animated.View style={{ opacity: fadeAnimProvince, flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={[styles.breadcrumbDot, step === 'province' && styles.breadcrumbDotActive]} />
+                                    <Text
+                                        style={[styles.breadcrumbText, step === 'province' && styles.breadcrumbTextActive]}
+                                    >
+                                        {selectedProvince.name}
+                                    </Text>
+                                </Animated.View>
+                            </TouchableOpacity>
+                        )}
+                        {selectedDistrict && (
+                            <>
+                                <Text style={styles.breadcrumbArrow}>•</Text>
+                                <TouchableOpacity onPress={() => handleBreadcrumbPress('district')}>
+                                    <Animated.View style={{ opacity: fadeAnimDistrict, flexDirection: 'row', alignItems: 'center' }}>
+                                        <View style={[styles.breadcrumbDot, step === 'district' && styles.breadcrumbDotActive]} />
+                                        <Text
+                                            style={[styles.breadcrumbText, step === 'district' && styles.breadcrumbTextActive]}
+                                        >
+                                            {selectedDistrict.name}
+                                        </Text>
+                                    </Animated.View>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                        {step === 'ward' && selectedProvince && selectedDistrict && (
+                            <>
+                                <Text style={styles.breadcrumbArrow}>•</Text>
+                                <Animated.View style={{ opacity: fadeAnimWard, flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={[styles.breadcrumbDot, styles.breadcrumbDotActive]} />
+                                    <Text style={[styles.breadcrumbText, styles.breadcrumbTextActive]}>
+                                        Chọn Phường/Xã
+                                    </Text>
+                                </Animated.View>
+                            </>
+                        )}
+                    </View>
+                    <View style={styles.stepsContainer}>
+                        {renderStep('province')}
+                        {selectedProvince && renderStep('district')}
+                        {selectedDistrict && renderStep('ward')}
+                    </View>
+                </View>
+            </CustomBottomSheet>
         </>
-    )
-}
+    );
+};
 
 const styles = CRUAddressStyle;
 

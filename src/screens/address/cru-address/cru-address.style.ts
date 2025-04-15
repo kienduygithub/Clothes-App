@@ -1,8 +1,7 @@
-import { CommonColors } from "@/src/common/resource/colors";
-import { StyleSheet } from "react-native";
+import { CommonColors } from '@/src/common/resource/colors';
+import { StyleSheet } from 'react-native';
 
 const CRUAddressStyle = StyleSheet.create({
-    /** Header */
     headerContainer: {
         height: 100,
         backgroundColor: CommonColors.white,
@@ -12,19 +11,17 @@ const CRUAddressStyle = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 10,
         paddingTop: 20,
-        position: 'relative'
+        position: 'relative',
     },
     backBtn: {
         position: 'absolute',
         top: 50,
-        left: 15
+        left: 15,
     },
     paymentHeaderText: {
         fontSize: 21,
         fontWeight: '500',
     },
-
-
     container: {
         flex: 1,
         padding: 16,
@@ -44,7 +41,7 @@ const CRUAddressStyle = StyleSheet.create({
         marginBottom: 8,
     },
     inputError: {
-        borderColor: 'red', // Viền đỏ khi có lỗi
+        borderColor: 'red',
     },
     input: {
         flex: 1,
@@ -57,7 +54,7 @@ const CRUAddressStyle = StyleSheet.create({
         paddingVertical: 10,
         borderRightWidth: 1,
         borderRightColor: '#ccc',
-        backgroundColor: '#ccc'
+        backgroundColor: '#ccc',
     },
     phonePrefixText: {
         fontSize: 16,
@@ -69,11 +66,32 @@ const CRUAddressStyle = StyleSheet.create({
     icon: {
         padding: 12,
     },
-    locationContainer: {
+    bottomSheetContainer: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
+    },
+    bottomSheetHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    resetButton: {
+        color: 'red',
+        fontSize: 16,
+    },
+    stepsContainer: {
+        flexDirection: 'column',
+    },
+    stepContainer: {
+        marginBottom: 16,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
         marginBottom: 8,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 4,
+        color: '#333',
     },
     breadcrumb: {
         flexDirection: 'row',
@@ -86,13 +104,23 @@ const CRUAddressStyle = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
+    breadcrumbDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#ccc',
+        marginRight: 8,
+    },
+    breadcrumbDotActive: {
+        backgroundColor: 'red',
+    },
+    breadcrumbTextActive: {
+        color: 'red',
+    },
     breadcrumbArrow: {
         fontSize: 14,
         color: 'red',
         marginHorizontal: 4,
-    },
-    listContainer: {
-        maxHeight: 200,
     },
     listItem: {
         flexDirection: 'row',
@@ -109,15 +137,6 @@ const CRUAddressStyle = StyleSheet.create({
     checkmark: {
         fontSize: 16,
         color: 'green',
-    },
-    backButton: {
-        padding: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-    },
-    backButtonText: {
-        fontSize: 16,
-        color: 'red',
     },
     addressTypeContainer: {
         flexDirection: 'row',
@@ -143,7 +162,13 @@ const CRUAddressStyle = StyleSheet.create({
         color: '#333',
     },
     addressTypeTextSelected: {
-        color: CommonColors.primary
+        color: CommonColors.primary,
+    },
+    addressText: {
+        flex: 1,
+        padding: 12,
+        fontSize: 16,
+        color: '#333',
     },
     saveButton: {
         backgroundColor: CommonColors.primary,
