@@ -6,9 +6,7 @@ import {
     StyleSheet,
     TouchableWithoutFeedback,
     View,
-    ScrollView, // Thêm ScrollView
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -92,10 +90,7 @@ const CustomBottomSheet = ({
         <View style={styles.container}>
             <TouchableWithoutFeedback onPress={closeBottomSheet}>
                 <Animated.View
-                    style={[
-                        styles.backdrop,
-                        { opacity: backdropOpacity },
-                    ]}
+                    style={[styles.backdrop, { opacity: backdropOpacity }]}
                 />
             </TouchableWithoutFeedback>
 
@@ -109,13 +104,7 @@ const CustomBottomSheet = ({
                     },
                 ]}
             >
-                <ScrollView
-                    style={styles.scrollView}
-                    showsVerticalScrollIndicator={false}
-                    nestedScrollEnabled={true}
-                >
-                    {children}
-                </ScrollView>
+                {children}
             </Animated.View>
         </View>
     );
@@ -137,9 +126,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
         paddingBottom: 30,
         overflow: 'hidden',
-    },
-    scrollView: {
-        flex: 1,
     },
 });
 

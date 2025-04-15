@@ -51,6 +51,54 @@ const AddressStyle = StyleSheet.create({
         color: CommonColors.primary,
         fontWeight: 'bold',
     },
+
+
+
+    /** Breadcum */
+    containerr: {
+        padding: 16,
+    },
+    headerr: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    headerText: {
+        color: '#999',
+    },
+    resetText: {
+        color: 'red',
+    },
+    step: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+        marginLeft: 8,
+    },
+    dot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#ccc',
+        marginRight: 8,
+    },
+    stepText: {
+        fontSize: 16,
+    },
+    wardBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderColor: 'red',
+        borderWidth: 1,
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 8,
+    },
+    wardText: {
+        color: 'red',
+        marginLeft: 8,
+        fontSize: 16,
+    },
 });
 
 export default AddressStyle;
