@@ -57,6 +57,7 @@ const AddressStyle = StyleSheet.create({
     /** Breadcum */
     containerr: {
         padding: 16,
+        backgroundColor: '#fff',
     },
     column: {
         position: 'relative',
@@ -65,22 +66,33 @@ const AddressStyle = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         height: 60,
+        paddingHorizontal: 8,
+    },
+    activeRow: {
+        backgroundColor: CommonColors.white, // Nền trắng che line
+        zIndex: 3, // Che đường line
     },
     dotColumn: {
         width: 30,
         alignItems: 'center',
+        position: 'relative',
+    },
+    verticalLine: {
+        position: 'absolute',
+        top: 8,
+        bottom: -52, // Điều chỉnh độ dài giữa các dot
+        width: 2,
+        backgroundColor: '#CCC',
+        zIndex: -1,
     },
     dot: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#D3D3D3',
+        backgroundColor: '#DDD',
     },
     textColumn: {
         flex: 1,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-        justifyContent: 'center',
     },
     text: {
         fontSize: 16,
@@ -91,16 +103,16 @@ const AddressStyle = StyleSheet.create({
         left: 0,
         right: 0,
         height: 60,
-        borderWidth: 1.5,
+        borderWidth: 1,
         borderColor: '#FF3B30',
         borderRadius: 8,
-        zIndex: -1,
+        zIndex: 0,
     },
     reset: {
-        color: '#FF3B30',
-        textAlign: 'right',
-        marginTop: 12,
-        fontWeight: 'bold',
+        marginTop: 16,
+        textAlign: 'center',
+        color: '#007AFF',
+        fontWeight: '500',
     },
 });
 

@@ -31,7 +31,7 @@ type Location = {
 };
 
 
-const levels = ['An Giang', 'Huyện An Phú', 'Chọn Phường/Xã'];
+const levels = ['Tỉnh / Thành phố', 'Quận / Huyện', 'Phường / Xã'];
 
 const AddressScreen = (props: Props) => {
     const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
@@ -77,8 +77,8 @@ const AddressScreen = (props: Props) => {
     );
 
     /** Breadcum */
-    const [activeLevel, setActiveLevel] = useState(2); // bắt đầu từ cấp 3
-    const animatedTop = useRef(new Animated.Value(2 * 60)).current; // mỗi ô cao 60px
+    const [activeLevel, setActiveLevel] = useState(2);
+    const animatedTop = useRef(new Animated.Value(2 * 60)).current;
 
     useEffect(() => {
         Animated.timing(animatedTop, {
@@ -112,44 +112,50 @@ const AddressScreen = (props: Props) => {
             >
                 <View style={styles.containerr}>
                     <View style={styles.column}>
-                        {levels.map((item, index) => (
-                            <TouchableOpacity key={index} onPress={() => setActiveLevel(index)}>
-                                <View style={styles.row}>
-                                    {/* Dot Indicator */}
-                                    <View style={styles.dotColumn}>
-                                        <View
-                                            style={[
-                                                styles.dot,
-                                                index === activeLevel && { backgroundColor: '#FF6600' },
-                                            ]}
-                                        />
-                                    </View>
+                        {levels.map((item, index) => {
+                            const isActive = index === activeLevel;
+                            return (
+                                <TouchableOpacity key={index} onPress={() => setActiveLevel(index)}>
+                                    <View style={[styles.row, isActive && styles.activeRow]}>
+                                        {/* Dot Column */}
+                                        <View style={styles.dotColumn}>
+                                            {/* Line between dots */}
+                                            {index < levels.length - 1 && (
+                                                <View style={styles.verticalLine} />
+                                            )}
 
-                                    {/* Text Item */}
-                                    <View style={styles.textColumn}>
-                                        <Text
-                                            style={[
-                                                styles.text,
-                                                index === activeLevel && { color: '#FF3B30', fontWeight: 'bold' },
-                                            ]}
-                                        >
-                                            {item}
-                                        </Text>
+                                            {/* Dot */}
+                                            <View
+                                                style={[
+                                                    styles.dot,
+                                                    isActive && { backgroundColor: '#FF6600' },
+                                                ]}
+                                            />
+                                        </View>
+
+                                        {/* Text Column */}
+                                        <View style={styles.textColumn}>
+                                            <Text
+                                                style={[
+                                                    styles.text,
+                                                    isActive && { color: '#FF3B30', fontWeight: 'bold' },
+                                                ]}
+                                            >
+                                                {item}
+                                            </Text>
+                                        </View>
                                     </View>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                                </TouchableOpacity>
+                            );
+                        })}
 
                         {/* Animated Active Border */}
                         <Animated.View
-                            style={[
-                                styles.activeBorder,
-                                { top: animatedTop }
-                            ]}
+                            style={[styles.activeBorder, { top: animatedTop }]}
                         />
                     </View>
 
-                    {/* Reset Link */}
+                    {/* Reset link */}
                     <Text style={styles.reset}>Thiết lập lại</Text>
                 </View>
             </CustomBottomSheet>
