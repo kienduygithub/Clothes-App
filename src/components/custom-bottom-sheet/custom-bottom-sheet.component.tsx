@@ -6,6 +6,7 @@ import {
     StyleSheet,
     TouchableWithoutFeedback,
     View,
+    ScrollView, // Thêm ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -15,7 +16,7 @@ type CustomBottomSheetProps = {
     isVisible: boolean;
     onClose: () => void;
     children: ReactNode;
-    height?: number; // chiều cao tối đa
+    height?: number;
 };
 
 const CustomBottomSheet = ({
@@ -108,7 +109,13 @@ const CustomBottomSheet = ({
                     },
                 ]}
             >
-                {children}
+                <ScrollView
+                    style={styles.scrollView}
+                    showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled={true}
+                >
+                    {children}
+                </ScrollView>
             </Animated.View>
         </View>
     );
@@ -131,24 +138,8 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
         overflow: 'hidden',
     },
-    dragHandleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: 10,
-        paddingBottom: 5,
-    },
-    dragHandle: {
-        width: 40,
-        height: 5,
-        borderRadius: 3,
-        backgroundColor: '#ccc',
-        marginBottom: 5,
-    },
-    closeIcon: {
-        position: 'absolute',
-        right: 16,
-        top: 8,
+    scrollView: {
+        flex: 1,
     },
 });
 
