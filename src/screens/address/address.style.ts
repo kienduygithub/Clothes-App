@@ -56,8 +56,15 @@ const AddressStyle = StyleSheet.create({
 
     /** Breadcum */
     containerr: {
-        padding: 16,
-        backgroundColor: '#fff',
+        paddingTop: 16,
+        backgroundColor: '#f4f4f4',
+    },
+    section: {
+        backgroundColor: CommonColors.white,
+        marginHorizontal: 10,
+        paddingVertical: 10,
+        borderRadius: 5,
+        marginBottom: 10
     },
     column: {
         position: 'relative',
@@ -65,54 +72,92 @@ const AddressStyle = StyleSheet.create({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 60,
+        height: 50,
         paddingHorizontal: 8,
+        marginHorizontal: 0
     },
     activeRow: {
-        backgroundColor: CommonColors.white, // Nền trắng che line
-        zIndex: 3, // Che đường line
+        backgroundColor: CommonColors.white,
+        zIndex: 2,
+        height: 50,
+        borderRadius: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     dotColumn: {
-        width: 30,
+        width: 18,
+        height: 18,
         alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 10,
+        backgroundColor: CommonColors.white,
         position: 'relative',
+    },
+    dotColumnActive: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: CommonColors.primary,
+        borderRadius: 30
     },
     verticalLine: {
         position: 'absolute',
-        top: 8,
-        bottom: -52, // Điều chỉnh độ dài giữa các dot
         width: 2,
         backgroundColor: '#CCC',
-        zIndex: -1,
+        left: 13, // Đã căn giữa với dot
+        zIndex: 1, // Dưới activeRow nhưng trên nền chính
     },
     dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+        width: 10,
+        height: 10,
+        borderRadius: 30,
         backgroundColor: '#DDD',
+        padding: 4,
+        zIndex: 3, // Đảm bảo dot luôn ở trên cùng
     },
     textColumn: {
         flex: 1,
     },
     text: {
-        fontSize: 16,
+        fontSize: 14,
         color: '#333',
     },
     activeBorder: {
         position: 'absolute',
-        left: 0,
-        right: 0,
-        height: 60,
+        left: 5,
+        right: 5,
+        height: 50,
         borderWidth: 1,
-        borderColor: '#FF3B30',
+        borderColor: CommonColors.primary,
         borderRadius: 8,
-        zIndex: 0,
+        zIndex: 2,
     },
     reset: {
         marginTop: 16,
         textAlign: 'center',
         color: '#007AFF',
         fontWeight: '500',
+    },
+
+
+
+
+    /** List */
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 8,
+        color: '#333',
+    },
+    listItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 12,
+    },
+    listItemText: {
+        fontSize: 16,
+        color: '#333',
     },
 });
 
