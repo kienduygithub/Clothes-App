@@ -1,9 +1,9 @@
-import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { Animated, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import AddressStyle from "./address.style"
 import { CommonColors } from "@/src/common/resource/colors";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CustomBottomSheet from "@/src/components/custom-bottom-sheet/custom-bottom-sheet.component";
 import AddressPicker from "./comp/address-selector.component";
 
@@ -30,12 +30,8 @@ type Location = {
     };
 };
 
-const locationData: Location = {
-    'An Giang': {
-        'Huyện An Phú': ['Xã Phú Hữu', 'Xã Phú Hội', 'Xã Quốc Thái'],
-    },
-};
 
+const levels = ['An Giang', 'Huyện An Phú', 'Chọn Phường/Xã'];
 
 const AddressScreen = (props: Props) => {
     const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
@@ -81,15 +77,17 @@ const AddressScreen = (props: Props) => {
     );
 
     /** Breadcum */
-    const [selectedProvince, setSelectedProvince] = useState<string | null>('An Giang');
-    const [selectedDistrict, setSelectedDistrict] = useState<string | null>('Huyện An Phú');
-    const [selectedWard, setSelectedWard] = useState<string | null>(null);
+    const [activeLevel, setActiveLevel] = useState(2); // bắt đầu từ cấp 3
+    const animatedTop = useRef(new Animated.Value(2 * 60)).current; // mỗi ô cao 60px
 
-    const reset = () => {
-        setSelectedProvince(null);
-        setSelectedDistrict(null);
-        setSelectedWard(null);
-    };
+    useEffect(() => {
+        Animated.timing(animatedTop, {
+            toValue: activeLevel * 60,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    }, [activeLevel]);
+
     return (
         <View style={styles.container}>
             <Text style={{ paddingHorizontal: 20, paddingVertical: 10, fontSize: 16, fontWeight: '500' }}>
@@ -112,38 +110,48 @@ const AddressScreen = (props: Props) => {
                 isVisible={true}
                 onClose={closeAddressBottomSheet}
             >
-                <ScrollView contentContainerStyle={styles.containerr}>
-                    <View style={styles.headerr}>
-                        <Text style={styles.headerText}>Khu vực được chọn</Text>
-                        <TouchableOpacity onPress={reset}>
-                            <Text style={styles.resetText}>Thiết lập lại</Text>
-                        </TouchableOpacity>
+                <View style={styles.containerr}>
+                    <View style={styles.column}>
+                        {levels.map((item, index) => (
+                            <TouchableOpacity key={index} onPress={() => setActiveLevel(index)}>
+                                <View style={styles.row}>
+                                    {/* Dot Indicator */}
+                                    <View style={styles.dotColumn}>
+                                        <View
+                                            style={[
+                                                styles.dot,
+                                                index === activeLevel && { backgroundColor: '#FF6600' },
+                                            ]}
+                                        />
+                                    </View>
+
+                                    {/* Text Item */}
+                                    <View style={styles.textColumn}>
+                                        <Text
+                                            style={[
+                                                styles.text,
+                                                index === activeLevel && { color: '#FF3B30', fontWeight: 'bold' },
+                                            ]}
+                                        >
+                                            {item}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+
+                        {/* Animated Active Border */}
+                        <Animated.View
+                            style={[
+                                styles.activeBorder,
+                                { top: animatedTop }
+                            ]}
+                        />
                     </View>
 
-                    {/* Province */}
-                    {selectedProvince && (
-                        <View style={styles.step}>
-                            <View style={styles.dot} />
-                            <Text style={styles.stepText}>{selectedProvince}</Text>
-                        </View>
-                    )}
-
-                    {/* District */}
-                    {selectedDistrict && (
-                        <View style={styles.step}>
-                            <View style={styles.dot} />
-                            <Text style={styles.stepText}>{selectedDistrict}</Text>
-                        </View>
-                    )}
-
-                    {/* Ward */}
-                    <TouchableOpacity style={styles.wardBox}>
-                        <Ionicons name="radio-button-on" size={20} color="red" />
-                        <Text style={styles.wardText}>
-                            {selectedWard ? selectedWard : 'Chọn Phường/Xã'}
-                        </Text>
-                    </TouchableOpacity>
-                </ScrollView>
+                    {/* Reset Link */}
+                    <Text style={styles.reset}>Thiết lập lại</Text>
+                </View>
             </CustomBottomSheet>
         </View>
     )

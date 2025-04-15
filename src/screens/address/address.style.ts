@@ -58,46 +58,49 @@ const AddressStyle = StyleSheet.create({
     containerr: {
         padding: 16,
     },
-    headerr: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 16,
+    column: {
+        position: 'relative',
     },
-    headerText: {
-        color: '#999',
-    },
-    resetText: {
-        color: 'red',
-    },
-    step: {
+    row: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
-        marginLeft: 8,
+        height: 60,
+    },
+    dotColumn: {
+        width: 30,
+        alignItems: 'center',
     },
     dot: {
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#ccc',
-        marginRight: 8,
+        backgroundColor: '#D3D3D3',
     },
-    stepText: {
+    textColumn: {
+        flex: 1,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        justifyContent: 'center',
+    },
+    text: {
         fontSize: 16,
+        color: '#333',
     },
-    wardBox: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderColor: 'red',
-        borderWidth: 1,
-        padding: 12,
+    activeBorder: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: 60,
+        borderWidth: 1.5,
+        borderColor: '#FF3B30',
         borderRadius: 8,
-        marginTop: 8,
+        zIndex: -1,
     },
-    wardText: {
-        color: 'red',
-        marginLeft: 8,
-        fontSize: 16,
+    reset: {
+        color: '#FF3B30',
+        textAlign: 'right',
+        marginTop: 12,
+        fontWeight: 'bold',
     },
 });
 
