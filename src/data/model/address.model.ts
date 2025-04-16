@@ -3,6 +3,8 @@ import { UserModel } from "./user.model";
 export class AddressModel {
     id: number;
     user: UserModel | undefined;
+    name: string;
+    phone: string;
     city: CityModel | undefined;
     district: DistrictModel | undefined;
     ward: WardModel | undefined;
@@ -12,6 +14,8 @@ export class AddressModel {
     constructor(
         id?: number,
         user?: UserModel | undefined,
+        name?: string,
+        phone?: string,
         city?: CityModel,
         district?: DistrictModel,
         ward?: WardModel,
@@ -20,6 +24,8 @@ export class AddressModel {
     ) {
         this.id = id ?? 0;
         this.user = user ?? undefined;
+        this.name = name ?? '';
+        this.phone = phone ?? '';
         this.city = city ?? undefined;
         this.district = district ?? undefined;
         this.ward = ward ?? undefined;
@@ -31,6 +37,8 @@ export class AddressModel {
         const model = new AddressModel();
         model.id = data?.id ?? 0;
         model.user = data?.user ? new UserModel().convertObj(data.user) : undefined;
+        model.name = data?.name ?? '';
+        model.phone = data?.phone ?? '';
         model.city = data?.city ? new CityModel().convertObj(data.city) : undefined;
         model.district = data?.district ? new DistrictModel().convertObj(data.district) : undefined;
         model.ward = data?.ward ? new WardModel().convertObj(data.ward) : undefined;
@@ -42,10 +50,13 @@ export class AddressModel {
 
     convertToExecute(data: AddressModel) {
         return {
+            name: data.name,
+            phone: data.phone,
             city_id: data.city?.id,
             district_id: data.district?.id,
             ward_id: data.ward?.id,
             address_detail: data.address_detail,
+            is_default: data.is_default
         }
     }
 }

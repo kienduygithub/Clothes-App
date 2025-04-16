@@ -1,12 +1,9 @@
-import { Dimensions, FlatList, Text, TouchableOpacity, View } from "react-native"
+import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import AddressStyle from "./address.style"
 import { CommonColors } from "@/src/common/resource/colors";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
-import CustomBottomSheet from "@/src/components/custom-bottom-sheet/custom-bottom-sheet.component";
 import { useToast } from "@/src/customize/toast.context";
-import AddressSelector from "./comp/address-selector.component";
 
 type Props = {}
 
@@ -27,12 +24,6 @@ const addressData: any = [
 
 const AddressScreen = (props: Props) => {
     const { showToast } = useToast();
-    const { height: HEIGHT_SCREEN } = Dimensions.get('window');
-    const [isOpenBottomSheet, setIsOpenBottomSheet] = useState(true);
-
-    const closeBottomSheet = () => {
-        setIsOpenBottomSheet(false);
-    }
 
     const navigateToCreateAddress = () => {
         router.navigate("/(routes)/cru-address");
@@ -87,13 +78,6 @@ const AddressScreen = (props: Props) => {
                     </TouchableOpacity>
                 )}
             />
-            <CustomBottomSheet
-                isVisible={true}
-                onClose={closeBottomSheet}
-                height={HEIGHT_SCREEN - 80}
-            >
-                <AddressSelector />
-            </CustomBottomSheet>
         </View>
     )
 }

@@ -7,10 +7,28 @@ import { useToast } from "@/src/customize/toast.context";
 import { Feather, Octicons } from "@expo/vector-icons";
 
 type Props = {
-
+    initStep?: number;
+    initSelectedCity?: CityModel | null;
+    initSelectedDistrict?: DistrictModel | null;
+    initSelectedWard?: WardModel | null;
+    initCities?: CityModel[];
+    initDistricts?: DistrictModel[];
+    initWards?: WardModel[];
+    setOuputCity?: (city: CityModel | null) => void,
+    setOutputDistrict?: (district: DistrictModel | null) => void,
+    setOutputWard?: (city: WardModel | null) => void,
+    closeBottomSheet?: () => any
 }
 
 const AddressSelector = ({
+    initStep = 0,
+    initSelectedCity = null,
+    initSelectedDistrict = null,
+    initSelectedWard = null,
+    setOuputCity,
+    setOutputDistrict,
+    setOutputWard,
+    closeBottomSheet
 
 }: Props) => {
     const { showToast } = useToast();
@@ -21,13 +39,23 @@ const AddressSelector = ({
     const [displayCities, setDisplayCities] = useState<CityModel[]>([]);
     const [displayDistricts, setDisplayDistricts] = useState<DistrictModel[]>([]);
     const [displayWards, setDisplayWards] = useState<WardModel[]>([]);
-    const [selectedCity, setSelectedCity] = useState<CityModel | null>(null);
-    const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(null);
-    const [selectedWard, setSelectedWard] = useState<WardModel | null>(null);
-    const [step, setStep] = useState<number>(0);
+    const [selectedCity, setSelectedCity] = useState<CityModel | null>(initSelectedCity);
+    const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(initSelectedDistrict);
+    const [selectedWard, setSelectedWard] = useState<WardModel | null>(initSelectedWard);
+    const [step, setStep] = useState<number>(initStep);
     const animatedTop = useRef(new Animated.Value(2 * 50)).current;
+    const firstInitRef = useRef(true);
 
     useEffect(() => {
+        if (firstInitRef.current) {
+            if (selectedCity) {
+                fetchDistrictsByCityId(selectedCity.id);
+            }
+            if (selectedDistrict) {
+                fetchWardsByDistrictId(selectedDistrict.id);
+            }
+            firstInitRef.current = false;
+        }
         fetchCities();
     }, [])
 
@@ -71,6 +99,9 @@ const AddressSelector = ({
             setSelectedCity(city);
             setSelectedDistrict(null);
             setSelectedWard(null);
+            setOuputCity?.(city);
+            setOutputDistrict?.(null);
+            setOutputWard?.(null);
             await fetchDistrictsByCityId(city.id);
             setStep(1);
         } catch (error) {
@@ -82,8 +113,10 @@ const AddressSelector = ({
     const handleDistrictSelect = async (dist: DistrictModel) => {
         try {
             setSelectedDistrict(dist);
+            setOutputDistrict?.(dist);
             if (!selectedWard) {
                 setSelectedWard(null);
+                setOutputWard?.(null);
             }
             await fetchWardsByDistrictId(dist.id);
             setStep(2);
@@ -95,6 +128,8 @@ const AddressSelector = ({
 
     const handleWardSelect = (ward: WardModel) => {
         setSelectedWard(ward);
+        setOutputWard?.(ward);
+        closeBottomSheet?.()
     };
 
     const renderStep = (currentStep: number) => {
@@ -201,6 +236,9 @@ const AddressSelector = ({
         setSelectedCity(null);
         setSelectedDistrict(null);
         setSelectedWard(null);
+        setOuputCity?.(null);
+        setOutputDistrict?.(null);
+        setOutputWard?.(null);
         setDistricts([]);
         setWards([]);
         setStep(0);
