@@ -18,6 +18,9 @@ const AddressSelector = ({
     const [cities, setCities] = useState<CityModel[]>([]);
     const [districts, setDistricts] = useState<DistrictModel[]>([]);
     const [wards, setWards] = useState<WardModel[]>([]);
+    const [displayCities, setDisplayCities] = useState<CityModel[]>([]);
+    const [displayDistricts, setDisplayDistricts] = useState<DistrictModel[]>([]);
+    const [displayWards, setDisplayWards] = useState<WardModel[]>([]);
     const [selectedCity, setSelectedCity] = useState<CityModel | null>(null);
     const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(null);
     const [selectedWard, setSelectedWard] = useState<WardModel | null>(null);
@@ -32,6 +35,7 @@ const AddressSelector = ({
         try {
             const response = await AddressManagement.fetchCities();
             setCities(response);
+            setDisplayCities(response);
         } catch (error) {
             console.log(error);
             showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
@@ -42,6 +46,8 @@ const AddressSelector = ({
         try {
             const response = await AddressManagement.fetchDistrictsByCityId(cityId);
             setDistricts(response);
+            const listSearch = response.filter(d => d.name.includes(searchInput.trim()));
+            setDisplayDistricts(listSearch);
         } catch (error) {
             console.log(error);
             showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
@@ -52,6 +58,8 @@ const AddressSelector = ({
         try {
             const response = await AddressManagement.fetchWardsByDistrictId(districtId);
             setWards(response);
+            const listSearch = response.filter(w => w.name.includes(searchInput.trim()));
+            setDisplayWards(listSearch);
         } catch (error) {
             console.log(error);
             showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
@@ -93,7 +101,7 @@ const AddressSelector = ({
         if (currentStep === 0) {
             return (
                 <FlatList
-                    data={cities}
+                    data={displayCities}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
                     style={[styles.section, { borderRadius: 0, paddingHorizontal: 0 }]}
@@ -114,13 +122,12 @@ const AddressSelector = ({
                         offset: 42 * index,
                         index,
                     })}
-                    initialScrollIndex={!selectedCity ? 0 : cities.findIndex(i => i.id === selectedCity.id)}
                 />
             );
         } else if (currentStep === 1) {
             return (
                 <FlatList
-                    data={districts}
+                    data={displayDistricts}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
                     style={[styles.section, { borderRadius: 0, paddingHorizontal: 0 }]}
@@ -141,13 +148,12 @@ const AddressSelector = ({
                         offset: 42 * index,
                         index,
                     })}
-                    initialScrollIndex={!selectedDistrict ? 0 : districts.findIndex(i => i.id === selectedDistrict.id)}
                 />
             );
         } else if (currentStep === 2) {
             return (
                 <FlatList
-                    data={wards}
+                    data={displayWards}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
                     style={[styles.section, { borderRadius: 0, paddingHorizontal: 0 }]}
@@ -168,7 +174,6 @@ const AddressSelector = ({
                         offset: 42 * index,
                         index,
                     })}
-                    initialScrollIndex={!selectedWard ? 0 : wards.findIndex(i => i.id === selectedWard.id)}
                 />
             );
         }
@@ -207,7 +212,28 @@ const AddressSelector = ({
             duration: 300,
             useNativeDriver: false,
         }).start();
+        setSearchInput('');
+        if (step === 0) {
+            setDisplayCities(cities)
+        } else if (step === 1) {
+            setDisplayDistricts(districts);
+        } else if (step === 2) {
+            setDisplayWards(wards);
+        }
     }, [step]);
+
+    useEffect(() => {
+        if (step === 0) {
+            let listSearch = cities.filter(c => c.name.toLocaleLowerCase().includes(searchInput.trim().toLocaleLowerCase()));
+            setDisplayCities(listSearch);
+        } else if (step === 1) {
+            let listSearch = districts.filter(d => d.name.toLocaleLowerCase().includes(searchInput.trim().toLocaleLowerCase()));
+            setDisplayDistricts(listSearch);
+        } else if (step === 2) {
+            let listSearch = wards.filter(w => w.name.toLocaleLowerCase().includes(searchInput.trim().toLocaleLowerCase()));
+            setDisplayWards(listSearch);
+        }
+    }, [searchInput])
 
     return (
         <View style={[styles.container]}>
