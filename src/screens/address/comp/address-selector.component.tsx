@@ -1,226 +1,439 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { CommonColors } from "@/src/common/resource/colors"
+import { CityModel, DistrictModel, WardModel } from "@/src/data/model/address.model";
+import { useEffect, useRef, useState } from "react";
+import { Animated, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import * as AddressManagement from '@/src/data/management/address.management';
+import { useToast } from "@/src/customize/toast.context";
+import { Feather, Octicons } from "@expo/vector-icons";
 
-interface Address {
-    name: string;
-    children?: Address[];
+type Props = {
+
 }
 
-const addressData: Address[] = [
-    {
-        name: 'An Giang',
-        children: [
-            { name: 'Huyện An Phú', children: [{ name: 'Thị Trấn An Phú' }, { name: 'Thị Trấn Long Bình' }] },
-            { name: 'Chợ Mới' },
-        ],
-    },
-    // Thêm dữ liệu khác nếu cần
-];
+const AddressSelector = ({
 
-const AddressPicker: React.FC = () => {
-    const [selectedProvince, setSelectedProvince] = useState<Address | null>(null);
-    const [selectedDistrict, setSelectedDistrict] = useState<Address | null>(null);
-    const [currentLevel, setCurrentLevel] = useState<'province' | 'district' | 'ward'>('province');
+}: Props) => {
+    const { showToast } = useToast();
+    const [searchInput, setSearchInput] = useState('');
+    const [cities, setCities] = useState<CityModel[]>([]);
+    const [districts, setDistricts] = useState<DistrictModel[]>([]);
+    const [wards, setWards] = useState<WardModel[]>([]);
+    const [selectedCity, setSelectedCity] = useState<CityModel | null>(null);
+    const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(null);
+    const [selectedWard, setSelectedWard] = useState<WardModel | null>(null);
+    const [step, setStep] = useState<number>(0);
+    const animatedTop = useRef(new Animated.Value(2 * 50)).current;
 
-    // Animation values
-    const provinceHighlightY = useSharedValue(0);
-    const districtHighlightY = useSharedValue(0);
-    const wardHighlightY = useSharedValue(0);
+    useEffect(() => {
+        fetchCities();
+    }, [])
 
-    const provinceHighlightStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: provinceHighlightY.value }],
-    }));
+    const fetchCities = async () => {
+        try {
+            const response = await AddressManagement.fetchCities();
+            setCities(response);
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
+        }
+    };
 
-    const districtHighlightStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: districtHighlightY.value }],
-    }));
+    const fetchDistrictsByCityId = async (cityId: number) => {
+        try {
+            const response = await AddressManagement.fetchDistrictsByCityId(cityId);
+            setDistricts(response);
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
+        }
+    };
 
-    const wardHighlightStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: wardHighlightY.value }],
-    }));
+    const fetchWardsByDistrictId = async (districtId: number) => {
+        try {
+            const response = await AddressManagement.fetchWardsByDistrictId(districtId);
+            setWards(response);
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
+        }
+    };
 
-    const handleProvinceSelect = (province: Address, index: number) => {
-        setSelectedProvince(province);
+    const handleProvinceSelect = async (city: CityModel) => {
+        try {
+            setSelectedCity(city);
+            setSelectedDistrict(null);
+            setSelectedWard(null);
+            await fetchDistrictsByCityId(city.id);
+            setStep(1);
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
+        }
+    };
+
+    const handleDistrictSelect = async (dist: DistrictModel) => {
+        try {
+            setSelectedDistrict(dist);
+            if (!selectedWard) {
+                setSelectedWard(null);
+            }
+            await fetchWardsByDistrictId(dist.id);
+            setStep(2);
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
+        }
+    };
+
+    const handleWardSelect = (ward: WardModel) => {
+        setSelectedWard(ward);
+    };
+
+    const renderStep = (currentStep: number) => {
+        if (currentStep === 0) {
+            return (
+                <FlatList
+                    data={cities}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsVerticalScrollIndicator={false}
+                    style={[styles.section, { borderRadius: 0, paddingHorizontal: 0 }]}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            key={item.id.toString()}
+                            style={[styles.listItem, { paddingHorizontal: 22 }]}
+                            onPress={() => handleProvinceSelect(item)}
+                        >
+                            <Text style={styles.listItemText}>{item.name}</Text>
+                            {selectedCity?.id === item.id && (
+                                <Feather name="check" size={24} color={CommonColors.primary} />
+                            )}
+                        </TouchableOpacity>
+                    )}
+                    getItemLayout={(_, index) => ({
+                        length: 42,       // chiều cao mỗi item (có thể đo cụ thể nếu custom)
+                        offset: 42 * index,
+                        index,
+                    })}
+                    initialScrollIndex={!selectedCity ? 0 : cities.findIndex(i => i.id === selectedCity.id)}
+                />
+            );
+        } else if (currentStep === 1) {
+            return (
+                <FlatList
+                    data={districts}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsVerticalScrollIndicator={false}
+                    style={[styles.section, { borderRadius: 0, paddingHorizontal: 0 }]}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            key={item.id.toString()}
+                            style={[styles.listItem, { paddingHorizontal: 22 }]}
+                            onPress={() => handleDistrictSelect(item)}
+                        >
+                            <Text style={styles.listItemText}>{item.name}</Text>
+                            {selectedDistrict?.id === item.id && (
+                                <Feather name="check" size={24} color={CommonColors.primary} />
+                            )}
+                        </TouchableOpacity>
+                    )}
+                    getItemLayout={(_, index) => ({
+                        length: 42,       // chiều cao mỗi item (có thể đo cụ thể nếu custom)
+                        offset: 42 * index,
+                        index,
+                    })}
+                    initialScrollIndex={!selectedDistrict ? 0 : districts.findIndex(i => i.id === selectedDistrict.id)}
+                />
+            );
+        } else if (currentStep === 2) {
+            return (
+                <FlatList
+                    data={wards}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsVerticalScrollIndicator={false}
+                    style={[styles.section, { borderRadius: 0, paddingHorizontal: 0 }]}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            key={item.id.toString()}
+                            style={[styles.listItem, { paddingHorizontal: 22 }]}
+                            onPress={() => handleWardSelect(item)}
+                        >
+                            <Text style={styles.listItemText}>{item.name}</Text>
+                            {selectedWard?.id === item.id && (
+                                <Feather name="check" size={24} color={CommonColors.primary} />
+                            )}
+                        </TouchableOpacity>
+                    )}
+                    getItemLayout={(_, index) => ({
+                        length: 42,       // chiều cao mỗi item (có thể đo cụ thể nếu custom)
+                        offset: 42 * index,
+                        index,
+                    })}
+                    initialScrollIndex={!selectedWard ? 0 : wards.findIndex(i => i.id === selectedWard.id)}
+                />
+            );
+        }
+        return null;
+    };
+
+    const renderNameStep = (currentStep: number) => {
+        if (currentStep === 0) {
+            return (
+                <Text style={{ fontSize: 14, fontWeight: '500' }}>Tỉnh/Thành phố</Text>
+            );
+        } else if (currentStep === 1) {
+            return (
+                <Text style={{ fontSize: 14, fontWeight: '500' }}>Quận/Huyện</Text>
+            );
+        } else if (currentStep === 2) {
+            return (
+                <Text style={{ fontSize: 14, fontWeight: '500' }}>Phường/Xã</Text>
+            );
+        }
+        return null;
+    }
+
+    const onResetSelector = () => {
+        setSelectedCity(null);
         setSelectedDistrict(null);
-        setCurrentLevel('district');
-        provinceHighlightY.value = withSpring(index * 50); // 50 là chiều cao mỗi item
-    };
+        setSelectedWard(null);
+        setDistricts([]);
+        setWards([]);
+        setStep(0);
+    }
 
-    const handleDistrictSelect = (district: Address, index: number) => {
-        setSelectedDistrict(district);
-        setCurrentLevel('ward');
-        districtHighlightY.value = withSpring(index * 50);
-    };
-
-    const handleWardSelect = (index: number) => {
-        wardHighlightY.value = withSpring(index * 50);
-    };
-
-    const renderProvinceItem = ({ item, index }: { item: Address; index: number }) => (
-        <TouchableOpacity
-            style={styles.item}
-            onPress={() => handleProvinceSelect(item, index)}
-        >
-            <Text style={styles.itemText}>{item.name}</Text>
-            {selectedProvince === item && <Text style={styles.checkMark}>✔</Text>}
-        </TouchableOpacity>
-    );
-
-    const renderDistrictItem = ({ item, index }: { item: Address; index: number }) => (
-        <TouchableOpacity
-            style={styles.item}
-            onPress={() => handleDistrictSelect(item, index)}
-        >
-            <Text style={styles.itemText}>{item.name}</Text>
-            {selectedDistrict === item && <Text style={styles.checkMark}>✔</Text>}
-        </TouchableOpacity>
-    );
-
-    const renderWardItem = ({ item, index }: { item: Address; index: number }) => (
-        <TouchableOpacity
-            style={styles.item}
-            onPress={() => handleWardSelect(index)}
-        >
-            <Text style={styles.itemText}>{item.name}</Text>
-        </TouchableOpacity>
-    );
+    useEffect(() => {
+        Animated.timing(animatedTop, {
+            toValue: step * 50,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    }, [step]);
 
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.headerText}>Khu vực được chọn</Text>
-                <TouchableOpacity onPress={() => setCurrentLevel('province')}>
-                    <Text style={styles.headerLink}>Thiết lập lại</Text>
-                </TouchableOpacity>
+        <View style={[styles.container]}>
+            <View style={[styles.section, { marginBottom: 12 }]}>
+                <View style={styles.searchContainer}>
+                    <Octicons name="search" size={18} color={CommonColors.lightGray} />
+                    <TextInput
+                        value={searchInput}
+                        onChangeText={(text: string) => setSearchInput(text)}
+                        placeholder="Tìm kiếm Tỉnh/Thành phố, Quận/Huyện, Phường/Xã"
+                    />
+                </View>
             </View>
+            <View style={[styles.section, { marginBottom: 12 }]}>
+                <View style={{ paddingHorizontal: 10, marginBottom: 13, flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ color: CommonColors.lightGray }}>
+                        Khu vực được chọn
+                    </Text>
+                    <TouchableOpacity onPress={onResetSelector}>
+                        <Text style={{ color: CommonColors.primary }}>Thiết lập lại</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.column}>
+                    {/* Province */}
+                    <TouchableOpacity onPress={() => setStep(0)}>
+                        <View style={[styles.row, step === 0 && styles.activeRow]}>
+                            <View style={[styles.dotColumn, step === 0 && styles.dotColumnActive]}>
+                                <View
+                                    style={[
+                                        styles.dot,
+                                        step === 0 && { backgroundColor: CommonColors.primary },
+                                    ]}
+                                ></View>
+                            </View>
 
-            {/* Breadcrumbs */}
-            <View style={styles.breadcrumbs}>
-                <TouchableOpacity onPress={() => setCurrentLevel('province')}>
-                    <Text style={styles.breadcrumbText}>An Giang</Text>
-                </TouchableOpacity>
-                {selectedProvince && (
-                    <>
-                        <Text style={styles.breadcrumbSeparator}> {'>'} </Text>
-                        <TouchableOpacity onPress={() => setCurrentLevel('district')}>
-                            <Text style={styles.breadcrumbText}>{selectedProvince.name}</Text>
+                            <View style={[styles.textColumn, { marginLeft: 10 }]}>
+                                <Text
+                                    style={[
+                                        styles.text,
+                                        step === 0 && { color: CommonColors.primary, fontWeight: '500' },
+                                    ]}
+                                >
+                                    {selectedCity ? selectedCity.name : 'Chọn Tỉnh/Thành phố'}
+                                </Text>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                    {selectedCity && (
+                        <TouchableOpacity onPress={() => setStep(1)}>
+                            <View style={[styles.row, step === 1 && styles.activeRow]}>
+                                <View style={[styles.dotColumn, step === 1 && styles.dotColumnActive]}>
+                                    <View
+                                        style={[
+                                            styles.dot,
+                                            step === 1 && { backgroundColor: CommonColors.primary },
+                                        ]}
+                                    ></View>
+                                </View>
+
+                                <View style={[styles.textColumn, { marginLeft: 10 }]}>
+                                    <Text
+                                        style={[
+                                            styles.text,
+                                            step === 1 && { color: CommonColors.primary, fontWeight: '500' },
+                                        ]}
+                                    >
+                                        {selectedDistrict ? selectedDistrict.name : 'Chọn Quận/Huyện'}
+                                    </Text>
+                                </View>
+                            </View>
                         </TouchableOpacity>
-                    </>
-                )}
-                {selectedDistrict && (
-                    <>
-                        <Text style={styles.breadcrumbSeparator}> {'>'} </Text>
-                        <Text style={[styles.breadcrumbText, styles.selectedBreadcrumb]}>
-                            {selectedDistrict.name}
-                        </Text>
-                    </>
-                )}
+                    )}
+                    {selectedDistrict && (
+                        <TouchableOpacity onPress={() => setStep(2)}>
+                            <View style={[styles.row, step === 2 && styles.activeRow]}>
+                                <View style={[styles.dotColumn, step === 2 && styles.dotColumnActive]}>
+                                    <View
+                                        style={[
+                                            styles.dot,
+                                            step === 2 && { backgroundColor: CommonColors.primary },
+                                        ]}
+                                    ></View>
+                                </View>
+
+                                <View style={[styles.textColumn, { marginLeft: 10 }]}>
+                                    <Text
+                                        style={[
+                                            styles.text,
+                                            step === 2 && { color: CommonColors.primary, fontWeight: '500' },
+                                        ]}
+                                    >
+                                        {selectedWard ? selectedWard.name : 'Chọn Phường/Xã'}
+                                    </Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Animated Active Border */}
+                    <Animated.View
+                        style={[
+                            styles.activeBorder,
+                            {
+                                top: animatedTop.interpolate({
+                                    inputRange: [0, 2 * 50],
+                                    outputRange: [0, 2 * 50], /** Điều chỉnh để căn giữa */
+                                }),
+                            },
+                        ]}
+                    />
+                </View>
             </View>
-
-            {/* List */}
-            {currentLevel === 'province' && (
-                <>
-                    <Text style={styles.levelTitle}>Tỉnh</Text>
-                    <Animated.View style={[styles.highlightBorder, provinceHighlightStyle]} />
-                    <FlatList
-                        data={addressData}
-                        renderItem={renderProvinceItem}
-                        keyExtractor={(item) => item.name}
-                    />
-                </>
-            )}
-
-            {currentLevel === 'district' && selectedProvince?.children && (
-                <>
-                    <Text style={styles.levelTitle}>Huyện</Text>
-                    <Animated.View style={[styles.highlightBorder, districtHighlightStyle]} />
-                    <FlatList
-                        data={selectedProvince.children}
-                        renderItem={renderDistrictItem}
-                        keyExtractor={(item) => item.name}
-                    />
-                </>
-            )}
-
-            {currentLevel === 'ward' && selectedDistrict?.children && (
-                <>
-                    <Text style={styles.levelTitle}>Phường/Xã</Text>
-                    <Animated.View style={[styles.highlightBorder, wardHighlightStyle]} />
-                    <FlatList
-                        data={selectedDistrict.children}
-                        renderItem={renderWardItem}
-                        keyExtractor={(item) => item.name}
-                    />
-                </>
-            )}
+            <View style={{ marginBottom: 12, paddingLeft: 10 }}>
+                {renderNameStep(step)}
+            </View>
+            {renderStep(step)}
         </View>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
+    searchContainer: {
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10
+    },
+
+
     container: {
+        backgroundColor: '#f4f4f4',
+    },
+    section: {
+        backgroundColor: CommonColors.white,
+        paddingVertical: 10,
+    },
+    column: {
+        position: 'relative',
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 50,
+        paddingHorizontal: 8,
+        marginHorizontal: 0
+    },
+    activeRow: {
+        backgroundColor: CommonColors.white,
+        zIndex: 2,
+        height: 50,
+        borderRadius: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    dotColumn: {
+        width: 18,
+        height: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 10,
+        backgroundColor: CommonColors.white,
+        position: 'relative',
+    },
+    dotColumnActive: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: CommonColors.primary,
+        borderRadius: 30
+    },
+    verticalLine: {
+        position: 'absolute',
+        width: 2,
+        backgroundColor: '#CCC',
+        left: 13, // Đã căn giữa với dot
+        zIndex: 1, // Dưới activeRow nhưng trên nền chính
+    },
+    dot: {
+        width: 10,
+        height: 10,
+        borderRadius: 30,
+        backgroundColor: '#DDD',
+        padding: 4,
+        zIndex: 3, // Đảm bảo dot luôn ở trên cùng
+    },
+    textColumn: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#fff',
     },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 16,
-    },
-    headerText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    headerLink: {
-        fontSize: 16,
-        color: '#ff4500',
-    },
-    breadcrumbs: {
-        flexDirection: 'row',
-        marginBottom: 16,
-    },
-    breadcrumbText: {
+    text: {
         fontSize: 14,
-        color: '#000',
+        color: '#333',
     },
-    breadcrumbSeparator: {
-        fontSize: 14,
-        color: '#888',
+    activeBorder: {
+        position: 'absolute',
+        left: 5,
+        right: 5,
+        height: 50,
+        borderWidth: 1,
+        borderColor: CommonColors.primary,
+        borderRadius: 8,
+        zIndex: 2,
     },
-    selectedBreadcrumb: {
-        color: '#ff4500',
+    reset: {
+        marginTop: 16,
+        textAlign: 'center',
+        color: '#007AFF',
+        fontWeight: '500',
     },
-    levelTitle: {
+
+    /** List */
+    sectionTitle: {
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 8,
+        color: '#333',
     },
-    item: {
-        paddingVertical: 16,
+    listItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        padding: 12,
     },
-    itemText: {
+    listItemText: {
         fontSize: 16,
+        color: '#333',
     },
-    checkMark: {
-        fontSize: 16,
-        color: '#ff4500',
-    },
-    highlightBorder: {
-        position: 'absolute',
-        left: 0,
-        width: '100%',
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#ff4500',
-        borderRadius: 8,
-        zIndex: -1,
-    },
-});
+})
 
-export default AddressPicker;
+export default AddressSelector;

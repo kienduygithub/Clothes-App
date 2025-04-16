@@ -15,6 +15,8 @@ type CustomBottomSheetProps = {
     onClose: () => void;
     children: ReactNode;
     height?: number;
+    borderTopLeftRadius?: number;
+    borderTopRightRadius?: number;
 };
 
 const CustomBottomSheet = ({
@@ -22,6 +24,8 @@ const CustomBottomSheet = ({
     onClose,
     children,
     height = SCREEN_HEIGHT * 0.9,
+    borderTopLeftRadius = 0,
+    borderTopRightRadius = 0
 }: CustomBottomSheetProps) => {
     const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
     const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -87,7 +91,7 @@ const CustomBottomSheet = ({
     if (!isVisible) return null;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container]}>
             <TouchableWithoutFeedback onPress={closeBottomSheet}>
                 <Animated.View
                     style={[styles.backdrop, { opacity: backdropOpacity }]}
@@ -102,6 +106,10 @@ const CustomBottomSheet = ({
                         height,
                         transform: [{ translateY }],
                     },
+                    {
+                        borderTopLeftRadius: borderTopLeftRadius,
+                        borderTopRightRadius: borderTopRightRadius
+                    }
                 ]}
             >
                 {children}
@@ -122,8 +130,8 @@ const styles = StyleSheet.create({
     },
     sheet: {
         backgroundColor: '#fff',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
         paddingBottom: 30,
         overflow: 'hidden',
     },
