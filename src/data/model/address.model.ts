@@ -10,6 +10,7 @@ export class AddressModel {
     ward: WardModel | undefined;
     address_detail: string;
     is_default: boolean;
+    created_at: Date | undefined;
 
     constructor(
         id?: number,
@@ -21,6 +22,7 @@ export class AddressModel {
         ward?: WardModel,
         address_detail?: string,
         is_default?: boolean,
+        created_at?: Date
     ) {
         this.id = id ?? 0;
         this.user = user ?? undefined;
@@ -31,6 +33,7 @@ export class AddressModel {
         this.ward = ward ?? undefined;
         this.address_detail = address_detail ?? "";
         this.is_default = is_default ?? false;
+        this.created_at = created_at ?? undefined;
     }
 
     convertObj(data: any) {
@@ -44,6 +47,7 @@ export class AddressModel {
         model.ward = data?.ward ? new WardModel().convertObj(data.ward) : undefined;
         model.address_detail = data?.address_detail ?? "";
         model.is_default = data?.is_default ?? false;
+        model.created_at = data?.createdAt ? new Date(data.createdAt) : undefined;
 
         return model;
     }

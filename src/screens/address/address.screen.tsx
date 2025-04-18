@@ -16,7 +16,8 @@ const AddressScreen = (props: Props) => {
 
     const fetchAddresses = async () => {
         try {
-            const response = await AddressManagement.fetchAddressesByUser();
+            let response = await AddressManagement.fetchAddressesByUser();
+            response = response.sort((a, b) => b.id - a.id);
             setAddresses(response);
         } catch (error) {
             console.log(error);
@@ -28,20 +29,64 @@ const AddressScreen = (props: Props) => {
         router.navigate("/(routes)/cru-address");
     }
 
-    const renderAddressItem = ({ item }: { item: AddressModel }) => {
+    const handleDeleteAddress = async (item: AddressModel, index: number) => {
+        try {
+            await AddressManagement.deleteAddressById(item.id);
+            setAddresses(prev => {
+                let updatedAddresses = [...prev];
+                if (item.is_default) {
+                    const remainingAddresses = updatedAddresses.filter((_, i) => i !== index);
+                    if (remainingAddresses.length > 0) {
+                        const latestAddress = remainingAddresses.reduce<AddressModel | undefined>(
+                            (latest, addr) => {
+                                return !latest || (addr.created_at && latest.created_at && new Date(addr.created_at) > new Date(latest.created_at)) ? addr : latest;
+                            }, undefined
+                        );
+
+                        // Cập nhật is_default cho địa chỉ mới nhất
+                        if (latestAddress) {
+                            updatedAddresses = updatedAddresses.map(addr =>
+                                addr.id === latestAddress.id ? { ...addr, is_default: true } as AddressModel : { ...addr, is_default: false } as AddressModel
+                            );
+                        }
+                    }
+                }
+                updatedAddresses.splice(index, 1);
+
+                return updatedAddresses;
+            });
+
+            showToast("Xóa địa chỉ thành công", "success");
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
+        }
+    }
+
+
+    const renderAddressItem = ({ item, index }: { item: AddressModel, index: number }) => {
         const renderAddressDetails = () => {
             return `${item.address_detail}, ${item.ward?.name}, ${item.district?.name}, ${item.city?.name}`
         }
+
 
         return (
             <View style={styles.addressContainer}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={styles.phoneText}>Kiến duy | {item.phone}</Text>
-                    <TouchableOpacity>
-                        <Text style={{ fontSize: 14, color: CommonColors.primary }}>
-                            Sửa
-                        </Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 5 }}>
+                        <TouchableOpacity>
+                            <Text style={{ fontSize: 14, color: CommonColors.green }}>
+                                Sửa
+                            </Text>
+                        </TouchableOpacity>
+                        <Text style={{ color: 'rgba(0, 0, 0, 0.5)' }}>|</Text>
+                        <TouchableOpacity onPress={() => handleDeleteAddress(item, index)}>
+                            <Text style={{ fontSize: 14, color: CommonColors.red }}>
+                                Xóa
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 <Text style={styles.addressText}>{renderAddressDetails()}</Text>
                 {item.is_default && (
@@ -78,7 +123,7 @@ const AddressScreen = (props: Props) => {
             </Text>
             <FlatList
                 data={addresses}
-                renderItem={({ item }) => renderAddressItem({ item })}
+                renderItem={({ item, index }) => renderAddressItem({ item, index })}
                 keyExtractor={(item) => `${item.id}`}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
                 showsVerticalScrollIndicator={false}
