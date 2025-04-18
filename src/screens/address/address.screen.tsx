@@ -2,63 +2,74 @@ import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import AddressStyle from "./address.style"
 import { CommonColors } from "@/src/common/resource/colors";
 import { AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useToast } from "@/src/customize/toast.context";
+import { useCallback, useEffect, useState } from "react";
+import { AddressModel } from "@/src/data/model/address.model";
+import * as AddressManagement from "@/src/data/management/address.management";
 
 type Props = {}
 
-const addressData: any = [
-    {
-        id: '1',
-        address: 'Dạ Hợp 12 Tằng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình',
-        phone: '(+84) 839 822 333',
-        isDefault: true,
-    },
-    {
-        id: '2',
-        address: 'Dạ Hợp 12 Tằng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình',
-        phone: '(+84) 839 822 333',
-        isDefault: false,
-    },
-];
-
 const AddressScreen = (props: Props) => {
     const { showToast } = useToast();
+    const [addresses, setAddresses] = useState<AddressModel[]>([]);
+
+    const fetchAddresses = async () => {
+        try {
+            const response = await AddressManagement.fetchAddressesByUser();
+            setAddresses(response);
+        } catch (error) {
+            console.log(error);
+            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
+        }
+    }
 
     const navigateToCreateAddress = () => {
         router.navigate("/(routes)/cru-address");
     }
 
-    const renderAddressItem = ({ item }: { item: any }) => (
-        <View style={styles.addressContainer}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={styles.phoneText}>Kiến duy | {item.phone}</Text>
-                <TouchableOpacity>
-                    <Text style={{ fontSize: 14, color: CommonColors.primary }}>
-                        Sửa
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            <Text style={styles.addressText}>{item.address}</Text>
-            {item.isDefault && (
-                <View
-                    style={{
-                        borderRadius: 3,
-                        borderWidth: 1,
-                        borderColor: CommonColors.primary,
-                        width: 70,
-                        height: 26,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
-                    <Text style={styles.defaultLabel}>
-                        Mặc định
-                    </Text>
+    const renderAddressItem = ({ item }: { item: AddressModel }) => {
+        const renderAddressDetails = () => {
+            return `${item.address_detail}, ${item.ward?.name}, ${item.district?.name}, ${item.city?.name}`
+        }
+
+        return (
+            <View style={styles.addressContainer}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={styles.phoneText}>Kiến duy | {item.phone}</Text>
+                    <TouchableOpacity>
+                        <Text style={{ fontSize: 14, color: CommonColors.primary }}>
+                            Sửa
+                        </Text>
+                    </TouchableOpacity>
                 </View>
-            )}
-        </View>
-    );
+                <Text style={styles.addressText}>{renderAddressDetails()}</Text>
+                {item.is_default && (
+                    <View
+                        style={{
+                            borderRadius: 3,
+                            borderWidth: 1,
+                            borderColor: CommonColors.primary,
+                            width: 70,
+                            height: 26,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <Text style={styles.defaultLabel}>
+                            Mặc định
+                        </Text>
+                    </View>
+                )}
+            </View>
+        )
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchAddresses();
+        }, [])
+    )
 
     return (
         <View style={styles.container}>
@@ -66,9 +77,9 @@ const AddressScreen = (props: Props) => {
                 Địa chỉ
             </Text>
             <FlatList
-                data={addressData}
-                renderItem={renderAddressItem}
-                keyExtractor={(item) => item.id}
+                data={addresses}
+                renderItem={({ item }) => renderAddressItem({ item })}
+                keyExtractor={(item) => `${item.id}`}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
                 showsVerticalScrollIndicator={false}
                 ListFooterComponent={() => (
