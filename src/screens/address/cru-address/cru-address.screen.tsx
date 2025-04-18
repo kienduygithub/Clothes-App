@@ -10,8 +10,11 @@ import { AddressType } from '@/src/common/resource/address';
 import CRUAddressStyle from './cru-address.style';
 import CustomBottomSheet from '@/src/components/custom-bottom-sheet/custom-bottom-sheet.component';
 import AddressSelector from '../comp/address-selector.component';
+import { useRoute } from '@react-navigation/native';
+import { ActionWebs } from '@/src/common/resource/action';
 
 type FormData = {
+    id: number;
     name: string;
     phone: string;
     province: number;
@@ -19,11 +22,17 @@ type FormData = {
     ward: number;
     address_details: string;
     address_type: string;
+    is_default: boolean;
 };
 
 type Props = {};
 
 const CRUAddressScreen = (props: Props) => {
+    const route = useRoute();
+    const { id: ADDRESS_ID, action } = route.params as {
+        id: string, /** Do URL */
+        action: string
+    }
     const { showToast } = useToast();
     const [selectedProvince, setSelectedProvince] = useState<CityModel | null>(null);
     const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(null);
@@ -38,6 +47,7 @@ const CRUAddressScreen = (props: Props) => {
         watch,
     } = useForm<FormData>({
         defaultValues: {
+            id: -1,
             name: '',
             phone: '',
             province: -1,
@@ -45,6 +55,7 @@ const CRUAddressScreen = (props: Props) => {
             ward: -1,
             address_details: '',
             address_type: AddressType.HOUSE,
+            is_default: true
         },
         mode: 'onChange',
         reValidateMode: 'onChange',
@@ -71,16 +82,22 @@ const CRUAddressScreen = (props: Props) => {
             return;
         }
         const model = new AddressModel();
-        model.id = 0;
+        model.id = data.id;
         model.name = data.name;
         model.phone = `+84${data.phone}`;
         model.city = selectedProvince;
         model.district = selectedDistrict;
         model.ward = selectedWard;
         model.address_detail = data.address_details;
-        model.is_default = true;
+        model.is_default = data.is_default;
 
         try {
+            if (action && action === ActionWebs.UPDATE) {
+                await AddressManagement.editAddressByUser(model);
+                showToast('Chỉnh sửa địa chỉ thành công', "success");
+                router.back();
+                return
+            }
             await AddressManagement.addAddressByUser(model);
             showToast('Tạo địa chỉ nhận hàng thành công', 'success');
             router.back();
@@ -113,6 +130,47 @@ const CRUAddressScreen = (props: Props) => {
         if (selectedProvince) parts.push(selectedProvince.name);
         return parts.length > 0 ? parts.join(', ') : 'Chọn Tỉnh/Thành phố, Quận/Huyện, Phường/Xã';
     };
+
+    const fetchDetailAddress = async () => {
+        try {
+            const response = await AddressManagement.fetchAddressById(+ADDRESS_ID);
+            console.log(response);
+            setValue("id", response.id);
+            setValue("name", response.name);
+            setValue("phone", response.phone.slice(3));
+            setValue("province", response.city?.id ?? -1);
+            setValue("district", response.district?.id ?? -1);
+            setValue("ward", response.ward?.id ?? -1);
+            setValue("address_details", response.address_detail);
+            setValue("address_type", AddressType.HOUSE);
+            setValue("is_default", response.is_default);
+            setSelectedProvince(response.city ?? null);
+            setSelectedDistrict(response.district ?? null);
+            setSelectedWard(response.ward ?? null);
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau");
+        }
+    }
+
+    const getInitStep = () => {
+        let initStep = 0;
+        if (selectedDistrict) {
+            initStep = 1;
+        }
+
+        if (selectedWard) {
+            initStep = 2;
+        }
+
+        return initStep;
+    }
+
+    useEffect(() => {
+        if (ADDRESS_ID && action === ActionWebs.UPDATE) {
+            fetchDetailAddress()
+        }
+    }, [])
 
     const { height: HEIGHT_SCREEN } = Dimensions.get('window');
 
@@ -266,7 +324,7 @@ const CRUAddressScreen = (props: Props) => {
                 height={HEIGHT_SCREEN - 80}
             >
                 <AddressSelector
-                    initStep={0}
+                    initStep={getInitStep()}
                     initSelectedCity={selectedProvince}
                     initSelectedDistrict={selectedDistrict}
                     initSelectedWard={selectedWard}

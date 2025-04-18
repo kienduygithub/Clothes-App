@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AddressModel } from "@/src/data/model/address.model";
 import * as AddressManagement from "@/src/data/management/address.management";
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
+import { ActionWebs } from "@/src/common/resource/action";
 
 type Props = {}
 
@@ -38,6 +39,16 @@ const AddressScreen = (props: Props) => {
 
     const navigateToCreateAddress = () => {
         router.navigate("/(routes)/cru-address");
+    }
+
+    const navigateToUpdateAddress = (id: number) => {
+        router.navigate({
+            pathname: "/(routes)/cru-address",
+            params: {
+                id: id,
+                action: ActionWebs.UPDATE
+            }
+        })
     }
 
     const openConfirmDeleteDialog = (item: AddressModel, index: number) => {
@@ -108,7 +119,7 @@ const AddressScreen = (props: Props) => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={styles.phoneText}>{item.name} | {item.phone}</Text>
                     <View style={{ flexDirection: 'row', gap: 5 }}>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigateToUpdateAddress(item.id)}>
                             <Text style={{ fontSize: 14, color: CommonColors.green }}>
                                 Sửa
                             </Text>
