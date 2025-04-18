@@ -7,12 +7,23 @@ import { useToast } from "@/src/customize/toast.context";
 import { useCallback, useEffect, useState } from "react";
 import { AddressModel } from "@/src/data/model/address.model";
 import * as AddressManagement from "@/src/data/management/address.management";
+import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
 
 type Props = {}
+
+interface DeleteSelected {
+    item: AddressModel | null,
+    index: number
+}
 
 const AddressScreen = (props: Props) => {
     const { showToast } = useToast();
     const [addresses, setAddresses] = useState<AddressModel[]>([]);
+    const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+    const [deleteSelected, setDeleteSelected] = useState<DeleteSelected>({
+        item: null,
+        index: -1
+    });
 
     const fetchAddresses = async () => {
         try {
@@ -29,12 +40,36 @@ const AddressScreen = (props: Props) => {
         router.navigate("/(routes)/cru-address");
     }
 
-    const handleDeleteAddress = async (item: AddressModel, index: number) => {
+    const openConfirmDeleteDialog = (item: AddressModel, index: number) => {
+        setDeleteDialogVisible(true);
+        setDeleteSelected({
+            item: item,
+            index: index
+        });
+    }
+
+    const handleClose = () => {
+        setDeleteDialogVisible(false);
+    };
+
+    const handleDeleteAddress = async () => {
+        if (deleteSelected.item === null || deleteSelected.index < 0) {
+            setDeleteDialogVisible(false);
+            return;
+        }
+
+        let item = deleteSelected.item;
+        let index = deleteSelected.index;
+        setDeleteSelected({
+            item: null,
+            index: -1
+        })
         try {
-            await AddressManagement.deleteAddressById(item.id);
+            setDeleteDialogVisible(false);
+            await AddressManagement.deleteAddressById(item?.id ?? 0);
             setAddresses(prev => {
                 let updatedAddresses = [...prev];
-                if (item.is_default) {
+                if (item?.is_default) {
                     const remainingAddresses = updatedAddresses.filter((_, i) => i !== index);
                     if (remainingAddresses.length > 0) {
                         const latestAddress = remainingAddresses.reduce<AddressModel | undefined>(
@@ -55,14 +90,12 @@ const AddressScreen = (props: Props) => {
 
                 return updatedAddresses;
             });
-
             showToast("Xóa địa chỉ thành công", "success");
         } catch (error) {
             console.log(error);
             showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
         }
     }
-
 
     const renderAddressItem = ({ item, index }: { item: AddressModel, index: number }) => {
         const renderAddressDetails = () => {
@@ -73,7 +106,7 @@ const AddressScreen = (props: Props) => {
         return (
             <View style={styles.addressContainer}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={styles.phoneText}>Kiến duy | {item.phone}</Text>
+                    <Text style={styles.phoneText}>{item.name} | {item.phone}</Text>
                     <View style={{ flexDirection: 'row', gap: 5 }}>
                         <TouchableOpacity>
                             <Text style={{ fontSize: 14, color: CommonColors.green }}>
@@ -81,7 +114,7 @@ const AddressScreen = (props: Props) => {
                             </Text>
                         </TouchableOpacity>
                         <Text style={{ color: 'rgba(0, 0, 0, 0.5)' }}>|</Text>
-                        <TouchableOpacity onPress={() => handleDeleteAddress(item, index)}>
+                        <TouchableOpacity onPress={() => openConfirmDeleteDialog(item, index)}>
                             <Text style={{ fontSize: 14, color: CommonColors.red }}>
                                 Xóa
                             </Text>
@@ -133,6 +166,15 @@ const AddressScreen = (props: Props) => {
                         <Text style={styles.addButtonText}>Thêm Địa Chỉ Mới</Text>
                     </TouchableOpacity>
                 )}
+            />
+            <DialogNotification
+                visible={deleteDialogVisible}
+                title="Xóa địa chỉ"
+                message="Thao tác không thể hoàn tác, Tiếp tục?"
+                textClose="Đóng"
+                textConfirm="Đồng ý"
+                onConfirm={handleDeleteAddress}
+                onClose={handleClose}
             />
         </View>
     )
