@@ -81,6 +81,7 @@ const ShopScreen = (props: Props) => {
                 </View>
                 <View style={styles.shopContentView}>
                     <TabView
+                        swipeEnabled={false}
                         navigationState={{ index, routes }}
                         renderScene={SceneMap({
                             shop: () => (<TabShopComponent shop={shop} shop_id={SHOP_ID} preImage={preImage} />),
