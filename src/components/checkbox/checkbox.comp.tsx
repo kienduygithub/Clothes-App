@@ -18,7 +18,7 @@ const CheckboxComponent = ({
 }: Props) => {
 
     return (
-        <TouchableOpacity>
+        <TouchableOpacity style={{ width: 26 }}>
             <BouncyCheckbox
                 size={24}
                 fillColor={CommonColors.primary}

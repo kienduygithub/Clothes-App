@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import PaymentStyle from "./payment.style"
-import { router, Stack } from "expo-router";
+import { router, Stack, useFocusEffect } from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import { formatPriceRender } from "@/src/common/utils/currency.helper";
 import { AppConfig } from "@/src/common/config/app.config";
@@ -34,13 +34,17 @@ const PaymentScreen = (props: Props) => {
     const [selectedAddress, setSelectedAddress] = useState<AddressModel | null>(null);
     const [isVisibleSelectAddressNotify, setIsVisibleSelectAddressNotify] = useState(false);
 
-    useEffect(() => {
-        fetchPreImage();
-        fetchDefaultAddressUser();
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            fetchPreImage();
+            fetchDefaultAddressUser();
+        }, [])
+    )
 
     const fetchDefaultAddressUser = async () => {
         if (address_id) {
+            const selected = await AddressManagement.fetchAddressById(+address_id);
+            setSelectedAddress(selected);
             return;
         }
 
@@ -49,6 +53,8 @@ const PaymentScreen = (props: Props) => {
             setTimeout(() => {
                 if (defaultAddress) {
                     setSelectedAddress(defaultAddress);
+                } else {
+                    setSelectedAddress(null);
                 }
             }, 500);
 
@@ -56,6 +62,16 @@ const PaymentScreen = (props: Props) => {
             console.log(error);
             showToast("Oops! Hệ thống đang bận, quay lại sau");
         }
+    }
+
+    const navigateToSelectAddressScreen = () => {
+        router.navigate({
+            pathname: "/(routes)/select-address",
+            params: {
+                address_id: selectedAddress?.id ?? -1,
+                cart_shops, subtotal, discount, final_total
+            }
+        })
     }
 
     const calculateTotalProduct = () => {
@@ -78,7 +94,7 @@ const PaymentScreen = (props: Props) => {
 
         try {
             const orderSuccess = await CartManagement.paymentCart(
-                null, /** Bổ sung sau */
+                selectedAddress.id, /** Bổ sung sau */
                 parsedCartShops,
                 subtotal,
                 discount,
@@ -125,6 +141,7 @@ const PaymentScreen = (props: Props) => {
                     <View style={[styles.section, { paddingHorizontal: 10 }]}>
                         <TouchableOpacity
                             style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}
+                            onPress={() => navigateToSelectAddressScreen()}
                         >
                             <View style={{ flexDirection: 'row', gap: 5, width: '90%' }}>
                                 <Ionicons style={{ marginTop: 3 }} name="location-sharp" size={18} color={CommonColors.primary} />

@@ -1,7 +1,7 @@
 import { CommonColors } from "@/src/common/resource/colors";
 import { StyleSheet } from "react-native";
 
-const AddressStyle = StyleSheet.create({
+const SelectAddressStyle = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
@@ -53,4 +53,4 @@ const AddressStyle = StyleSheet.create({
     },
 });
 
-export default AddressStyle;
+export default SelectAddressStyle;

@@ -81,6 +81,9 @@ function RootLayoutNav() {
 
           <Stack.Screen
             name="(routes)/product-details/index"
+            options={{
+              title: 'Chi tiết sản phẩm'
+            }}
           />
 
           <Stack.Screen
@@ -113,6 +116,14 @@ function RootLayoutNav() {
               title: 'CRU địa chỉ người dùng',
               headerTitleAlign: 'center',
               headerShown: false
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/select-address/index"
+            options={{
+              title: 'Chọn địa chỉ',
+              headerTitleAlign: 'center',
             }}
           />
 
