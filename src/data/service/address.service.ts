@@ -71,6 +71,19 @@ export const fetchAddressById = async (address_id: number) => {
         throw error;
     }
 }
+export const fetchDefaultAddress = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = ServiceCore.GET(
+            `${domain}`,
+            `address/default`,
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
 
 export const addAddressByUser = async (data: AddressModel) => {
     try {

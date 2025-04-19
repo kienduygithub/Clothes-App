@@ -61,6 +61,23 @@ export const fetchAddressById = async (address_id: number) => {
     }
 }
 
+export const fetchDefaultAddress = async () => {
+    try {
+        const result = await AddressService.fetchDefaultAddress();
+        const response: AddressModel[] = result?.addresses?.map(
+            (address: any) => new AddressModel().convertObj(address)
+        ) ?? [];
+
+        if (response.length === 0) {
+            return undefined;
+        }
+
+        return response[0];
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const addAddressByUser = async (data: AddressModel) => {
     try {
         await AddressService.addAddressByUser(data);

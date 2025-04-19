@@ -12,6 +12,7 @@ import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 import { PaymentMethod } from "@/src/common/resource/payment_method";
 import { useToast } from "@/src/customize/toast.context";
 import * as CartManagement from "@/src/data/management/cart.management";
+import * as AddressManagement from "@/src/data/management/address.management";
 import { AddressModel } from "@/src/data/model/address.model";
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
 
@@ -19,11 +20,12 @@ type Props = {}
 
 const PaymentScreen = (props: Props) => {
     const route = useRoute();
-    const { cart_shops, subtotal, discount, final_total } = route.params as {
+    const { cart_shops, subtotal, discount, final_total, address_id } = route.params as {
         cart_shops: string;
         subtotal: number;
         discount: number;
         final_total: number;
+        address_id: number;
     };
     const parsedCartShops: CartShopFinalType[] = JSON.parse(cart_shops);
     const { showToast } = useToast();
@@ -34,7 +36,27 @@ const PaymentScreen = (props: Props) => {
 
     useEffect(() => {
         fetchPreImage();
+        fetchDefaultAddressUser();
     }, [])
+
+    const fetchDefaultAddressUser = async () => {
+        if (address_id) {
+            return;
+        }
+
+        try {
+            const defaultAddress = await AddressManagement.fetchDefaultAddress();
+            setTimeout(() => {
+                if (defaultAddress) {
+                    setSelectedAddress(defaultAddress);
+                }
+            }, 500);
+
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau");
+        }
+    }
 
     const calculateTotalProduct = () => {
         let total = 0;
@@ -109,7 +131,7 @@ const PaymentScreen = (props: Props) => {
                                 {selectedAddress ? (
                                     <View>
                                         <Text style={styles.sectionTitle}>{selectedAddress.name} (+84) {selectedAddress.phone.slice(3)}</Text>
-                                        <Text style={styles.addressText}>
+                                        <Text style={styles.addressText} ellipsizeMode="tail" numberOfLines={2} >
                                             {`${selectedAddress.address_detail}, ${selectedAddress.city?.name}, ${selectedAddress.district?.name}, ${selectedAddress.ward?.name}`}
                                         </Text>
                                     </View>
