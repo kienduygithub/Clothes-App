@@ -6,13 +6,14 @@ import { useRoute } from "@react-navigation/native";
 import { formatPriceRender } from "@/src/common/utils/currency.helper";
 import { AppConfig } from "@/src/common/config/app.config";
 import { CartShopFinalType } from "@/src/data/types/global";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather, FontAwesome5, FontAwesome6, Ionicons } from "@expo/vector-icons";
+import { AntDesign, Feather, FontAwesome5, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import CheckboxComponent from "@/src/components/checkbox/checkbox.comp";
 import { PaymentMethod } from "@/src/common/resource/payment_method";
 import { useToast } from "@/src/customize/toast.context";
 import * as CartManagement from "@/src/data/management/cart.management";
+import { AddressModel } from "@/src/data/model/address.model";
+import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
 
 type Props = {}
 
@@ -28,6 +29,8 @@ const PaymentScreen = (props: Props) => {
     const { showToast } = useToast();
     const [preImage, setPreImage] = useState("");
     const [usePaymentMethod, setUsePaymentMethod] = useState(PaymentMethod.COD);
+    const [selectedAddress, setSelectedAddress] = useState<AddressModel | null>(null);
+    const [isVisibleSelectAddressNotify, setIsVisibleSelectAddressNotify] = useState(false);
 
     useEffect(() => {
         fetchPreImage();
@@ -46,6 +49,11 @@ const PaymentScreen = (props: Props) => {
     }
 
     const onHandleOrder = async () => {
+        if (!selectedAddress) {
+            setIsVisibleSelectAddressNotify(true);
+            return;
+        }
+
         try {
             const orderSuccess = await CartManagement.paymentCart(
                 null, /** Bổ sung sau */
@@ -92,17 +100,29 @@ const PaymentScreen = (props: Props) => {
                     showsVerticalScrollIndicator={false}
                 >
                     {/* Phần 1: Địa chỉ */}
-                    <View style={styles.section}>
+                    <View style={[styles.section, { paddingHorizontal: 10 }]}>
                         <TouchableOpacity
-                            style={{ flexDirection: 'row', gap: 5 }}
+                            style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}
                         >
-                            <Ionicons name="location-sharp" size={18} color={CommonColors.primary} />
-                            <View>
-                                <Text style={styles.sectionTitle}>Kiến duy (+84) 839 822 333</Text>
-                                <Text style={styles.addressText}>
-                                    Dạ Hợp 12 Tầng, Phường Hữu Nghị, Thành Phố Hòa Bình, Hòa Bình
-                                </Text>
+                            <View style={{ flexDirection: 'row', gap: 5, width: '90%' }}>
+                                <Ionicons style={{ marginTop: 3 }} name="location-sharp" size={18} color={CommonColors.primary} />
+                                {selectedAddress ? (
+                                    <View>
+                                        <Text style={styles.sectionTitle}>{selectedAddress.name} (+84) {selectedAddress.phone.slice(3)}</Text>
+                                        <Text style={styles.addressText}>
+                                            {`${selectedAddress.address_detail}, ${selectedAddress.city?.name}, ${selectedAddress.district?.name}, ${selectedAddress.ward?.name}`}
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <View>
+                                        <Text style={styles.sectionTitle}>Địa chỉ giao hàng</Text>
+                                        <Text style={[styles.addressText, { color: CommonColors.primary }]}>
+                                            Chọn địa chỉ
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
+                            <AntDesign name="right" size={16} color={CommonColors.lightGray} />
                         </TouchableOpacity>
                     </View>
 
@@ -268,6 +288,15 @@ const PaymentScreen = (props: Props) => {
                     <Text style={styles.orderButtonText}>ĐẶT HÀNG</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Notify chọn địa chỉ */}
+            <DialogNotification
+                visible={isVisibleSelectAddressNotify}
+                type="warning"
+                message="Vui lòng chọn ít nhất một địa chỉ giao hàng"
+                onConfirm={() => setIsVisibleSelectAddressNotify(false)}
+                textConfirm="Đóng"
+            />
         </>
     )
 }

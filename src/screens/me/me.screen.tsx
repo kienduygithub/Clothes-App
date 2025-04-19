@@ -73,7 +73,7 @@ const MeScreen = (props: Props) => {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/address')}>
                         <FontAwesome name="address-card-o" size={20} color={CommonColors.black} />
-                        <Text style={styles.buttonText}>Danh sách địa chỉ</Text>
+                        <Text style={styles.buttonText}>Địa chỉ giao hàng</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button}>
                         <Ionicons name="card-outline" size={20} color={CommonColors.black} />
