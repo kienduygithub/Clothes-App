@@ -85,7 +85,7 @@ const ShopScreen = (props: Props) => {
                         navigationState={{ index, routes }}
                         renderScene={SceneMap({
                             shop: () => (<TabShopComponent shop={shop} shop_id={SHOP_ID} preImage={preImage} />),
-                            product: TabProductComponent,
+                            product: () => (<TabProductComponent shop_id={SHOP_ID} preImage={preImage} />),
                             category: TabCategoryComponent
                         })}
                         onIndexChange={setIndex}

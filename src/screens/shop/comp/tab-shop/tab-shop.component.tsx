@@ -84,6 +84,7 @@ const TabShopComponent = ({
             fetchLatestProducts();
         }
     }, [])
+
     return (
         <ScrollView style={styles.container}>
             {coupons.length > 0 && (
