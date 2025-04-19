@@ -5,7 +5,7 @@ import { Ionicons, Octicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as ShopManagement from "@/src/data/management/shop.management";
 import ShopHeaderComponent from "./comp/shop-header/shop-header.component";
 import { AppConfig } from "@/src/common/config/app.config";
@@ -17,12 +17,6 @@ import TabCategoryComponent from "./comp/tab-category/tab-category.component";
 type Props = {}
 
 const { width: WIDTH_SCREEN } = Dimensions.get('screen');
-
-const renderScene = SceneMap({
-    shop: TabShopComponent,
-    product: TabProductComponent,
-    category: TabCategoryComponent
-});
 
 const routes = [
     { key: 'shop', title: 'Cửa hàng' },
@@ -36,9 +30,9 @@ const ShopScreen = (props: Props) => {
     }
     const { showToast } = useToast();
     const [index, setIndex] = useState(0);
+    const [preImage, setPreImage] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [shop, setShop] = useState<ShopModel | null>(null);
-    const [preImage, setPreImage] = useState('');
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
@@ -47,7 +41,6 @@ const ShopScreen = (props: Props) => {
     const fetchShopById = async () => {
         try {
             const response = await ShopManagement.fetchShopById(+SHOP_ID);
-            console.log(response);
             if (response) {
                 setShop(response);
             }
@@ -56,6 +49,8 @@ const ShopScreen = (props: Props) => {
             showToast("Oops! Hệ thống đang bận, quay lại sau");
         }
     }
+
+
 
     useEffect(() => {
         fetchPreImage();
@@ -87,7 +82,11 @@ const ShopScreen = (props: Props) => {
                 <View style={styles.shopContentView}>
                     <TabView
                         navigationState={{ index, routes }}
-                        renderScene={renderScene}
+                        renderScene={SceneMap({
+                            shop: () => (<TabShopComponent shop={shop} shop_id={SHOP_ID} preImage={preImage} />),
+                            product: TabProductComponent,
+                            category: TabCategoryComponent
+                        })}
                         onIndexChange={setIndex}
                         initialLayout={{ width: WIDTH_SCREEN }}
                         renderTabBar={props => (
