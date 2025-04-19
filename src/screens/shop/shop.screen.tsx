@@ -86,7 +86,7 @@ const ShopScreen = (props: Props) => {
                         renderScene={SceneMap({
                             shop: () => (<TabShopComponent shop={shop} shop_id={SHOP_ID} preImage={preImage} />),
                             product: () => (<TabProductComponent shop_id={SHOP_ID} preImage={preImage} />),
-                            category: TabCategoryComponent
+                            category: () => (<TabCategoryComponent shop_id={SHOP_ID} preImage={preImage} />)
                         })}
                         onIndexChange={setIndex}
                         initialLayout={{ width: WIDTH_SCREEN }}
