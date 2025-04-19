@@ -1,15 +1,51 @@
 import { CommonColors } from "@/src/common/resource/colors";
+import { useToast } from "@/src/customize/toast.context";
+import { ShopModel } from "@/src/data/model/shop.model";
 import { Ionicons, Octicons } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import * as ShopManagement from "@/src/data/management/shop.management";
+import ShopHeaderComponent from "./comp/shop-header/shop-header.component";
+import { AppConfig } from "@/src/common/config/app.config";
 
 type Props = {}
 
 const { width: WIDTH_SCREEN } = Dimensions.get('screen');
 
 const ShopScreen = (props: Props) => {
+    const { shop_id: SHOP_ID } = useRoute().params as {
+        shop_id: number
+    }
+    const { showToast } = useToast();
     const [searchInput, setSearchInput] = useState('');
+    const [shop, setShop] = useState<ShopModel | null>(null);
+    const [preImage, setPreImage] = useState('');
+
+    const fetchPreImage = () => {
+        setPreImage(new AppConfig().getPreImage());
+    }
+
+    const fetchShopById = async () => {
+        try {
+            const response = await ShopManagement.fetchShopById(+SHOP_ID);
+            console.log(response);
+            if (response) {
+                setShop(response);
+            }
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau");
+        }
+    }
+
+    useEffect(() => {
+        fetchPreImage();
+        if (SHOP_ID) {
+            fetchShopById();
+        }
+    }, [])
 
     return (
         <>
@@ -28,6 +64,7 @@ const ShopScreen = (props: Props) => {
                 </View>
             </View>
             <View>
+                <ShopHeaderComponent shop={shop} preImage={preImage} />
                 <Text>Shop Screen</Text>
             </View>
         </>
@@ -46,7 +83,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 10,
         paddingTop: 20,
-        position: 'absolute'
+        position: 'absolute',
+        zIndex: 10000000000
     },
     backBtn: {
         position: 'absolute',

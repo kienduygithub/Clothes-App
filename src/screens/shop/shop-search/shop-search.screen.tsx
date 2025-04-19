@@ -1,7 +1,6 @@
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { TextInput, TouchableOpacity, View } from "react-native";
 import ShopSearchStyle from "./shop-search.style";
 import { Ionicons, Octicons } from "@expo/vector-icons";
-import { Dimensions } from "react-native";
 import { useState } from "react";
 import { CommonColors } from "@/src/common/resource/colors";
 import { router } from "expo-router";
