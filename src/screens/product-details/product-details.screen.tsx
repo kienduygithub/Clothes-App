@@ -118,6 +118,19 @@ const ProductDetailScreen = (props: Props) => {
         }
     }
 
+    const navigateToShop = (id: number) => {
+        router.navigate({
+            pathname: "/(routes)/shop",
+            params: {
+                shop_id: id
+            }
+        })
+    }
+
+    const navigateToCart = () => {
+        router.navigate("/(tabs)/cart");
+    }
+
     return (
         <>
             <Stack.Screen options={{
@@ -132,7 +145,7 @@ const ProductDetailScreen = (props: Props) => {
                 headerRight: () => (
                     <TouchableOpacity
                         style={styles.buttonHeader}
-                        onPress={() => router.back()}
+                        onPress={() => navigateToCart()}
                         onLayout={(event) => {
                             const { x, y } = event.nativeEvent.layout;
                             setCartPosition({ x, y });
@@ -257,7 +270,7 @@ const ProductDetailScreen = (props: Props) => {
                                         <Text style={styles.shopAddressText}>{product.shop?.contact_address}</Text>
                                     </View>
                                 </View>
-                                <TouchableOpacity style={styles.buttonShopView}>
+                                <TouchableOpacity style={styles.buttonShopView} onPress={() => navigateToShop(product.shop?.id ?? -1)}>
                                     <Text style={styles.buttonShopViewText}>Xem cửa hàng</Text>
                                 </TouchableOpacity>
                             </View>

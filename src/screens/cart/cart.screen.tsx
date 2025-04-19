@@ -470,6 +470,15 @@ const CartScreen = (props: Props) => {
         }
     }
 
+    const navigateToShop = (id: number) => {
+        router.navigate({
+            pathname: "/(routes)/shop",
+            params: {
+                shop_id: id
+            }
+        })
+    }
+
     const headerHeight = useHeaderHeight();
     const shouldDisableCheckout = isCartEmpty() || isAnySelectedOutOfStock();
 
@@ -505,7 +514,9 @@ const CartScreen = (props: Props) => {
                                                 toggleCheckedFunc={(isChecked) => handleToggleCartShop(item.id, isChecked)}
                                                 disabled={isShopOutOfStock(item.cart_items)}
                                             />
-                                            <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
+                                            <TouchableOpacity onPress={() => navigateToShop(item.shop?.id ?? -1)}>
+                                                <Text style={styles.shopNameText}>{item.shop?.shop_name}</Text>
+                                            </TouchableOpacity>
                                         </View>
                                         <View style={styles.listCartItemWrapper}>
                                             {item.cart_items.map((cart_item, index) => {

@@ -86,6 +86,8 @@ function RootLayoutNav() {
             }}
           />
 
+          {/* Cart & Payment */}
+
           <Stack.Screen
             name="(routes)/payment/index"
             options={{
@@ -101,6 +103,8 @@ function RootLayoutNav() {
               headerShown: false,
             }}
           />
+
+          {/* Address */}
 
           <Stack.Screen
             name="(routes)/address/index"
@@ -124,6 +128,26 @@ function RootLayoutNav() {
             options={{
               title: 'Chọn địa chỉ',
               headerTitleAlign: 'center',
+            }}
+          />
+
+          {/* Shop */}
+
+          <Stack.Screen
+            name="(routes)/shop/index"
+            options={{
+              title: 'Cửa hàng',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/shop-search/index"
+            options={{
+              title: 'Nơi tìm kiếm sản phẩm cửa hàng',
+              headerTitleAlign: 'center',
+              headerShown: false
             }}
           />
 
