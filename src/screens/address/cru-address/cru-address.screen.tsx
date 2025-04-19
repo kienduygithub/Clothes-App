@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Animated, Text, TextInput, View, TouchableOpacity, Dimensions } from 'react-native';
+import { Text, TextInput, View, TouchableOpacity, Dimensions, Switch, StyleSheet } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import * as AddressManagement from '@/src/data/management/address.management';
 import { useToast } from '@/src/customize/toast.context';
@@ -12,6 +12,8 @@ import CustomBottomSheet from '@/src/components/custom-bottom-sheet/custom-botto
 import AddressSelector from '../comp/address-selector.component';
 import { useRoute } from '@react-navigation/native';
 import { ActionWebs } from '@/src/common/resource/action';
+import SwitchComponent from '@/src/components/switch/switch.component';
+import DialogNotification from '@/src/components/dialog-notification/dialog-notification.component';
 
 type FormData = {
     id: number;
@@ -38,6 +40,7 @@ const CRUAddressScreen = (props: Props) => {
     const [selectedDistrict, setSelectedDistrict] = useState<DistrictModel | null>(null);
     const [selectedWard, setSelectedWard] = useState<WardModel | null>(null);
     const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+    const [isVisibleDefaultAddress, setIsVibleDefaultAddress] = useState(false);
 
     const {
         control,
@@ -55,13 +58,14 @@ const CRUAddressScreen = (props: Props) => {
             ward: -1,
             address_details: '',
             address_type: AddressType.HOUSE,
-            is_default: true
+            is_default: false
         },
         mode: 'onChange',
         reValidateMode: 'onChange',
     });
 
     const address_type = watch('address_type');
+    const is_default_watch = watch('is_default');
 
     const openAddressBottomSheet = () => {
         setIsBottomSheetVisible(true);
@@ -134,7 +138,6 @@ const CRUAddressScreen = (props: Props) => {
     const fetchDetailAddress = async () => {
         try {
             const response = await AddressManagement.fetchAddressById(+ADDRESS_ID);
-            console.log(response);
             setValue("id", response.id);
             setValue("name", response.name);
             setValue("phone", response.phone.slice(3));
@@ -166,6 +169,14 @@ const CRUAddressScreen = (props: Props) => {
         return initStep;
     }
 
+    const onChangeToggleDefault = (value: boolean, onChange: (value: boolean) => void) => {
+        if (action === ActionWebs.UPDATE && is_default_watch.valueOf()) {
+            setIsVibleDefaultAddress(true);
+            return;
+        }
+        onChange(value)
+    }
+
     useEffect(() => {
         if (ADDRESS_ID && action === ActionWebs.UPDATE) {
             fetchDetailAddress()
@@ -181,7 +192,13 @@ const CRUAddressScreen = (props: Props) => {
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                     <Ionicons name="arrow-back-sharp" size={24} color="black" />
                 </TouchableOpacity>
-                <Text style={styles.paymentHeaderText}>Thêm địa chỉ mới</Text>
+                <Text style={styles.paymentHeaderText}>
+                    {
+                        action === ActionWebs.UPDATE
+                            ? 'Sửa địa chỉ'
+                            : 'Thêm địa chỉ mới'
+                    }
+                </Text>
             </View>
 
             <View style={styles.container}>
@@ -285,6 +302,18 @@ const CRUAddressScreen = (props: Props) => {
                 </View>
                 {errors.address_details && <Text style={styles.error}>{errors.address_details.message}</Text>}
 
+                {/* Địa chỉ mặc định */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10 }}>
+                    <Text style={styles.label}>Đặt làm địa chỉ mặc định</Text>
+                    <Controller
+                        control={control}
+                        name="is_default"
+                        render={({ field: { onChange, value } }) => (
+                            <SwitchComponent value={value} onChange={(value) => onChangeToggleDefault(value, onChange)} />
+                        )}
+                    />
+                </View>
+
                 {/* Loại địa chỉ */}
                 <Text style={styles.label}>Loại địa chỉ *</Text>
                 <View style={styles.addressTypeContainer}>
@@ -334,6 +363,14 @@ const CRUAddressScreen = (props: Props) => {
                     closeBottomSheet={closeAddressBottomSheet}
                 />
             </CustomBottomSheet>
+
+            <DialogNotification
+                type='warning'
+                visible={isVisibleDefaultAddress}
+                message='Để hủy địa chỉ mặc định này, vui lòng chọn địa chỉ khác làm địa chỉ mặc định mới'
+                onConfirm={() => setIsVibleDefaultAddress(false)}
+                textConfirm='Đóng'
+            />
         </>
     );
 };

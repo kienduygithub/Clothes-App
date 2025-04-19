@@ -180,8 +180,7 @@ const AddressScreen = (props: Props) => {
             />
             <DialogNotification
                 visible={deleteDialogVisible}
-                title="Xóa địa chỉ"
-                message="Thao tác không thể hoàn tác, Tiếp tục?"
+                message="Thao tác sẽ làm dữ liệu biến mất hoàn toàn và không thể hoàn tác"
                 textClose="Đóng"
                 textConfirm="Đồng ý"
                 onConfirm={handleDeleteAddress}
