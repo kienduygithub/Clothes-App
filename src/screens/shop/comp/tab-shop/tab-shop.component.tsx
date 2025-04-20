@@ -4,7 +4,6 @@ import { CouponModel } from "@/src/data/model/coupon.model";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/src/customize/toast.context";
 import * as CouponManagement from "@/src/data/management/coupon.management";
-import * as ProductManagement from "@/src/data/management/product.management";
 import * as ShopManagement from "@/src/data/management/shop.management";
 import CouponItemComponent from "../coupon-item/coupon-item.component";
 import { ShopModel } from "@/src/data/model/shop.model";
