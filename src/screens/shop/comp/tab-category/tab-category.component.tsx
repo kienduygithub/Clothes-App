@@ -37,7 +37,7 @@ const TabCategoryComponent = ({
             <View style={styles.section}>
                 {categories.map((category, index) => (
                     <>
-                        <TouchableOpacity style={styles.itemWrapper} key={`${index}-${category.id}`}>
+                        <TouchableOpacity style={styles.itemWrapper} key={`${index}-${category.id}-${category.category_name}`}>
                             <Image source={{ uri: `${preImage}/${category.image_url}` }} style={styles.itemImage} />
                             <View style={styles.textWrapper}>
                                 <Text style={styles.itemTitle}>{category.category_name}</Text>

@@ -1,5 +1,7 @@
+import { PaginateModel } from "@/src/common/model/paginate.model";
 import { CartItemModel } from "../model/cart.model";
 import { CouponModel } from "../model/coupon.model";
+import { ProductModel } from "../model/product.model";
 import { ShopModel } from "../model/shop.model";
 
 export interface ProductType {
@@ -59,4 +61,9 @@ type CartShopFinalType = {
     shop_total: number;
     shop_discount: number;
     shop_final_total: number;
+}
+
+type ProductPaginate = {
+    products: ProductModel[];
+    paginate: PaginateModel;
 }

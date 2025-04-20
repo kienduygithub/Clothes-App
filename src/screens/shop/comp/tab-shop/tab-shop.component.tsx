@@ -1,15 +1,17 @@
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CommonColors } from "@/src/common/resource/colors";
 import { CouponModel } from "@/src/data/model/coupon.model";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/src/customize/toast.context";
 import * as CouponManagement from "@/src/data/management/coupon.management";
 import * as ProductManagement from "@/src/data/management/product.management";
+import * as ShopManagement from "@/src/data/management/shop.management";
 import CouponItemComponent from "../coupon-item/coupon-item.component";
 import { ShopModel } from "@/src/data/model/shop.model";
 import { ProductModel } from "@/src/data/model/product.model";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import ProductItemComponent from "@/src/screens/home/comp/product-item/product-item.comp";
+import { PaginateModel } from "@/src/common/model/paginate.model";
 
 type Props = {
     shop: ShopModel | null;
@@ -26,8 +28,28 @@ const TabShopComponent = ({
 }: Props) => {
     const { showToast } = useToast();
     const [coupons, setCoupons] = useState<CouponModel[]>([]);
-    const [popularProducts, setPopularProducts] = useState<ProductModel[]>([]);
     const [latestProducts, setLatestProducts] = useState<ProductModel[]>([]);
+    const [popularProducts, setPopularProducts] = useState<ProductModel[]>([]);
+    const [paginatePopular, setPaginatePopular] = useState<PaginateModel>(
+        new PaginateModel().convertObj({
+            currentPage: 1,
+            limit: 10,
+            totalItems: 0,
+            totalPages: 1
+        })
+    )
+    const [paginateLatest, setPaginateLatest] = useState<PaginateModel>(
+        new PaginateModel().convertObj({
+            currentPage: 1,
+            limit: 10,
+            totalItems: 0,
+            totalPages: 1
+        })
+    )
+    const [isEndReachedPopular, setIsEndReachedPopular] = useState(false);
+    const [isEndReachedLatest, setIsEndReachedLatest] = useState(false);
+    const isFetchingPopular = useRef(false);
+    const isFetchingLatest = useRef(false);
 
     const fetchCoupons = async () => {
         try {
@@ -57,33 +79,84 @@ const TabShopComponent = ({
         }
     }
 
-    const fetchPopularProducts = async () => {
+    const fetchPopularProducts = async (page: number) => {
         try {
-            const response = await ProductManagement.fetchProductsByShopId(shop_id);
-            setPopularProducts(response);
+            isFetchingPopular.current = true;
+            const response = await ShopManagement.fetchPopularProductsByShop(
+                shop_id,
+                page,
+                paginatePopular.limit
+            );
+            let products = response.products;
+            let paginate = response.paginate;
+            setPopularProducts(prev => [...prev, ...products]);
+            setPaginatePopular(prev => ({
+                ...prev,
+                totalItems: paginate.totalItems,
+                totalPages: paginate.totalPages,
+                currentPage: page
+            } as PaginateModel));
+
+            if (page >= paginate.totalPages) {
+                setIsEndReachedPopular(true);
+            }
+            isFetchingPopular.current = false;
         } catch (error) {
             console.log(error);
             showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            isFetchingPopular.current = false;
         }
     }
 
-    const fetchLatestProducts = async () => {
+    const fetchLatestProducts = async (page: number) => {
         try {
-            const response = await ProductManagement.fetchProductsByShopId(shop_id);
-            setLatestProducts(response);
+            isFetchingLatest.current = false;
+            const response = await ShopManagement.fetchLatestProductsByShop(
+                shop_id,
+                page,
+                paginateLatest.limit
+            );
+            let products = response.products;
+            let paginate = response.paginate;
+            setLatestProducts(prev => [...prev, ...products]);
+            setPaginateLatest(prev => ({
+                ...prev,
+                totalItems: paginate.totalItems,
+                totalPages: paginate.totalPages,
+                currentPage: page
+            } as PaginateModel));
+
+            if (page >= response.paginate.totalPages) {
+                setIsEndReachedLatest(true);
+            }
+            isFetchingPopular.current = false;
         } catch (error) {
             console.log(error);
             showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            isFetchingPopular.current = false;
+        }
+    }
+
+    const handleScrollPopular = async (event: any) => {
+        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+        const scrollPosition = contentOffset.x;
+        const maxScroll = contentSize.width - layoutMeasurement.width;
+
+        /** Nếu vuốt gần đến cuối (cách mép phải 100px) */
+        if (maxScroll - scrollPosition < 200 && !isFetchingPopular.current) {
+            const nextPage = paginatePopular.currentPage + 1;
+            await fetchPopularProducts(nextPage);
         }
     }
 
     useEffect(() => {
         if (shop_id) {
             fetchCoupons();
-            fetchPopularProducts();
-            fetchLatestProducts();
+            fetchPopularProducts(1); /** Tải trang đầu tiên */
+            fetchLatestProducts(1); /** Tải trang đầu tiên */
         }
     }, [])
+
 
     return (
         <ScrollView style={styles.container}>
@@ -122,37 +195,42 @@ const TabShopComponent = ({
             </View>
             {/* Sản phẩm bán chạy */}
             <View style={[styles.section, { paddingHorizontal: 0 }]}>
-                <View style={{ paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                     <FontAwesome5 name="cubes" size={16} color={CommonColors.black} />
                     <Text style={[styles.sectionHeaderText]}>
-                        Bán chạy
+                        Sản phẩm bán chạy
                     </Text>
                 </View>
-                <View style={{ marginTop: 5, backgroundColor: CommonColors.gray, height: 0.5 }}></View>
                 <ScrollView
                     horizontal
-                    showsHorizontalScrollIndicator={false}
+                    showsHorizontalScrollIndicator
                     style={{ paddingLeft: 16 }}
+                    scrollEventThrottle={16}
                 >
                     {popularProducts.map((product, index) => (
                         <View key={`${index}-${product.id}`} style={{ marginRight: 15 }}>
                             <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
                         </View>
                     ))}
+                    {popularProducts.length > 0 && (
+                        <TouchableOpacity style={styles.btnSearchMore}>
+                            <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
+                            <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
+                        </TouchableOpacity>
+                    )}
                 </ScrollView>
             </View>
-            {/* Sản phẩm bán chạy */}
+            {/* Sản phẩm mới ra */}
             <View style={[styles.section, { paddingHorizontal: 0 }]}>
-                <View style={{ paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                     <FontAwesome5 name="cubes" size={16} color={CommonColors.black} />
                     <Text style={[styles.sectionHeaderText]}>
-                        Gần đây
+                        Sản phẩm gần đây
                     </Text>
                 </View>
-                <View style={{ marginTop: 5, backgroundColor: CommonColors.gray, height: 0.5 }}></View>
                 <ScrollView
                     horizontal
-                    showsHorizontalScrollIndicator={false}
+                    showsHorizontalScrollIndicator
                     style={{ paddingLeft: 16 }}
                 >
                     {latestProducts.map((product, index) => (
@@ -160,6 +238,12 @@ const TabShopComponent = ({
                             <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
                         </View>
                     ))}
+                    {latestProducts.length > 0 && (
+                        <TouchableOpacity style={styles.btnSearchMore}>
+                            <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
+                            <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
+                        </TouchableOpacity>
+                    )}
                 </ScrollView>
             </View>
         </ScrollView>
@@ -211,7 +295,16 @@ const styles = StyleSheet.create({
         color: CommonColors.black,
         letterSpacing: 1.2
     },
-
+    btnSearchMore: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10,
+        width: (WIDTH_SCREEN - 40) / 2 - 10
+    },
+    btnSearchMoreText: {
+        fontSize: 16,
+        color: CommonColors.primary
+    }
 })
 
 export default TabShopComponent;
