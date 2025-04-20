@@ -12,3 +12,17 @@ export const fetchParentCategories = async () => {
         throw error;
     }
 }
+
+export const fetchParentCategoriesWithTotalProductByShop = async (
+    shop_id: number
+) => {
+    try {
+        const result = await CategoryService.fetchParentCategoriesWithTotalProductByShop(shop_id);
+        const response = result?.categories?.map(
+            (category: any) => new CategoryModel().convertObj(category)
+        ) ?? [];
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

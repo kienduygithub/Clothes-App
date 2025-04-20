@@ -13,3 +13,18 @@ export const fetchParentCategories = async () => {
         throw error;
     }
 }
+
+export const fetchParentCategoriesWithTotalProductByShop = async (
+    shop_id: number
+) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `shop/${shop_id}/category-products`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

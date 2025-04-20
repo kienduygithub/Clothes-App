@@ -19,9 +19,7 @@ const TabCategoryComponent = ({
     const [categories, setCategories] = useState<CategoryModel[]>([]);
     const fetchCategories = async () => {
         try {
-            console.log('Đang tải lại danh mục...');
-            const response = await CategoryManagement.fetchParentCategories();
-            console.log('Category: Done!');
+            const response = await CategoryManagement.fetchParentCategoriesWithTotalProductByShop(shop_id);
             setCategories(response);
         } catch (error) {
             console.log(error);
@@ -36,8 +34,8 @@ const TabCategoryComponent = ({
         <ScrollView style={styles.container}>
             <View style={styles.section}>
                 {categories.map((category, index) => (
-                    <>
-                        <TouchableOpacity style={styles.itemWrapper} key={`${index}-${category.id}-${category.category_name}`}>
+                    <View key={`${index}-${category.id}-${category.category_name}`}>
+                        <TouchableOpacity style={styles.itemWrapper}>
                             <Image source={{ uri: `${preImage}/${category.image_url}` }} style={styles.itemImage} />
                             <View style={styles.textWrapper}>
                                 <Text style={styles.itemTitle}>{category.category_name}</Text>
@@ -45,7 +43,7 @@ const TabCategoryComponent = ({
                             </View>
                             <AntDesign style={{ marginLeft: 'auto' }} name="right" size={14} color={CommonColors.gray} />
                         </TouchableOpacity>
-                    </>
+                    </View>
                 ))}
             </View>
         </ScrollView>
