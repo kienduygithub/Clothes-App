@@ -66,3 +66,28 @@ export const fetchPriceProductsByShop = async (id: number, page: number, limit: 
         throw error;
     }
 }
+
+export const fetchProductsByParentCategoryInShop = async (
+    shop_id: number,
+    parent_category_id: number,
+    page: number,
+    limit: number,
+) => {
+    try {
+        const result = await ShopService.fetchProductsByParentCategoryInShop(
+            shop_id,
+            parent_category_id,
+            page,
+            limit
+        );
+        const productPaginate: ProductPaginate = {
+            products: result?.products?.map((product: any) => new ProductModel().convertObj(product)) ?? [],
+            paginate: result?.pagination
+                ? new PaginateModel().convertObj(result.pagination)
+                : new PaginateModel()
+        }
+        return productPaginate;
+    } catch (error) {
+        throw error;
+    }
+}

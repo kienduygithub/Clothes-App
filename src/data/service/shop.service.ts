@@ -57,3 +57,22 @@ export const fetchPriceProductsByShop = async (id: number, page: number, limit: 
         throw error;
     }
 }
+
+export const fetchProductsByParentCategoryInShop = async (
+    shop_id: number,
+    parent_category_id: number,
+    page: number,
+    limit: number
+) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `shop/${shop_id}/category/${parent_category_id}/products?page=${page}&limit=${limit}`
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

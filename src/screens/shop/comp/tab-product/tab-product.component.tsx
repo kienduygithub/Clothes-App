@@ -274,7 +274,7 @@ const ButtonSearchMore = ({
     return (
         <Animated.View entering={FadeInDown.delay(800).duration(300)}>
             <LinearGradient
-                colors={['rgba(255,255,255,0.0)', 'rgba(255,255,255,1)']}
+                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
                 style={styles.btnSearchMore}
             >
                 <TouchableOpacity onPress={() => onSearchMore()} style={{ justifyContent: 'center', alignItems: 'center' }}>

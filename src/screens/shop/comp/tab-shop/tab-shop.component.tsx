@@ -11,6 +11,7 @@ import { ProductModel } from "@/src/data/model/product.model";
 import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import ProductItemComponent from "@/src/screens/home/comp/product-item/product-item.comp";
 import { PaginateModel } from "@/src/common/model/paginate.model";
+import { router } from "expo-router";
 
 type Props = {
     shop: ShopModel | null;
@@ -156,6 +157,19 @@ const TabShopComponent = ({
         }
     }, [])
 
+    const navigateToSearchShopScreen = (TYPE: "BestSellers" | "Latest") => {
+        router.navigate({
+            pathname: '/(routes)/shop-search',
+            params: {
+                shop_id: shop_id,
+                type: TYPE,
+                textTitle: TYPE === "BestSellers"
+                    ? 'Sản phẩm bán chạy'
+                    : 'Sản phẩm ra mắt gần đây'
+            }
+        })
+    }
+
 
     return (
         <ScrollView style={styles.container}>
@@ -211,12 +225,10 @@ const TabShopComponent = ({
                             <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
                         </View>
                     ))}
-                    {popularProducts.length > 0 && (
-                        <TouchableOpacity style={styles.btnSearchMore}>
-                            <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
-                            <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
-                        </TouchableOpacity>
-                    )}
+                    <TouchableOpacity onPress={() => navigateToSearchShopScreen("BestSellers")} style={styles.btnSearchMore} >
+                        <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
+                        <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
+                    </TouchableOpacity>
                 </ScrollView>
             </View>
             {/* Sản phẩm mới ra */}
@@ -237,12 +249,10 @@ const TabShopComponent = ({
                             <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
                         </View>
                     ))}
-                    {latestProducts.length > 0 && (
-                        <TouchableOpacity style={styles.btnSearchMore}>
-                            <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
-                            <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
-                        </TouchableOpacity>
-                    )}
+                    <TouchableOpacity onPress={() => navigateToSearchShopScreen("Latest")} style={styles.btnSearchMore}>
+                        <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
+                        <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
+                    </TouchableOpacity>
                 </ScrollView>
             </View>
         </ScrollView>

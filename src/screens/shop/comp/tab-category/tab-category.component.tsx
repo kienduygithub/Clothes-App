@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import * as CategoryManagement from "@/src/data/management/category.management";
 import { AntDesign } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 type Props = {
     shop_id: number;
@@ -30,12 +31,24 @@ const TabCategoryComponent = ({
         fetchCategories();
     }, [])
 
+    const navigateToSearchShopScreen = (category: CategoryModel) => {
+        router.navigate({
+            pathname: '/(routes)/shop-search',
+            params: {
+                shop_id: shop_id,
+                parent_category_id: category.id,
+                type: 'Category',
+                textTitle: category.category_name
+            }
+        })
+    }
+
     return (
         <ScrollView style={styles.container}>
             <View style={styles.section}>
                 {categories.map((category, index) => (
                     <View key={`${index}-${category.id}-${category.category_name}`}>
-                        <TouchableOpacity style={styles.itemWrapper}>
+                        <TouchableOpacity onPress={() => navigateToSearchShopScreen(category)} style={styles.itemWrapper}>
                             <Image source={{ uri: `${preImage}/${category.image_url}` }} style={styles.itemImage} />
                             <View style={styles.textWrapper}>
                                 <Text style={styles.itemTitle}>{category.category_name}</Text>
