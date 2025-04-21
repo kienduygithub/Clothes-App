@@ -152,6 +152,15 @@ function RootLayoutNav() {
           />
 
           <Stack.Screen
+            name="(routes)/search-result/index"
+            options={{
+              title: 'Tìm kiếm sản phẩm',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
             name="(tabs)"
             options={{
               headerShown: false

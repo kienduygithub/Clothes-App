@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import HomeStyle from "./home.style";
 import HeaderComponent from "@/src/components/header/header.comp";
@@ -11,6 +11,7 @@ import { AppConfig } from "@/src/common/config/app.config";
 import * as CategoryManagement from "../../data/management/category.management";
 import * as ProductManagement from "../../data/management/product.management";
 import { ProductModel } from "@/src/data/model/product.model";
+import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
 
 const HomeScreen = () => {
     const [preImage, setPreImage] = useState('');
@@ -19,6 +20,7 @@ const HomeScreen = () => {
     const [refreshCProduct, setRefreshProduct] = useState(false);
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
+    const [isSearchOverlayVisible, setSearchOverlayVisible] = useState(false);
 
     useEffect(() => {
         fetchPreImage();
@@ -65,35 +67,44 @@ const HomeScreen = () => {
         }
     }
 
+    const onHandleSearch = (searchValue: string) => {
+        console.log(searchValue);
+        router.push({
+            pathname: '/(routes)/search-result',
+            params: {
+                search: searchValue
+            }
+        })
+        setSearchOverlayVisible(false);
+    }
+
     return (
         <>
-            <Stack.Screen
-                options={{
-                    headerShown: true,
-                    header: () => <HeaderComponent />
-                }}
-            />
+            <HeaderComponent openSearch={() => setSearchOverlayVisible(true)} />
             {
                 isLoading ? (
                     <View style={{ marginTop: 30 }}>
                         <ActivityIndicator size={'large'} />
                     </View>
                 ) : (
-                    <ScrollView showsVerticalScrollIndicator={false}>
-                        <CategoryListComponent categories={categories} preImage={preImage} setRefreshCategory={setRefreshCategory} />
-                        <FlashSaleComponent preImage={preImage} products={products} />
-                        <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
-                            <Image
-                                source={require("@/assets/images/sale-banner.jpg")}
-                                style={{
-                                    width: "100%",
-                                    height: 150,
-                                    borderRadius: 15
-                                }}
-                            />
-                        </View>
-                        <ProductListComponent preImage={preImage} products={products} flatlist={false} />
-                    </ScrollView>
+                    <>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <CategoryListComponent categories={categories} preImage={preImage} setRefreshCategory={setRefreshCategory} />
+                            <FlashSaleComponent preImage={preImage} products={products} />
+                            <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
+                                <Image
+                                    source={require("@/assets/images/sale-banner.jpg")}
+                                    style={{
+                                        width: "100%",
+                                        height: 150,
+                                        borderRadius: 15
+                                    }}
+                                />
+                            </View>
+                            <ProductListComponent preImage={preImage} products={products} flatlist={false} />
+                        </ScrollView>
+                        <SearchOverlayComponent isVisible={isSearchOverlayVisible} onHandleSearch={onHandleSearch} onClose={() => setSearchOverlayVisible(false)} />
+                    </>
                 )
             }
         </>
