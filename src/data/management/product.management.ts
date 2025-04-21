@@ -1,6 +1,8 @@
+import { PaginateModel } from "@/src/common/model/paginate.model";
 import * as ProductService from "../../data/service/product.service";
 import { ProductModel } from "../model/product.model";
 import { ProductVariantModel } from "../model/product_variant.model";
+import { ProductPaginate } from "../types/global";
 
 export const fetchProducts = async () => {
     try {
@@ -45,6 +47,32 @@ export const fetchProductVariantByProductId = async (id: number) => {
         const response: ProductVariantModel[] = result?.variants?.map(
             (variant: any) => new ProductVariantModel().convertObj(variant)
         ) ?? [];
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const searchAndFilterProductMobile = async (
+    searchValue: string,
+    page: number,
+    limit: number
+) => {
+    try {
+        const result = await ProductService.searchAndFilterProductMobile(
+            searchValue,
+            page,
+            limit,
+        );
+        const products: ProductModel[] = result?.products?.map(
+            (product: any) => new ProductModel().convertObj(product)
+        ) ?? [];
+        const paginate = new PaginateModel().convertObj(result?.paginate);
+        const response: ProductPaginate = {
+            products: products,
+            paginate: paginate
+        }
 
         return response;
     } catch (error) {

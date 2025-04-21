@@ -9,6 +9,7 @@ type Props = {
     isVisible: boolean;
     onClose: () => void;
     onHandleSearch: (searchValue: string) => void
+    initialQuery?: string;
 }
 
 const { height: HEIGHT_SCREEN } = Dimensions.get('window');
@@ -16,18 +17,21 @@ const { height: HEIGHT_SCREEN } = Dimensions.get('window');
 const SearchOverlayComponent = ({
     isVisible,
     onClose,
-    onHandleSearch
+    onHandleSearch,
+    initialQuery
 }: Props) => {
     const inputRef = useRef<TextInput>(null);
     const opacity = useSharedValue(0);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
 
     /** Tự động focus vào TextInput khi overlay xuất hiện */
     useEffect(() => {
         if (isVisible && inputRef.current) {
             inputRef.current.focus();
+            setSearchQuery(initialQuery);
             opacity.value = withTiming(1, { duration: 150 });
         } else {
+            setSearchQuery('')
             opacity.value = withTiming(0, { duration: 150 });
         }
     }, [isVisible])
@@ -37,14 +41,13 @@ const SearchOverlayComponent = ({
     }));
 
     const handleSearch = () => {
-        onHandleSearch(searchQuery);
+        onHandleSearch(searchQuery ?? '');
     }
 
     if (!isVisible) return null;
 
     return (
         <Animated.View style={styles.container}>
-            {/* Inner Animated.View: Handles opacity animation */}
             <Animated.View style={[styles.innerContainer, animatedStyle]} >
                 <View style={styles.searchBar}>
                     <TouchableOpacity onPress={onClose}>

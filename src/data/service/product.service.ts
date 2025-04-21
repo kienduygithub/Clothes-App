@@ -56,3 +56,21 @@ export const fetchProductVariantByProductId = async (id: number) => {
         throw error;
     }
 }
+
+export const searchAndFilterProductMobile = async (
+    searchValue: string,
+    page: number,
+    limit: number
+) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `product/search-and-filter?search=${searchValue}&page=${page}&limit=${limit}`
+        )
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

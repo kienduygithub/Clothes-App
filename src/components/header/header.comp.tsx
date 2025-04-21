@@ -3,8 +3,6 @@ import HeaderStyle from "./header.style";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
-import { Link } from "expo-router";
-import { useState } from "react";
 
 type Props = {
     openSearch: () => void
