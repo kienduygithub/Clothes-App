@@ -1,4 +1,4 @@
-import { FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { AppConfig } from "@/src/common/config/app.config";
 import { CommonColors } from "@/src/common/resource/colors";
@@ -14,6 +14,8 @@ import { router } from "expo-router";
 import ProductItemComponent from "../home/comp/product-item/product-item.comp";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
+import CustomBottomSheet from "@/src/components/custom-bottom-sheet/custom-bottom-sheet.component";
+import FilterComponent, { FilterParams } from "./comp/filter/filter.component";
 
 type Props = {
 
@@ -37,6 +39,15 @@ const SearchResultScreen = (props: Props) => {
     const [paginate, setPaginate] = useState<PaginateModel>(initPaginate);
     const [isEndReached, setIsEndReached] = useState(false);
     const isFetching = useRef(false);
+    const [isOpenFilterSheet, setIsOpenFilterSheet] = useState(true);
+    const [filterParams, setFilterParams] = useState<FilterParams>({
+        origins: [],
+        categoryId: null,
+        sortPrice: 'ASC',
+        minPrice: 0,
+        maxPrice: Infinity,
+        minRatings: []
+    });
 
     useEffect(() => {
         fetchPreImage();
@@ -90,9 +101,33 @@ const SearchResultScreen = (props: Props) => {
         await searchAndFilterProducts(page);
     }
 
+    const handleApplyFilter = (newFilterParams: FilterParams) => {
+        setFilterParams(newFilterParams);
+        setIsEndReached(false);
+        setProducts([]); // Reset danh sách sản phẩm
+        searchAndFilterProducts(1); // Tìm kiếm lại với bộ lọc mới
+        setIsOpenFilterSheet(false); // Đóng bottom sheet
+    };
+
+    const handleResetFilter = () => {
+        setFilterParams({
+            origins: [],
+            categoryId: null,
+            sortPrice: 'ASC',
+            minPrice: 0,
+            maxPrice: Infinity,
+            minRatings: []
+        });
+        setIsEndReached(false);
+        setProducts([]); // Reset danh sách sản phẩm
+        searchAndFilterProducts(1); // Tìm kiếm lại với bộ lọc mặc định
+    };
+
+    const { height: HEIGHT_SCREEN } = useWindowDimensions();
+
     return (
         <>
-            <View style={styles.container}>
+            <View style={[styles.container, { marginBottom: 10 }]}>
                 <View style={styles.searchBar}>
                     <TouchableOpacity onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={24} color={CommonColors.primary} />
@@ -104,12 +139,12 @@ const SearchResultScreen = (props: Props) => {
                         placeholder="Tìm kiếm sản phẩm"
                         autoFocus={Platform.OS === 'web'}
                     />
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => setIsOpenFilterSheet(true)}>
                         <Ionicons name="filter-outline" size={24} color={CommonColors.primary} />
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ marginTop: 10, flex: 1 }}>
+            <View style={{ flex: 1 }}>
                 <FlatList
                     data={products}
                     showsVerticalScrollIndicator={false}
@@ -143,7 +178,18 @@ const SearchResultScreen = (props: Props) => {
                         </Animated.View>
                     </View>
                 )}
+
             </View>
+            <CustomBottomSheet
+                isVisible={isOpenFilterSheet}
+                height={HEIGHT_SCREEN * 0.86}
+                onClose={() => setIsOpenFilterSheet(false)}
+            >
+                <FilterComponent
+                    onApply={handleApplyFilter}
+                    onReset={handleResetFilter}
+                />
+            </CustomBottomSheet>
         </>
     );
 };

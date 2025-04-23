@@ -14,6 +14,19 @@ export const fetchParentCategories = async () => {
     }
 }
 
+export const fetchCategoryBoth = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `category/all/both`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const fetchParentCategoriesWithTotalProductByShop = async (
     shop_id: number
 ) => {
