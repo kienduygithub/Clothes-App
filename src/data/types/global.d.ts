@@ -3,6 +3,8 @@ import { CartItemModel } from "../model/cart.model";
 import { CouponModel } from "../model/coupon.model";
 import { ProductModel } from "../model/product.model";
 import { ShopModel } from "../model/shop.model";
+import { Sort } from "@/src/common/resource/sort";
+import { CategoryModel } from "../model/category.model";
 
 export interface ProductType {
     id: number;
@@ -66,4 +68,24 @@ type CartShopFinalType = {
 type ProductPaginate = {
     products: ProductModel[];
     paginate: PaginateModel;
+}
+
+type FilterParams = {
+    origins: string[],
+    categoryId: number | null,
+    sortPrice: Sort,
+    minPrice: number,
+    maxPrice: number,
+    minRatings: number[]
+}
+
+type PriceRange = {
+    label: string,
+    minPrice: number,
+    maxPrice: number
+}
+
+type CategoryGroup = {
+    parent: CategoryModel,
+    childrens: CategoryModel[]
 }

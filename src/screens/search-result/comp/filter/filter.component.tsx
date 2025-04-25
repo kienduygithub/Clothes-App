@@ -5,41 +5,23 @@ import { ORIGINS } from '@/src/common/resource/origins';
 import * as CategoryManagement from "@/src/data/management/category.management";
 import { CategoryModel } from '@/src/data/model/category.model';
 import { useToast } from '@/src/customize/toast.context';
-
-// Định nghĩa type cho tham số bộ lọc
-export interface FilterParams {
-    origins: string[];
-    categoryId: number | null;
-    sortPrice: 'ASC' | 'DESC';
-    minPrice: number;
-    maxPrice: number;
-    minRatings: number[];
-}
-
-// Định nghĩa type cho khoảng giá
-interface PriceRange {
-    label: string;
-    minPrice: number;
-    maxPrice: number;
-}
-
-// Định nghĩa type cho danh mục phân cấp
-interface CategoryGroup {
-    parent: CategoryModel;
-    children: CategoryModel[];
-}
+import { CategoryGroup, FilterParams, PriceRange } from '@/src/data/types/global';
+import { Sort } from '@/src/common/resource/sort';
 
 // Props cho FilterComponent
-interface FilterComponentProps {
-    onApply: (filterParams: FilterParams) => void;
+type Props = {
+    onApply: (filterParams: FilterParams) => void,
     onReset: () => void;
 }
 
-const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) => {
+const FilterComponent = ({
+    onApply,
+    onReset
+}: Props) => {
     const { showToast } = useToast();
     const [selectedOrigins, setSelectedOrigins] = useState<string[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-    const [sortPrice, setSortPrice] = useState<'ASC' | 'DESC'>('ASC');
+    const [sortPrice, setSortPrice] = useState<Sort>(Sort.ASC);
     const [minPriceInput, setMinPriceInput] = useState<string>(''); // Ô input tối thiểu
     const [maxPriceInput, setMaxPriceInput] = useState<string>(''); // Ô input tối đa
     const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRange | null>(null); // Tùy chọn giá được chọn
@@ -64,10 +46,10 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
             const response = await CategoryManagement.fetchCategoryBoth();
             // Sắp xếp danh mục thành nhóm (danh mục cha + con)
             const parents = response.filter((cat: CategoryModel) => !cat.parent);
-            const groups: CategoryGroup[] = parents.map((parent: CategoryModel) => ({
+            const groups: CategoryGroup[] = parents?.map((parent: CategoryModel) => ({
                 parent,
-                children: response.filter((cat: CategoryModel) => cat.parent?.id === parent.id)
-            }));
+                childrens: response.filter((cat: CategoryModel) => cat.parent?.id === parent.id)
+            })) ?? [];
             setCategoryGroups(groups);
         } catch (error) {
             console.log(error);
@@ -90,7 +72,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
     };
 
     // Hàm xử lý toggle cho sortPrice (chỉ chọn 1)
-    const toggleSortPrice = (value: 'ASC' | 'DESC') => {
+    const toggleSortPrice = (value: Sort) => {
         setSortPrice(value);
     };
 
@@ -142,12 +124,11 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
     const handleReset = () => {
         setSelectedOrigins([]);
         setSelectedCategoryId(null);
-        setSortPrice('ASC');
+        setSortPrice(Sort.ASC);
         setSelectedPriceRange(null);
         setMinPriceInput('');
         setMaxPriceInput('');
         setSelectedRatings([]);
-        onReset();
     };
 
     return (
@@ -158,13 +139,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
             {/* Theo Danh Mục */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Theo Danh Mục</Text>
-                {categoryGroups.map(group => (
+                {categoryGroups?.map(group => (
                     <View key={group.parent.id} style={styles.categoryGroup}>
                         {/* Tiêu đề danh mục cha */}
                         <Text style={styles.categoryParentTitle}>{group.parent.category_name}</Text>
                         {/* Danh sách danh mục con */}
                         <View style={styles.optionsContainer}>
-                            {group.children.map(child => (
+                            {group.childrens?.map(child => (
                                 <TouchableOpacity
                                     key={child.id}
                                     style={[
@@ -190,7 +171,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Nơi Bán</Text>
                 <View style={styles.optionsContainer}>
-                    {origins.map(origin => (
+                    {origins?.map(origin => (
                         <TouchableOpacity
                             key={origin}
                             style={[
@@ -219,7 +200,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
                             styles.optionButton,
                             sortPrice === 'ASC' && styles.optionButtonSelected
                         ]}
-                        onPress={() => toggleSortPrice('ASC')}
+                        onPress={() => toggleSortPrice(Sort.ASC)}
                     >
                         <Text style={[
                             styles.optionText,
@@ -233,7 +214,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
                             styles.optionButton,
                             sortPrice === 'DESC' && styles.optionButtonSelected
                         ]}
-                        onPress={() => toggleSortPrice('DESC')}
+                        onPress={() => toggleSortPrice(Sort.DESC)}
                     >
                         <Text style={[
                             styles.optionText,
@@ -286,7 +267,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
                 </View>
                 {/* Các tùy chọn gợi ý */}
                 <View style={styles.optionsContainer}>
-                    {priceRanges.map(range => (
+                    {priceRanges?.map(range => (
                         <TouchableOpacity
                             key={range.label}
                             style={[
@@ -310,7 +291,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({ onApply, onReset }) =
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Đánh Giá</Text>
                 <View style={styles.optionsContainer}>
-                    {ratings.map(rating => (
+                    {ratings?.map(rating => (
                         <TouchableOpacity
                             key={rating}
                             style={[

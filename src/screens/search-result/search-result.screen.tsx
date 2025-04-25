@@ -15,7 +15,9 @@ import ProductItemComponent from "../home/comp/product-item/product-item.comp";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomBottomSheet from "@/src/components/custom-bottom-sheet/custom-bottom-sheet.component";
-import FilterComponent, { FilterParams } from "./comp/filter/filter.component";
+import FilterComponent from "./comp/filter/filter.component";
+import { FilterParams } from "@/src/data/types/global";
+import { Sort } from "@/src/common/resource/sort";
 
 type Props = {
 
@@ -37,13 +39,13 @@ const SearchResultScreen = (props: Props) => {
         totalPages: 1
     })
     const [paginate, setPaginate] = useState<PaginateModel>(initPaginate);
-    const [isEndReached, setIsEndReached] = useState(false);
+    const isEndReached = useRef<boolean>(false);
     const isFetching = useRef(false);
     const [isOpenFilterSheet, setIsOpenFilterSheet] = useState(true);
     const [filterParams, setFilterParams] = useState<FilterParams>({
         origins: [],
         categoryId: null,
-        sortPrice: 'ASC',
+        sortPrice: Sort.ASC,
         minPrice: 0,
         maxPrice: Infinity,
         minRatings: []
@@ -60,15 +62,20 @@ const SearchResultScreen = (props: Props) => {
 
     const searchAndFilterProducts = async (page: number) => {
         try {
-            if (isEndReached) {
+            if (isEndReached.current) {
                 return;
             }
-
             isFetching.current = true;
             const response = await ProductManagement.searchAndFilterProductMobile(
                 searchValue,
                 page,
-                paginate.limit
+                paginate.limit,
+                filterParams.origins,
+                filterParams.categoryId,
+                filterParams.sortPrice,
+                filterParams.minPrice,
+                filterParams.maxPrice,
+                filterParams.minRatings
             );
 
             setProducts(prev => [...prev, ...response.products]);
@@ -80,7 +87,7 @@ const SearchResultScreen = (props: Props) => {
             } as PaginateModel));
 
             if (page >= response.paginate.totalPages) {
-                setIsEndReached(true);
+                isEndReached.current = true;
             }
 
             isFetching.current = false;
@@ -101,26 +108,26 @@ const SearchResultScreen = (props: Props) => {
         await searchAndFilterProducts(page);
     }
 
-    const handleApplyFilter = (newFilterParams: FilterParams) => {
+    const handleApplyFilter = async (newFilterParams: FilterParams) => {
         setFilterParams(newFilterParams);
-        setIsEndReached(false);
-        setProducts([]); // Reset danh sách sản phẩm
-        searchAndFilterProducts(1); // Tìm kiếm lại với bộ lọc mới
-        setIsOpenFilterSheet(false); // Đóng bottom sheet
+        isEndReached.current = false;
+        setProducts([]);
+        await searchAndFilterProducts(1);
+        setIsOpenFilterSheet(false);
     };
 
     const handleResetFilter = () => {
         setFilterParams({
             origins: [],
             categoryId: null,
-            sortPrice: 'ASC',
+            sortPrice: Sort.ASC,
             minPrice: 0,
             maxPrice: Infinity,
             minRatings: []
         });
-        setIsEndReached(false);
-        setProducts([]); // Reset danh sách sản phẩm
-        searchAndFilterProducts(1); // Tìm kiếm lại với bộ lọc mặc định
+        isEndReached.current = false;
+        setProducts([]);
+        searchAndFilterProducts(1);
     };
 
     const { height: HEIGHT_SCREEN } = useWindowDimensions();
@@ -161,14 +168,14 @@ const SearchResultScreen = (props: Props) => {
                         )
                     }
                     ListFooterComponent={
-                        () => products.length > 0 && !isFetching.current && !isEndReached ? (
+                        () => products.length > 0 && !isFetching.current && !isEndReached.current ? (
                             <ButtonSearchMore onSearchMore={onSearchMore} />
                         ) : (
                             <></>
                         )
                     }
                 />
-                {isEndReached && !isFetching.current && (
+                {isEndReached.current && !isFetching.current && (
                     <View style={{ backgroundColor: CommonColors.extraLightGray }}>
                         <Animated.View entering={FadeInDown.delay(1000).duration(300)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: CommonColors.extraLightGray, height: 50 }}>
                             <Text style={{ fontSize: 18, fontWeight: '500', color: CommonColors.primary }}>

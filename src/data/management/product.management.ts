@@ -3,6 +3,7 @@ import * as ProductService from "../../data/service/product.service";
 import { ProductModel } from "../model/product.model";
 import { ProductVariantModel } from "../model/product_variant.model";
 import { ProductPaginate } from "../types/global";
+import { Sort } from "@/src/common/resource/sort";
 
 export const fetchProducts = async () => {
     try {
@@ -57,13 +58,25 @@ export const fetchProductVariantByProductId = async (id: number) => {
 export const searchAndFilterProductMobile = async (
     searchValue: string,
     page: number,
-    limit: number
+    limit: number,
+    origins: string[],
+    categoryId: number | null,
+    sortPrice: Sort,
+    minPrice: number,
+    maxPrice: number,
+    minRatings: number[]
 ) => {
     try {
         const result = await ProductService.searchAndFilterProductMobile(
             searchValue,
             page,
             limit,
+            origins,
+            categoryId,
+            sortPrice,
+            minPrice,
+            maxPrice,
+            minRatings
         );
         const products: ProductModel[] = result?.products?.map(
             (product: any) => new ProductModel().convertObj(product)
