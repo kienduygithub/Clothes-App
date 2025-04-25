@@ -23,7 +23,7 @@ import SearchOverlayComponent from "@/src/components/search-overlay/search-overl
 type Props = {};
 
 const SearchResultScreen = (props: Props) => {
-    const { search: SEARCH_PARAMS } = useRoute().params as { search: string };
+    const { search: SEARCH_PARAMS, shop_id: SHOP } = useRoute().params as { search: string, shop_id: string };
     const { showToast } = useToast();
     const [preImage, setPreImage] = useState('');
     const [refreshing, setRefreshing] = useState(false);
@@ -76,17 +76,33 @@ const SearchResultScreen = (props: Props) => {
                 return;
             }
             isFetching.current = true;
-            const response = await ProductManagement.searchAndFilterProductMobile(
-                searchValue,
-                page,
-                paginate.limit,
-                params.origins, // Sử dụng params thay vì filterParams
-                params.categoryId,
-                params.sortPrice,
-                params.minPrice,
-                params.maxPrice,
-                params.minRatings
-            );
+            let response: any;
+            if (SHOP) {
+                response = await ProductManagement.searchAndFilterProductShopMobile(
+                    parseInt(SHOP),
+                    searchValue,
+                    page,
+                    paginate.limit,
+                    params.origins, // Sử dụng params thay vì filterParams
+                    params.categoryId,
+                    params.sortPrice,
+                    params.minPrice,
+                    params.maxPrice,
+                    params.minRatings
+                );
+            } else {
+                response = await ProductManagement.searchAndFilterProductMobile(
+                    searchValue,
+                    page,
+                    paginate.limit,
+                    params.origins, // Sử dụng params thay vì filterParams
+                    params.categoryId,
+                    params.sortPrice,
+                    params.minPrice,
+                    params.maxPrice,
+                    params.minRatings
+                );
+            }
 
             setProducts(prev => [...prev, ...response.products]);
             setPaginate(prev => ({

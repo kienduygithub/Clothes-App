@@ -102,3 +102,49 @@ export const searchAndFilterProductMobile = async (
         throw error;
     }
 }
+
+export const searchAndFilterProductShopMobile = async (
+    shop_id: number,
+    searchValue: string,
+    page: number,
+    limit: number,
+    origins: string[],
+    categoryId: number | null,
+    sortPrice: Sort,
+    minPrice: number,
+    maxPrice: number,
+    minRatings: number[]
+) => {
+    try {
+        const domain = new AppConfig().getDomain();
+
+        const queryParams = new URLSearchParams({
+            search: searchValue,
+            page: page.toString(),
+            limit: limit.toString(),
+            ...(categoryId !== null && { categoryId: categoryId.toString() }),
+            sortPrice: sortPrice,
+            minPrice: minPrice.toString(),
+            maxPrice: maxPrice.toString()
+        });
+
+        if (origins && origins.length > 0) {
+            let originParams = origins.join(',');
+            queryParams.append('origins', originParams);
+        }
+
+        if (minRatings && minRatings.length > 0) {
+            let minRatingParams = minRatings.map((rating) => rating.toString()).join(',');
+            queryParams.append('minRatings', minRatingParams);
+        }
+
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `product/search-and-filter/shop/${shop_id}?${queryParams.toString()}`
+        )
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

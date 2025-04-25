@@ -13,6 +13,7 @@ import TabShopComponent from "./comp/tab-shop/tab-shop.component";
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import TabProductComponent from "./comp/tab-product/tab-product.component";
 import TabCategoryComponent from "./comp/tab-category/tab-category.component";
+import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
 
 type Props = {}
 
@@ -33,6 +34,7 @@ const ShopScreen = (props: Props) => {
     const [preImage, setPreImage] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [shop, setShop] = useState<ShopModel | null>(null);
+    const [openSearchOverlay, setOpenSearchOverlay] = useState(false);
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
@@ -66,14 +68,15 @@ const ShopScreen = (props: Props) => {
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                     <Ionicons name="arrow-back-sharp" size={24} color="black" />
                 </TouchableOpacity>
-                <View style={styles.searchContainer}>
+                <TouchableOpacity style={styles.searchContainer} onPress={() => setOpenSearchOverlay(true)}>
                     <Octicons name="search" size={18} color={CommonColors.white} />
                     <TextInput
+                        editable={false}
                         value={searchInput}
                         onChangeText={(text: string) => setSearchInput(text)}
                         placeholder="Tìm kiếm sản phẩm trong cửa hàng"
                     />
-                </View>
+                </TouchableOpacity>
             </View>
             <View style={{ flex: 1 }}>
                 <View style={{ position: 'absolute' }}>
@@ -132,6 +135,19 @@ const ShopScreen = (props: Props) => {
                     />
                 </View>
             </View>
+            <SearchOverlayComponent
+                isVisible={openSearchOverlay}
+                onHandleSearch={(searchValue: string) => {
+                    router.push({
+                        pathname: "/(routes)/search-result",
+                        params: {
+                            search: searchValue,
+                            shop_id: SHOP_ID
+                        }
+                    })
+                }}
+                onClose={() => setOpenSearchOverlay(false)}
+            />
         </>
     )
 }
@@ -149,7 +165,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingTop: 20,
         position: 'absolute',
-        zIndex: 10000000000
+        zIndex: 10
     },
     backBtn: {
         position: 'absolute',
