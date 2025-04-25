@@ -18,6 +18,7 @@ import CustomBottomSheet from "@/src/components/custom-bottom-sheet/custom-botto
 import FilterComponent from "./comp/filter/filter.component";
 import { FilterParams } from "@/src/data/types/global";
 import { Sort } from "@/src/common/resource/sort";
+import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
 
 type Props = {};
 
@@ -27,6 +28,7 @@ const SearchResultScreen = (props: Props) => {
     const [preImage, setPreImage] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const [searchValue, setSearchValue] = useState(SEARCH_PARAMS ?? '');
+    const [openSearchOverlay, setOpenSearchOverlay] = useState(false);
     const [products, setProducts] = useState<ProductModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
@@ -46,11 +48,23 @@ const SearchResultScreen = (props: Props) => {
         maxPrice: Infinity,
         minRatings: [],
     });
+    const firstFetching = useRef(true);
 
     useEffect(() => {
         fetchPreImage();
         searchAndFilterProducts(1, filterParams);
     }, []);
+
+    useEffect(() => {
+        if (firstFetching.current) {
+            firstFetching.current = false;
+            return;
+        }
+
+        isEndReached.current = false;
+        setProducts([]);
+        searchAndFilterProducts(1, filterParams);
+    }, [searchValue])
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
@@ -136,13 +150,15 @@ const SearchResultScreen = (props: Props) => {
                     <TouchableOpacity onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={24} color={CommonColors.primary} />
                     </TouchableOpacity>
-                    <TextInput
-                        style={styles.input}
-                        value={searchValue}
-                        editable={false}
-                        placeholder="Tìm kiếm sản phẩm"
-                        autoFocus={Platform.OS === 'web'}
-                    />
+                    <TouchableOpacity onPress={() => setOpenSearchOverlay(true)} style={styles.input}>
+                        <TextInput
+                            // style={styles.input}
+                            value={searchValue}
+                            editable={false}
+                            placeholder="Tìm kiếm sản phẩm"
+                            autoFocus={Platform.OS === 'web'}
+                        />
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => setIsOpenFilterSheet(true)}>
                         <Ionicons name="filter-outline" size={24} color={CommonColors.primary} />
                     </TouchableOpacity>
@@ -202,6 +218,15 @@ const SearchResultScreen = (props: Props) => {
                     initFilterParams={filterParams}
                 />
             </CustomBottomSheet>
+            <SearchOverlayComponent
+                isVisible={openSearchOverlay}
+                onClose={() => setOpenSearchOverlay(false)}
+                onHandleSearch={(searchValue) => {
+                    setSearchValue(searchValue);
+                    setOpenSearchOverlay(false);
+                }}
+                initialQuery={searchValue}
+            />
         </>
     );
 };

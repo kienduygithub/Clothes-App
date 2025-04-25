@@ -35,7 +35,6 @@ const SearchResultStyle = StyleSheet.create({
         flex: 1,
         backgroundColor: CommonColors.background,
         borderRadius: 5,
-        paddingVertical: 8,
         paddingHorizontal: 10,
         flexDirection: 'row',
         justifyContent: 'space-between'
