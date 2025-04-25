@@ -12,21 +12,25 @@ import { Sort } from '@/src/common/resource/sort';
 type Props = {
     onApply: (filterParams: FilterParams) => void,
     onReset: () => void;
+    initFilterParams: FilterParams
 }
 
 const FilterComponent = ({
     onApply,
-    onReset
+    onReset,
+    initFilterParams
 }: Props) => {
     const { showToast } = useToast();
-    const [selectedOrigins, setSelectedOrigins] = useState<string[]>([]);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-    const [sortPrice, setSortPrice] = useState<Sort>(Sort.ASC);
-    const [minPriceInput, setMinPriceInput] = useState<string>(''); // Ô input tối thiểu
-    const [maxPriceInput, setMaxPriceInput] = useState<string>(''); // Ô input tối đa
-    const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRange | null>(null); // Tùy chọn giá được chọn
-    const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-    const [focusedInput, setFocusedInput] = useState<'min' | 'max' | null>(null); // Trạng thái focus của ô input
+    const [selectedOrigins, setSelectedOrigins] = useState<string[]>(initFilterParams.origins ?? []);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(initFilterParams.categoryId ?? null);
+    const [sortPrice, setSortPrice] = useState<Sort>(initFilterParams.sortPrice ?? Sort.ASC);
+    const [minPriceInput, setMinPriceInput] = useState<string>(initFilterParams.minPrice.toString());
+    const [maxPriceInput, setMaxPriceInput] = useState<string>(
+        initFilterParams.maxPrice !== Infinity ? initFilterParams.maxPrice.toString() : ''
+    );
+    const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRange | null>(null);
+    const [selectedRatings, setSelectedRatings] = useState<number[]>(initFilterParams.minRatings ?? []);
+    const [focusedInput, setFocusedInput] = useState<'min' | 'max' | null>(null);
     const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
 
     const origins: string[] = ORIGINS;

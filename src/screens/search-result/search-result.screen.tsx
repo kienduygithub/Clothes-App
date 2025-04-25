@@ -19,14 +19,10 @@ import FilterComponent from "./comp/filter/filter.component";
 import { FilterParams } from "@/src/data/types/global";
 import { Sort } from "@/src/common/resource/sort";
 
-type Props = {
-
-}
+type Props = {};
 
 const SearchResultScreen = (props: Props) => {
-    const { search: SEARCH_PARAMS } = useRoute().params as {
-        search: string
-    }
+    const { search: SEARCH_PARAMS } = useRoute().params as { search: string };
     const { showToast } = useToast();
     const [preImage, setPreImage] = useState('');
     const [refreshing, setRefreshing] = useState(false);
@@ -36,31 +32,31 @@ const SearchResultScreen = (props: Props) => {
         currentPage: 1,
         limit: 2,
         totalItems: 0,
-        totalPages: 1
-    })
+        totalPages: 1,
+    });
     const [paginate, setPaginate] = useState<PaginateModel>(initPaginate);
     const isEndReached = useRef<boolean>(false);
-    const isFetching = useRef(false);
-    const [isOpenFilterSheet, setIsOpenFilterSheet] = useState(true);
+    const isFetching = useRef<boolean>(false);
+    const [isOpenFilterSheet, setIsOpenFilterSheet] = useState(false);
     const [filterParams, setFilterParams] = useState<FilterParams>({
         origins: [],
         categoryId: null,
         sortPrice: Sort.ASC,
         minPrice: 0,
         maxPrice: Infinity,
-        minRatings: []
+        minRatings: [],
     });
 
     useEffect(() => {
         fetchPreImage();
-        searchAndFilterProducts(1);
-    }, [])
+        searchAndFilterProducts(1, filterParams);
+    }, []);
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
-    }
+    };
 
-    const searchAndFilterProducts = async (page: number) => {
+    const searchAndFilterProducts = async (page: number, params: FilterParams) => {
         try {
             if (isEndReached.current) {
                 return;
@@ -70,12 +66,12 @@ const SearchResultScreen = (props: Props) => {
                 searchValue,
                 page,
                 paginate.limit,
-                filterParams.origins,
-                filterParams.categoryId,
-                filterParams.sortPrice,
-                filterParams.minPrice,
-                filterParams.maxPrice,
-                filterParams.minRatings
+                params.origins, // Sử dụng params thay vì filterParams
+                params.categoryId,
+                params.sortPrice,
+                params.minPrice,
+                params.maxPrice,
+                params.minRatings
             );
 
             setProducts(prev => [...prev, ...response.products]);
@@ -83,7 +79,7 @@ const SearchResultScreen = (props: Props) => {
                 ...prev,
                 totalItems: response.paginate.totalItems,
                 totalPages: response.paginate.totalPages,
-                currentPage: page
+                currentPage: page,
             } as PaginateModel));
 
             if (page >= response.paginate.totalPages) {
@@ -96,38 +92,39 @@ const SearchResultScreen = (props: Props) => {
             showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
             isFetching.current = false;
         }
-    }
+    };
 
     const onRefresh = async () => {
         setRefreshing(true);
         setRefreshing(false);
-    }
+    };
 
     const onSearchMore = async () => {
         const page = paginate.currentPage + 1;
-        await searchAndFilterProducts(page);
-    }
+        await searchAndFilterProducts(page, filterParams);
+    };
 
     const handleApplyFilter = async (newFilterParams: FilterParams) => {
-        setFilterParams(newFilterParams);
+        setFilterParams(newFilterParams); // Cập nhật state
         isEndReached.current = false;
         setProducts([]);
-        await searchAndFilterProducts(1);
+        await searchAndFilterProducts(1, newFilterParams); // Truyền newFilterParams trực tiếp
         setIsOpenFilterSheet(false);
     };
 
     const handleResetFilter = () => {
-        setFilterParams({
+        const resetParams: FilterParams = {
             origins: [],
             categoryId: null,
             sortPrice: Sort.ASC,
             minPrice: 0,
             maxPrice: Infinity,
-            minRatings: []
-        });
+            minRatings: [],
+        };
+        setFilterParams(resetParams);
         isEndReached.current = false;
         setProducts([]);
-        searchAndFilterProducts(1);
+        searchAndFilterProducts(1, resetParams);
     };
 
     const { height: HEIGHT_SCREEN } = useWindowDimensions();
@@ -160,15 +157,13 @@ const SearchResultScreen = (props: Props) => {
                     columnWrapperStyle={{
                         justifyContent: 'space-between',
                         marginBottom: 10,
-                        marginHorizontal: 16
+                        marginHorizontal: 16,
                     }}
-                    renderItem={
-                        ({ index, item }) => (
-                            <ProductItemComponent item={item} index={index} preImage={preImage} productType="regular" />
-                        )
-                    }
-                    ListFooterComponent={
-                        () => products.length > 0 && !isFetching.current && !isEndReached.current ? (
+                    renderItem={({ index, item }) => (
+                        <ProductItemComponent item={item} index={index} preImage={preImage} productType="regular" />
+                    )}
+                    ListFooterComponent={() =>
+                        products.length > 0 && !isFetching.current && !isEndReached.current ? (
                             <ButtonSearchMore onSearchMore={onSearchMore} />
                         ) : (
                             <></>
@@ -177,7 +172,17 @@ const SearchResultScreen = (props: Props) => {
                 />
                 {isEndReached.current && !isFetching.current && (
                     <View style={{ backgroundColor: CommonColors.extraLightGray }}>
-                        <Animated.View entering={FadeInDown.delay(1000).duration(300)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: CommonColors.extraLightGray, height: 50 }}>
+                        <Animated.View
+                            entering={FadeInDown.delay(1000).duration(300)}
+                            style={{
+                                flexDirection: 'row',
+                                gap: 10,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: CommonColors.extraLightGray,
+                                height: 50,
+                            }}
+                        >
                             <Text style={{ fontSize: 18, fontWeight: '500', color: CommonColors.primary }}>
                                 Không tìm thấy sản phẩm nữa
                             </Text>
@@ -185,7 +190,6 @@ const SearchResultScreen = (props: Props) => {
                         </Animated.View>
                     </View>
                 )}
-
             </View>
             <CustomBottomSheet
                 isVisible={isOpenFilterSheet}
@@ -195,30 +199,24 @@ const SearchResultScreen = (props: Props) => {
                 <FilterComponent
                     onApply={handleApplyFilter}
                     onReset={handleResetFilter}
+                    initFilterParams={filterParams}
                 />
             </CustomBottomSheet>
         </>
     );
 };
 
-const ButtonSearchMore = ({
-    onSearchMore
-}: {
-    onSearchMore: () => void
-}) => {
+const ButtonSearchMore = ({ onSearchMore }: { onSearchMore: () => void }) => {
     return (
         <Animated.View entering={FadeInDown.delay(800).duration(300)}>
-            <LinearGradient
-                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']}
-                style={styles.btnSearchMore}
-            >
+            <LinearGradient colors={['rgba(255,255,255,0)', 'rgba(255,255,255,1)']} style={styles.btnSearchMore}>
                 <TouchableOpacity onPress={() => onSearchMore()} style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Text style={styles.btnSearchMoreText}>Tải thêm</Text>
                 </TouchableOpacity>
             </LinearGradient>
         </Animated.View>
-    )
-}
+    );
+};
 
 const styles = SearchResultStyle;
 
