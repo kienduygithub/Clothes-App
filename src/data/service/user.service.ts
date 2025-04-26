@@ -5,7 +5,7 @@ import { UserModel } from "../model/user.model";
 export const fetchInfoUser = async () => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = ServiceCore.GET(
+        const response = await ServiceCore.GET(
             `${domain}`,
             `user/info/mobile`,
         );
@@ -20,7 +20,7 @@ export const editInfoUser = async (data: UserModel) => {
     try {
         const domain = new AppConfig().getDomain();
         const payload = new UserModel().toJsonExecute(data);
-        const response = ServiceCore.PATCH(
+        const response = await ServiceCore.PATCH(
             `${domain}`,
             `user/info/mobile`,
             payload
@@ -37,10 +37,15 @@ export const editAvatarUser = async (file: any) => {
         const domain = new AppConfig().getDomain();
         const formData = new FormData();
         formData.append('userFile', file);
-        const response = ServiceCore.PATCH(
+        const response = await ServiceCore.POST(
             `${domain}`,
             `user/avatar/mobile`,
-            formData
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            }
         );
 
         return response;

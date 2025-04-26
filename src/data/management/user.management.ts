@@ -22,8 +22,9 @@ export const editInfoUser = async (data: UserModel) => {
 
 export const editAvatarUser = async (file: any) => {
     try {
-        await UserService.editInfoUser(file);
-        return true;
+        const result = await UserService.editAvatarUser(file);
+        const response = result?.url ?? '';
+        return response;
     } catch (error) {
         throw error;
     }

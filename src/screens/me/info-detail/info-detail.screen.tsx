@@ -1,4 +1,4 @@
-import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
 import InfoDetailStyle from "./info-detail.style"
 import { AntDesign, Feather, FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { router } from "expo-router"
@@ -7,10 +7,11 @@ import { Controller, useForm } from "react-hook-form"
 import { Gender } from "@/src/common/resource/gender"
 import { AppConfig } from "@/src/common/config/app.config"
 import * as UserManagement from "@/src/data/management/user.management"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { UserModel } from "@/src/data/model/user.model"
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
 import { CommonColors } from "@/src/common/resource/colors"
+import * as ImagePicker from 'expo-image-picker';
 
 type FormData = {
     name: string;
@@ -27,7 +28,8 @@ const InfoDetailScreen = ({
     const { showToast } = useToast();
     const preImage = new AppConfig().getPreImage();
     const [avatarImage, setAvatarImage] = useState('');
-
+    const [image, setImage] = useState<ImagePicker.ImagePickerResult | null>(null);
+    const [loading, setLoading] = useState(false)
     const initValueForm = {
         name: '',
         phone: '',
@@ -94,13 +96,52 @@ const InfoDetailScreen = ({
         user.address = data.address;
 
         try {
+            setLoading(true);
             await UserManagement.editInfoUser(user);
+            setLoading(false);
             setTimeout(() => {
                 showToast("Thay đổi thông tin hồ sơ thành công", "success");
             }, 500)
         } catch (error) {
             console.log(error);
+            setLoading(false);
             showToast("Oops! Hệ thống đang bận, quay lại sau");
+        }
+    }
+
+    const saveAvatarUser = async (imageResult: ImagePicker.ImagePickerResult) => {
+        if (imageResult === null || imageResult.canceled) {
+            return;
+        }
+
+        try {
+            const imageFile = {
+                uri: imageResult.assets[0].uri,
+                type: imageResult.assets[0].mimeType, // 'image/png'
+                name: imageResult.assets[0].fileName,  // 'Filename.png'
+                size: imageResult.assets[0].fileSize,  // 75016
+            };
+
+            const response = await UserManagement.editAvatarUser(imageFile);
+            setAvatarImage(response);
+            showToast("Chỉnh sửa ảnh đại diện thành công", "success");
+        } catch (error) {
+            console.log(error);
+            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        }
+    }
+
+    const handlePickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images', 'videos'],
+            allowsEditing: true,
+            aspect: [4, 4],
+            quality: 1
+        });
+
+        if (!result.canceled) {
+            setImage(result);
+            await saveAvatarUser(result);
         }
     }
 
@@ -114,9 +155,15 @@ const InfoDetailScreen = ({
                 <Text style={styles.paymentHeaderText}>
                     Chi tiết hồ sơ
                 </Text>
-                <TouchableOpacity onPress={() => setOpenWarningSave(true)} style={styles.btnSaveForm}>
-                    <Text style={styles.btnSaveFormText}>Lưu</Text>
-                </TouchableOpacity>
+                {loading ? (
+                    <ActivityIndicator
+                        style={styles.btnSaveForm}
+                    />
+                ) : (
+                    <TouchableOpacity onPress={() => setOpenWarningSave(true)} style={styles.btnSaveForm}>
+                        <Text style={styles.btnSaveFormText}>Lưu</Text>
+                    </TouchableOpacity>
+                )}
             </View>
             <ScrollView style={styles.container}>
                 <View style={styles.sectionWrapper}>
@@ -127,7 +174,7 @@ const InfoDetailScreen = ({
                                 <Image style={styles.avatarImage} source={{ uri: `${preImage}/${avatarImage}` }} />
                             </View>
                         </View>
-                        <TouchableOpacity style={styles.editImageButton}>
+                        <TouchableOpacity onPress={() => handlePickImage()} style={styles.editImageButton}>
                             <Text style={styles.editImageButtonText}>Upload</Text>
                             <AntDesign name="upload" size={18} color={CommonColors.white} />
                         </TouchableOpacity>
