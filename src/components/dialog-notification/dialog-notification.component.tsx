@@ -1,5 +1,5 @@
 import { CommonColors } from "@/src/common/resource/colors";
-import { TouchableOpacity } from "react-native";
+import { Dimensions, TouchableOpacity } from "react-native";
 import { Text } from "react-native";
 import { Modal, StyleSheet, View } from "react-native";
 
@@ -62,9 +62,8 @@ const DialogNotification = ({
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(65, 65, 65, 0.15)'
+        backgroundColor: 'transparent',
     },
     dialog: {
         backgroundColor: 'white',
@@ -73,6 +72,16 @@ const styles = StyleSheet.create({
         maxWidth: 400,
         paddingTop: 16,
         paddingBottom: 0,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        overflow: 'hidden',
+        marginTop: 120,
+
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     message: {
         fontSize: 15,

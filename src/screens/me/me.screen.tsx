@@ -27,6 +27,10 @@ const MeScreen = (props: Props) => {
         }
     }
 
+    const navigateToInfoDetailScreen = () => {
+        router.navigate("/(routes)/info-detail");
+    }
+
     const logout = async () => {
         try {
             await new AppConfig().clear();
@@ -83,7 +87,7 @@ const MeScreen = (props: Props) => {
                         <Ionicons name="help-circle-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Chăm sóc khách hàng</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={() => navigateToInfoDetailScreen()}>
                         <Ionicons name="pencil-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Chỉnh sửa thông tin</Text>
                     </TouchableOpacity>

@@ -48,7 +48,7 @@ function RootLayoutNav() {
   return (
     <ToastProvider>
       <>
-        <StatusBar style='auto' />
+        <StatusBar />
         <Stack>
           <Stack.Screen
             name="index"
@@ -155,6 +155,15 @@ function RootLayoutNav() {
             name="(routes)/search-result/index"
             options={{
               title: 'Tìm kiếm sản phẩm',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/info-detail/index"
+            options={{
+              title: 'Chi tiết người dùng',
               headerTitleAlign: 'center',
               headerShown: false
             }}
