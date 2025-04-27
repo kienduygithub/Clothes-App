@@ -1,5 +1,6 @@
 import { Fonts } from '@/src/common/resource/fonts';
 import { ToastProvider } from '@/src/customize/toast.context';
+import store from '@/src/data/store/store.config';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -7,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { Provider } from 'react-redux';
 
 export {
   ErrorBoundary,
@@ -46,8 +48,8 @@ export default function RootLayout() {
 function RootLayoutNav() {
 
   return (
-    <ToastProvider>
-      <>
+    <Provider store={store}>
+      <ToastProvider>
         <StatusBar />
         <Stack>
           <Stack.Screen
@@ -176,7 +178,7 @@ function RootLayoutNav() {
             }}
           />
         </Stack>
-      </>
-    </ToastProvider>
+      </ToastProvider>
+    </Provider>
   );
 }

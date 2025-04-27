@@ -5,6 +5,7 @@ import { ProductModel } from "../model/product.model";
 import { ShopModel } from "../model/shop.model";
 import { Sort } from "@/src/common/resource/sort";
 import { CategoryModel } from "../model/category.model";
+import rootReducer from "../store/reducers/root.reducer";
 
 export interface ProductType {
     id: number;
@@ -54,6 +55,8 @@ export interface SizeType {
     id: number,
     size_code: string,
 }
+
+type RootState = ReturnType<typeof rootReducer>;
 
 type CartShopFinalType = {
     cart_shop_id: number;
