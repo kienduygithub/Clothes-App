@@ -14,6 +14,10 @@ import { ErrorModel } from "@/src/common/model/error.model";
 import { HttpCode } from "@/src/common/resource/http-code";
 import { AppConfig } from "@/src/common/config/app.config";
 import { UserModel } from "@/src/data/model/user.model";
+import * as UserManagement from "@/src/data/management/user.management";
+import { useToast } from "@/src/customize/toast.context";
+import { useDispatch } from "react-redux";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 const signInform = Yup.object().shape({
     email: Yup.string()
@@ -25,6 +29,8 @@ const signInform = Yup.object().shape({
 })
 
 const SignInScreen = () => {
+    const { showToast } = useToast();
+    const dispatch = useDispatch();
     const FormValidate = {
         REQUIRED: 'required',
         INVALID_EMAIL: 'invalidEmail',
@@ -43,19 +49,21 @@ const SignInScreen = () => {
             await new AppConfig().setAccessToken(response.access_token);
             await new AppConfig().setRefreshToken(response.refresh_token);
             await new AppConfig().setUserInfo(userInfo);
-
+            const userLogged = await UserManagement.fetchInfoUser();
+            dispatch(UserActions.SaveInfoLogged(userLogged));
             router.dismissAll();
             router.push("/(tabs)");
-        } catch (error) {
-            if (error instanceof ErrorModel) {
-                const status = error.status;
-                const message = error.message;
-                if (status === HttpCode.BAD_REQUEST) {
-                    if (message?.includes('Thông tin đăng nhập không chính xác')) {
-                        setErrors({ email: FormValidate.INVALID_INFO });
-                    }
+        } catch (error: any) {
+            console.log(error);
+            const status = error?.status;
+            const message = error?.message;
+            if (status === HttpCode.BAD_REQUEST) {
+                if (message?.includes('Thông tin đăng nhập không chính xác')) {
+                    setErrors({ email: FormValidate.INVALID_INFO });
                 }
+                return;
             }
+            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
         }
     }
 

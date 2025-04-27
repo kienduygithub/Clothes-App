@@ -9,7 +9,7 @@ const initialState: CounterState = {
     count: 0
 }
 
-export const CounterReducer = (state = initialState, actions: ActionState) => {
+const CounterReducer = (state = initialState, actions: ActionState) => {
     switch (actions.type) {
         case CounterActions.COUNTER_DECREASE:
             return {
@@ -25,3 +25,5 @@ export const CounterReducer = (state = initialState, actions: ActionState) => {
             return state;
     }
 }
+
+export default CounterReducer;

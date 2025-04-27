@@ -12,6 +12,8 @@ import { UserModel } from "@/src/data/model/user.model"
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
 import { CommonColors } from "@/src/common/resource/colors"
 import * as ImagePicker from 'expo-image-picker';
+import * as UserActions from '@/src/data/store/actions/user/user.action';
+import { useDispatch } from "react-redux"
 
 type FormData = {
     name: string;
@@ -29,7 +31,8 @@ const InfoDetailScreen = ({
     const preImage = new AppConfig().getPreImage();
     const [avatarImage, setAvatarImage] = useState('');
     const [image, setImage] = useState<ImagePicker.ImagePickerResult | null>(null);
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
     const initValueForm = {
         name: '',
         phone: '',
@@ -62,6 +65,7 @@ const InfoDetailScreen = ({
             setValue("gender", user.gender);
             setValue("phone", user.phone !== '' ? `${user.phone.slice(3)}` : '');
             setValue("address", user.address);
+            dispatch(UserActions.UpdateInfoLogged(user));
         } catch (error) {
             console.log(error);
             showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
@@ -94,10 +98,12 @@ const InfoDetailScreen = ({
         user.phone = `+84${data.phone}`;
         user.gender = data.gender;
         user.address = data.address;
+        user.image_url = avatarImage;
 
         try {
             setLoading(true);
             await UserManagement.editInfoUser(user);
+            dispatch(UserActions.UpdateInfoLogged(user));
             setLoading(false);
             setTimeout(() => {
                 showToast("Thay đổi thông tin hồ sơ thành công", "success");
@@ -124,6 +130,7 @@ const InfoDetailScreen = ({
 
             const response = await UserManagement.editAvatarUser(imageFile);
             setAvatarImage(response);
+            dispatch(UserActions.UpdateImageInfo(response));
             showToast("Chỉnh sửa ảnh đại diện thành công", "success");
         } catch (error) {
             console.log(error);

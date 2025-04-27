@@ -5,23 +5,39 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { router, Stack } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
-import { useEffect, useState } from "react";
-import { UserModel } from "@/src/data/model/user.model";
+import { useEffect, useRef } from "react";
 import { AppConfig } from "@/src/common/config/app.config";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/src/data/types/global";
+import * as UserManagement from "@/src/data/management/user.management";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 
 type Props = {}
 
 const MeScreen = (props: Props) => {
-    const [user, setUser] = useState<UserModel>();
     const preImage = new AppConfig().getPreImage();
+    const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
+    const dispatch = useDispatch();
+    const firstFetching = useRef(true);
+
     useEffect(() => {
-        fetchUserInfo();
+        fetchInfoUser();
     }, [])
 
-    const fetchUserInfo = async () => {
+    useEffect(() => {
+        if (firstFetching.current) {
+            firstFetching.current = false;
+            return;
+        }
+
+
+    }, [userSelector])
+
+    const fetchInfoUser = async () => {
         try {
-            const userInfo = await new AppConfig().getUserInfo()
-            setUser(userInfo);
+            const userLogged = await UserManagement.fetchInfoUser();
+            dispatch(UserActions.UpdateInfoLogged(userLogged));
         } catch (error) {
             console.log(error);
         }
@@ -55,15 +71,18 @@ const MeScreen = (props: Props) => {
             />
             <View style={[styles.container, { marginTop: headerHeight }]}>
                 <View style={{ alignItems: 'center' }}>
-                    {/* <Image
-                        source={{ uri: 'https://tiki.vn/blog/wp-content/uploads/2023/01/Y7deW5ZtpOonbiD_XawHLHdkjKYKHvWxvxNZzKdXXn0L8InieLIH_-U5m0u-RUlFtXKp0Ty91Itj4Oxwn_tjKg_UZo3lxFSrOH_DHIbpKP1LDn80z6BbOxj4d8bmymdy8PWFGjLkTpCdoz-3X-KY7IedQ_dxWJlHSIBWwCYhgM02FvUfVUgLKOQxrQWgjw.jpg' }}
-                        style={styles.infoImage}
-                    /> */}
-                    <Image
-                        source={{ uri: `${preImage}/${user?.image_url}` }}
-                        style={styles.infoImage}
-                    />
-                    <Text style={styles.username}>{user?.name ?? 'Anonymous'}</Text>
+                    {userSelector.image_url === '' ? (
+                        <Image
+                            source={{ uri: 'https://tiki.vn/blog/wp-content/uploads/2023/01/Y7deW5ZtpOonbiD_XawHLHdkjKYKHvWxvxNZzKdXXn0L8InieLIH_-U5m0u-RUlFtXKp0Ty91Itj4Oxwn_tjKg_UZo3lxFSrOH_DHIbpKP1LDn80z6BbOxj4d8bmymdy8PWFGjLkTpCdoz-3X-KY7IedQ_dxWJlHSIBWwCYhgM02FvUfVUgLKOQxrQWgjw.jpg' }}
+                            style={styles.infoImage}
+                        />
+                    ) : (
+                        <Image
+                            source={{ uri: `${preImage}/${userSelector.image_url}` }}
+                            style={styles.infoImage}
+                        />
+                    )}
+                    <Text style={styles.username}>{userSelector.name ?? 'Anonymous'}</Text>
                 </View>
 
                 <View style={styles.buttonWrapper}>
