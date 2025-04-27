@@ -1,31 +1,44 @@
 import React, { useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Tabs } from 'expo-router';
+import { StyleSheet, Text, View } from 'react-native';
 import { TabConfig } from '@/src/common/resource/tab.config';
 import { Fonts } from '@/src/common/resource/fonts';
 import { AppConfig } from '@/src/common/config/app.config';
-import { ToastProvider } from '@/src/customize/toast.context';
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import * as UserManagement from "@/src/data/management/user.management";
+import * as CartManagement from "@/src/data/management/cart.management";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
+import * as CartActions from "@/src/data/store/actions/cart/cart.action";
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/src/data/types/global';
+import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
+import { CartStoreState } from '@/src/data/store/reducers/cart/cart.reducer';
 
 export default function TabLayout() {
-  const tabScreens = TabConfig.screenTabs;
-  const notificationCount = 30;
+  const notificationCount = 0;
+  const preImage = new AppConfig().getPreImage();
+  const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
+  const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+  const dispatch = useDispatch();
 
   useEffect(() => {
     fetchUserInfo();
+    fetchCart();
   }, []);
 
   const fetchUserInfo = async () => {
     try {
-      console.log(await new AppConfig().getUserInfo())
+      const user = await UserManagement.fetchInfoUser();
+      dispatch(UserActions.SaveInfoLogged(user));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const fetchCart = async () => {
+    try {
+      const response = await CartManagement.fetchCartByUser();
+      dispatch(CartActions.SaveCart(response));
     } catch (error) {
       console.log(error);
     }
@@ -47,36 +60,64 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <FontAwesome size={24} name="home" color={color} />,
         }}
       />
-      {tabScreens.map(({ name, title, icon }) => (
-        <Tabs.Screen
-          key={name}
-          name={name}
-          options={{
-            title: title,
-            tabBarIcon: icon
-              ? ({ color }) => (
-                <View>
-                  <FontAwesome
-                    size={name === "notification/index" ? 22 : 24}
-                    name={icon}
-                    color={color}
-                  />
-                  {name === "notification/index" && notificationCount > 0 && (
-                    <View style={style.notifiWrapper}>
-                      <Text style={style.notifyText}>{notificationCount}</Text>
-                    </View>
-                  )}
-                  {name === "cart/index" && notificationCount > 0 && (
-                    <View style={style.notifiWrapper}>
-                      <Text style={style.notifyText}>{notificationCount}</Text>
-                    </View>
-                  )}
+
+      <Tabs.Screen
+        name="search/index"
+        options={{
+          title: "Khám phá",
+          headerShown: false,
+          tabBarIcon: ({ color }) => <FontAwesome size={24} name={'search'} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="notification/index"
+        options={{
+          title: "News",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <View>
+              <FontAwesome size={20} name={'bell'} color={color} />
+              {notificationCount > 0 && (
+                <View style={style.notifiWrapper}>
+                  <Text style={style.notifyText}>{notificationCount}</Text>
                 </View>
-              )
-              : undefined,
-          }}
-        />
-      ))}
+              )}
+            </View>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="cart/index"
+        options={{
+          title: "Giỏ hàng",
+          headerShown: true,
+          tabBarIcon: ({ color }) => (
+            <View>
+              <FontAwesome size={22} name={'shopping-cart'} color={color} />
+              {notificationCount > 0 && (
+                <View style={style.notifiWrapper}>
+                  <Text style={style.notifyText}>{notificationCount}</Text>
+                </View>
+              )}
+            </View>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="me/index"
+        options={{
+          title: "Tài khoản",
+          headerShown: true,
+          tabBarIcon: ({ color }) => (
+            <View>
+              <FontAwesome size={24} name={'user'} color={color} />
+            </View>
+          ),
+        }}
+      />
     </Tabs>
   );
 }
@@ -84,7 +125,7 @@ export default function TabLayout() {
 const style = StyleSheet.create({
   notifiWrapper: {
     position: "absolute",
-    right: -8,
+    right: -10,
     top: -6,
     alignItems: "center",
     justifyContent: "center",

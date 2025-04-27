@@ -10,14 +10,11 @@ import { AuthModel } from "@/src/data/model/auth.model";
 import { Formik } from "formik";
 import * as Yup from 'yup';
 import FormStyle from "@/src/common/styles/form.styles";
-import { ErrorModel } from "@/src/common/model/error.model";
 import { HttpCode } from "@/src/common/resource/http-code";
 import { AppConfig } from "@/src/common/config/app.config";
 import { UserModel } from "@/src/data/model/user.model";
-import * as UserManagement from "@/src/data/management/user.management";
 import { useToast } from "@/src/customize/toast.context";
 import { useDispatch } from "react-redux";
-import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 const signInform = Yup.object().shape({
     email: Yup.string()
@@ -49,8 +46,6 @@ const SignInScreen = () => {
             await new AppConfig().setAccessToken(response.access_token);
             await new AppConfig().setRefreshToken(response.refresh_token);
             await new AppConfig().setUserInfo(userInfo);
-            const userLogged = await UserManagement.fetchInfoUser();
-            dispatch(UserActions.SaveInfoLogged(userLogged));
             router.dismissAll();
             router.push("/(tabs)");
         } catch (error: any) {
