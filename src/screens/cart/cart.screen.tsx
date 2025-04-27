@@ -23,8 +23,11 @@ import * as CouponManagement from "@/src/data/management/coupon.management";
 import { formatCurrency, formatPriceRender } from "@/src/common/utils/currency.helper";
 import { DiscountTypes } from "@/src/common/resource/discount_type";
 import Scissors from "@/assets/images/icon_scissors.svg";
-import { CartShopFinalType } from "@/src/data/types/global";
+import { CartShopFinalType, RootState } from "@/src/data/types/global";
 import { ShopModel } from "@/src/data/model/shop.model";
+import { useDispatch, useSelector } from "react-redux";
+import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer";
+import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 
 type Props = {}
 
@@ -43,6 +46,8 @@ const CartScreen = (props: Props) => {
     const sheetVarientSelectRef = useRef<BottomSheet>(null);
     const sheetCouponSelectRef = useRef<BottomSheet>(null);
     const snapPoints = ["50%"];
+    const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+    const dispatch = useDispatch();
 
     useFocusEffect(
         useCallback(() => {
@@ -123,6 +128,13 @@ const CartScreen = (props: Props) => {
     ) => {
         try {
             await CartManagement.updateQuantityCartItem(cart_item_id, new_quantity);
+            dispatch(
+                CartActions.UpdateQuantityCartItem(
+                    cart_item_id,
+                    cart_shop_id,
+                    new_quantity
+                )
+            );
             setCart(prevCart => {
                 const updatedCart = { ...prevCart } as CartModel;
                 const cartShop = updatedCart.cart_shops?.find(
@@ -291,14 +303,6 @@ const CartScreen = (props: Props) => {
         const final_total = subTotal - discount;
 
         try {
-            // await CartManagement.paymentCart(
-            //     null, /** Bổ sung sau */
-            //     listCartShopFinal,
-            //     subTotal,
-            //     discount,
-            //     final_total
-            // );
-            // showToast("Thanh toán thành công", "success");
             router.navigate({
                 pathname: '/(routes)/payment',
                 params: {
@@ -317,7 +321,12 @@ const CartScreen = (props: Props) => {
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
         try {
             await CartManagement.removeCartItem(cart_item_id);
-
+            dispatch(
+                CartActions.RemoveCartItem(
+                    cart_item_id,
+                    cart_shop_id
+                )
+            )
             setCart(prevCart => {
                 if (!prevCart) return prevCart;
 
@@ -364,6 +373,14 @@ const CartScreen = (props: Props) => {
         variant: ProductVariantModel,
         quantity: number
     ) => {
+        dispatch(
+            CartActions.UpdateCartItem(
+                variant,
+                cart_item_id,
+                cart_shop_id,
+                quantity
+            )
+        );
         setCart(prevCart => {
             const updatedCart = { ...prevCart } as CartModel;
             const cartShop = updatedCart.cart_shops?.find(

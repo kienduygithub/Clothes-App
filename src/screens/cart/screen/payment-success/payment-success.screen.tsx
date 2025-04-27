@@ -7,6 +7,8 @@ import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import * as CartActions from "@/src/data/store/actions/cart/cart.action";
+import { useDispatch } from "react-redux";
 
 type Props = {}
 
@@ -16,6 +18,11 @@ const PaymentSuccessScreen = (props: Props) => {
         order_info: string,
     };
     const parsedOrderInfo: OrderModel = JSON.parse(order_info);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(CartActions.ResetCart());
+    }, [])
 
     const navigateToOrderDetail = () => {
         router.dismissAll();

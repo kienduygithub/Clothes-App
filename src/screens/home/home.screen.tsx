@@ -1,5 +1,5 @@
 import { router, Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HomeStyle from "./home.style";
 import HeaderComponent from "@/src/components/header/header.comp";
 import ProductListComponent from "./comp/product-list/product-list.comp";
@@ -22,10 +22,11 @@ const HomeScreen = () => {
     const [preImage, setPreImage] = useState('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [refreshCategory, setRefreshCategory] = useState(false);
-    const [refreshCProduct, setRefreshProduct] = useState(false);
+    const [refreshProduct, setRefreshProduct] = useState(false);
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
     const [isSearchOverlayVisible, setSearchOverlayVisible] = useState(false);
+    const firstFetching = useRef(true);
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
     const dispatch = useDispatch();
 
@@ -35,9 +36,13 @@ const HomeScreen = () => {
         fetchProducts();
         fetchCart();
         setIsLoading(false)
+        firstFetching.current = false;
     }, [])
 
     useEffect(() => {
+        if (firstFetching.current) {
+            return;
+        }
         if (refreshCategory) {
             fetchCategories();
             setRefreshCategory(false);
@@ -45,11 +50,14 @@ const HomeScreen = () => {
     }, [refreshCategory])
 
     useEffect(() => {
-        if (refreshCProduct) {
+        if (firstFetching.current) {
+            return;
+        }
+        if (refreshProduct) {
             fetchProducts();
             setRefreshProduct(false);
         }
-    }, [refreshCProduct])
+    }, [refreshProduct])
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
@@ -86,7 +94,6 @@ const HomeScreen = () => {
     }
 
     const onHandleSearch = (searchValue: string) => {
-        console.log(searchValue);
         router.push({
             pathname: '/(routes)/search-result',
             params: {

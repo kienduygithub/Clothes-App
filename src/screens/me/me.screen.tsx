@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/data/types/global";
 import * as UserManagement from "@/src/data/management/user.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
+import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 
 type Props = {}
@@ -50,6 +51,7 @@ const MeScreen = (props: Props) => {
     const logout = async () => {
         try {
             await new AppConfig().clear();
+            dispatch(CartActions.ResetCart());
             router.dismissAll();
             router.navigate({
                 pathname: '/(routes)/sign-in'
