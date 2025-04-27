@@ -5,11 +5,16 @@ export enum UserActions {
     SAVE_INFO_LOGGED = '@User/SaveInfoLogged',
     UPDATE_INFO_LOGGED = '@User/UpdateInfoLogged',
     UPDATE_IMAGE_INFO = '@User/UpdateImageInfo',
+    RESET_INFO_LOGGED = '@User/ResetInfoLogged',
 }
 
 export const SaveInfoLogged = (data: UserModel) => ({
     type: UserActions.SAVE_INFO_LOGGED,
     data: data
+} as ActionState)
+
+export const ResetInfoLogged = () => ({
+    type: UserActions.RESET_INFO_LOGGED
 } as ActionState)
 
 export const UpdateInfoLogged = (data: UserModel) => ({
@@ -20,4 +25,4 @@ export const UpdateInfoLogged = (data: UserModel) => ({
 export const UpdateImageInfo = (image_url: string) => ({
     type: UserActions.UPDATE_IMAGE_INFO,
     data: image_url
-})
+} as ActionState)

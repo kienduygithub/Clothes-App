@@ -6,13 +6,15 @@ export interface UserStoreState {
     name: string;
     image_url: string;
     cart_id: number;
+    isLogged: boolean;
 }
 
 const initialState: UserStoreState = {
     id: 0,
     name: '',
     image_url: '',
-    cart_id: 0
+    cart_id: 0,
+    isLogged: false
 }
 
 export const UserReducer = (state = initialState, actions: ActionState) => {
@@ -20,7 +22,13 @@ export const UserReducer = (state = initialState, actions: ActionState) => {
         case UserActions.SAVE_INFO_LOGGED:
             return {
                 ...state,
-                ...actions.data
+                ...actions.data,
+                isLogged: true
+            }
+        case UserActions.RESET_INFO_LOGGED:
+            return {
+                ...state,
+                ...initialState,
             }
         case UserActions.UPDATE_INFO_LOGGED:
             return {

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { TabConfig } from '@/src/common/resource/tab.config';
 import { Fonts } from '@/src/common/resource/fonts';
 import { AppConfig } from '@/src/common/config/app.config';
@@ -44,6 +44,14 @@ export default function TabLayout() {
     }
   }
 
+  const calculateTotalProduct = () => {
+    let total = 0;
+    cartSelector.cart_shops.forEach((cart_shop) => {
+      total += cart_shop.cart_items.length;
+    })
+    return total;
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -57,6 +65,9 @@ export default function TabLayout() {
         options={{
           title: "Trang chủ",
           headerShown: false,
+          tabBarLabelStyle: {
+            fontSize: 13
+          },
           tabBarIcon: ({ color }) => <FontAwesome size={24} name="home" color={color} />,
         }}
       />
@@ -65,6 +76,9 @@ export default function TabLayout() {
         name="search/index"
         options={{
           title: "Khám phá",
+          tabBarLabelStyle: {
+            fontSize: 13
+          },
           headerShown: false,
           tabBarIcon: ({ color }) => <FontAwesome size={24} name={'search'} color={color} />,
         }}
@@ -73,8 +87,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="notification/index"
         options={{
-          title: "News",
+          title: "Thông báo",
           headerShown: false,
+          tabBarLabelStyle: {
+            fontSize: 13
+          },
           tabBarIcon: ({ color }) => (
             <View>
               <FontAwesome size={20} name={'bell'} color={color} />
@@ -93,12 +110,15 @@ export default function TabLayout() {
         options={{
           title: "Giỏ hàng",
           headerShown: true,
+          tabBarLabelStyle: {
+            fontSize: 13
+          },
           tabBarIcon: ({ color }) => (
             <View>
               <FontAwesome size={22} name={'shopping-cart'} color={color} />
-              {notificationCount > 0 && (
+              {calculateTotalProduct() > 0 && (
                 <View style={style.notifiWrapper}>
-                  <Text style={style.notifyText}>{notificationCount}</Text>
+                  <Text style={style.notifyText}>{calculateTotalProduct()}</Text>
                 </View>
               )}
             </View>
@@ -111,9 +131,20 @@ export default function TabLayout() {
         options={{
           title: "Tài khoản",
           headerShown: true,
+          tabBarLabelStyle: {
+            fontSize: 13
+          },
           tabBarIcon: ({ color }) => (
-            <View>
-              <FontAwesome size={24} name={'user'} color={color} />
+            <View style={style.avatarContainer}>
+              {userSelector?.isLogged ? (
+                <Image
+                  source={{ uri: `${preImage}${userSelector.image_url}` }}
+                  style={style.avatar}
+                  onError={() => console.log('Failed to load avatar')}
+                />
+              ) : (
+                <FontAwesome size={24} name={'user'} color={color} />
+              )}
             </View>
           ),
         }}
@@ -143,17 +174,25 @@ const style = StyleSheet.create({
     fontFamily: Fonts.POPPINS_REGULAR,
   },
   tabBarStyle: {
-    // position: "absolute",
+    fontSize: 14,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
-    // borderRadius: 20,
-    height: 60,
-    // bottom: 10,
-    // left: 20,
-    // right: 20,
+    paddingTop: 8,
+    height: 70,
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-  }
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
 });

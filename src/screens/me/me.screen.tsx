@@ -26,15 +26,6 @@ const MeScreen = (props: Props) => {
         fetchInfoUser();
     }, [])
 
-    useEffect(() => {
-        if (firstFetching.current) {
-            firstFetching.current = false;
-            return;
-        }
-
-
-    }, [userSelector])
-
     const fetchInfoUser = async () => {
         try {
             const userLogged = await UserManagement.fetchInfoUser();
@@ -51,6 +42,7 @@ const MeScreen = (props: Props) => {
     const logout = async () => {
         try {
             await new AppConfig().clear();
+            dispatch(UserActions.ResetInfoLogged());
             dispatch(CartActions.ResetCart());
             router.dismissAll();
             router.navigate({
