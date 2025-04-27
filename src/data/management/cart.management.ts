@@ -1,5 +1,5 @@
 import { ErrorModel } from "@/src/common/model/error.model";
-import { CartModel } from "../model/cart.model";
+import { CartItemModel, CartModel } from "../model/cart.model";
 import { ProductVariantModel } from "../model/product_variant.model";
 import * as CartService from "../service/cart.service";
 import { CartShopFinalType } from "../types/global";
@@ -8,24 +8,22 @@ import { OrderModel } from "../model/order.model";
 export const fetchCartByUser = async () => {
     try {
         const result = await CartService.fetchCartByUser();
-        const response: CartModel[] = result?.carts?.map(
-            (cart: any) => new CartModel().convertObj(cart)
-        ) ?? [];
-
-        if (response.length === 0) {
-            return undefined;
-        }
-
-        return response[0];
+        return new CartModel().convertObj(result?.carts[0]);
     } catch (error) {
         throw error;
     }
 }
 
-export const addCartItem = async (product_variant: ProductVariantModel, quantity: number) => {
+export const addCartItem = async (product_variant: ProductVariantModel, quantity: number): Promise<Map<string, any>> => {
     try {
-        await CartService.addCartItem(product_variant, quantity);
-        return true;
+        const result = await CartService.addCartItem(product_variant, quantity);
+        const cartItem = result?.cart_item ? new CartItemModel().convertObj(result?.cart_item) : new CartItemModel();
+        const cartShopId = result?.cart_shop_id;
+        const response = new Map<string, any>();
+        response.set('cart_item', cartItem);
+        response.set('cart_shop_id', cartShopId);
+        response.set('quantity', quantity);
+        return response;
     } catch (error) {
         throw error as ErrorModel;
     }

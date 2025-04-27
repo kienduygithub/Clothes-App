@@ -10,8 +10,13 @@ import { CategoryModel } from "@/src/data/model/category.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import * as CategoryManagement from "../../data/management/category.management";
 import * as ProductManagement from "../../data/management/product.management";
+import * as CartManagement from "@/src/data/management/cart.management";
+import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { ProductModel } from "@/src/data/model/product.model";
 import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/src/data/types/global";
+import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer";
 
 const HomeScreen = () => {
     const [preImage, setPreImage] = useState('');
@@ -21,11 +26,14 @@ const HomeScreen = () => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
     const [isSearchOverlayVisible, setSearchOverlayVisible] = useState(false);
+    const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+    const dispatch = useDispatch();
 
     useEffect(() => {
         fetchPreImage();
         fetchCategories();
         fetchProducts();
+        fetchCart();
         setIsLoading(false)
     }, [])
 
@@ -62,6 +70,16 @@ const HomeScreen = () => {
             const response = await CategoryManagement.fetchParentCategories();
             console.log('Danh mục: Done!');
             setCategories(response);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const fetchCart = async () => {
+        try {
+            const response = await CartManagement.fetchCartByUser();
+            console.log('Giỏ hàng: Done!');
+            dispatch(CartActions.SaveCart(response));
         } catch (error) {
             console.log(error);
         }

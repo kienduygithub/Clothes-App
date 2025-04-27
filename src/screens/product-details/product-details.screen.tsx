@@ -18,8 +18,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
 import { useToast } from "@/src/customize/toast.context"
 import * as CartManagement from "../../data/management/cart.management";
-import { ErrorModel } from "@/src/common/model/error.model"
 import { formatPriceRender } from "@/src/common/utils/currency.helper"
+import { useDispatch, useSelector } from "react-redux"
+import { RootState } from "@/src/data/types/global"
+import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer"
+import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 
 type Props = {};
 
@@ -35,6 +38,8 @@ const ProductDetailScreen = (props: Props) => {
     const [variants, setVariants] = useState<ProductVariantModel[]>([]);
     const [availableVariants, setAvailableVariants] = useState<Map<number, string>>();
     const [products, setProducts] = useState<ProductModel[]>([]);
+    const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+    const dispatch = useDispatch();
 
     const sheetRef = useRef<BottomSheet>(null);
     const [isOpenBottomSheet, setIsOpenBottomSheet] = useState(false);
@@ -103,7 +108,12 @@ const ProductDetailScreen = (props: Props) => {
 
     const handleAddToCart = async (variant: ProductVariantModel, quantity: number) => {
         try {
-            await CartManagement.addCartItem(variant, quantity);
+            const response = await CartManagement.addCartItem(variant, quantity);
+            dispatch(CartActions.AddCartItemToCart(
+                response.get('cart_item'),
+                response.get('cart_shop_id'),
+                quantity
+            ))
             showToast("Đã thêm sản phẩm vào giỏ hàng", "success");
             sheetRef.current?.close();
         } catch (error: any) {
