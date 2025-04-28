@@ -10,6 +10,7 @@ export class UserModel {
     image_url: string;
     cart_id: number;
     roles: string;
+    expires: boolean;
 
     constructor(
         id?: number,
@@ -21,6 +22,7 @@ export class UserModel {
         image_url?: string,
         cart_id?: number,
         roles?: string,
+        expires?: boolean,
     ) {
         this.id = id ?? 0;
         this.name = name ?? '';
@@ -31,6 +33,7 @@ export class UserModel {
         this.image_url = image_url ?? '';
         this.cart_id = cart_id ?? 0;
         this.roles = roles ?? '';
+        this.expires = expires ?? false;
     }
 
     convertObj(data: any) {

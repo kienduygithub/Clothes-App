@@ -43,11 +43,11 @@ const SignInScreen = () => {
             let data = new AuthModel(email, password);
             const response = await AuthManagement.signIn(data);
             const userInfo = new UserModel().convertObj(response?.info);
+            userInfo.expires = true;
             await new AppConfig().setAccessToken(response.access_token);
             await new AppConfig().setRefreshToken(response.refresh_token);
             await new AppConfig().setUserInfo(userInfo);
-            router.dismissAll();
-            router.push("/(tabs)");
+            router.dismissTo("/(tabs)");
         } catch (error: any) {
             console.log(error);
             const status = error?.status;

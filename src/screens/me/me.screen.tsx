@@ -13,14 +13,16 @@ import * as UserManagement from "@/src/data/management/user.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+import { useToast } from "@/src/customize/toast.context";
+import { MessageError } from "@/src/common/resource/message-error";
 
 type Props = {}
 
 const MeScreen = (props: Props) => {
+    const { showToast } = useToast();
     const preImage = new AppConfig().getPreImage();
     const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
     const dispatch = useDispatch();
-    const firstFetching = useRef(true);
 
     useEffect(() => {
         fetchInfoUser();
@@ -30,8 +32,14 @@ const MeScreen = (props: Props) => {
         try {
             const userLogged = await UserManagement.fetchInfoUser();
             dispatch(UserActions.UpdateInfoLogged(userLogged));
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 

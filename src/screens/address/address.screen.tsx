@@ -9,6 +9,9 @@ import { AddressModel } from "@/src/data/model/address.model";
 import * as AddressManagement from "@/src/data/management/address.management";
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
 import { ActionWebs } from "@/src/common/resource/action";
+import { MessageError } from "@/src/common/resource/message-error";
+import { useDispatch } from "react-redux";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 type Props = {}
 
@@ -25,15 +28,22 @@ const AddressScreen = (props: Props) => {
         item: null,
         index: -1
     });
+    const dispatch = useDispatch();
 
     const fetchAddresses = async () => {
         try {
             let response = await AddressManagement.fetchAddressesByUser();
             response = response.sort((a, b) => b.id - a.id);
             setAddresses(response);
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -102,9 +112,16 @@ const AddressScreen = (props: Props) => {
                 return updatedAddresses;
             });
             showToast("Xóa địa chỉ thành công", "success");
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 

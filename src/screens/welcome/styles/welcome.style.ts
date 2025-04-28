@@ -51,6 +51,19 @@ const WelcomeStyle = StyleSheet.create({
         marginBottom: 15,
         gap: 5
     },
+    btnStart: {
+        flexDirection: 'row',
+        padding: 10,
+        borderColor: 'transparent',
+        backgroundColor: CommonColors.primary,
+        borderWidth: 1,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 15,
+        gap: 5,
+        width: 320
+    },
     btnTxt: {
         fontSize: 14,
         fontFamily: Fonts.POPPINS_BOLD,
@@ -68,8 +81,10 @@ const WelcomeStyle = StyleSheet.create({
         fontFamily: Fonts.POPPINS_REGULAR,
     },
     signInTxtSpan: {
-        color: CommonColors.primary,
-        fontFamily: Fonts.POPPINS_BOLD,
+        fontSize: 18,
+        color: CommonColors.white,
+        fontWeight: '700',
+        letterSpacing: 2
     }
 });
 

@@ -4,6 +4,22 @@ import { ProductVariantModel } from "../model/product_variant.model";
 import { CartItemModel } from "../model/cart.model";
 import { CartShopFinalType } from "../types/global";
 
+export const fetchCartByUserNonAuthenticate = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const userInfo = await new AppConfig().getUserInfo();
+        const user_id = userInfo.id;
+        const cart_id = userInfo.cart_id;
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `cart/${cart_id}/user/${user_id}`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const fetchCartByUser = async () => {
     try {
         const domain = new AppConfig().getDomain();

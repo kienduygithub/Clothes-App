@@ -30,14 +30,21 @@ export default function TabLayout() {
     try {
       const user = await UserManagement.fetchInfoUser();
       dispatch(UserActions.SaveInfoLogged(user));
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      if (error?.message === 'Session expired, please log in again') {
+        const user = await new AppConfig().getUserInfo();
+        if (user) {
+          console.log('>>> User___: ', user);
+          dispatch(UserActions.SaveInfoLogged(user));
+        }
+      }
     }
   }
 
   const fetchCart = async () => {
     try {
-      const response = await CartManagement.fetchCartByUser();
+      const response = await CartManagement.fetchCartByUserNonAuthenticate();
       dispatch(CartActions.SaveCart(response));
     } catch (error) {
       console.log(error);

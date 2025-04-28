@@ -28,6 +28,8 @@ import { ShopModel } from "@/src/data/model/shop.model";
 import { useDispatch, useSelector } from "react-redux";
 import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer";
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
+import { MessageError } from "@/src/common/resource/message-error";
 
 type Props = {}
 
@@ -64,11 +66,16 @@ const CartScreen = (props: Props) => {
         setLoading(true);
         try {
             const response = await CartManagement.fetchCartByUser();
-            console.log(response);
             setCart(response);
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Hệ thống đang bận', "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
 
         setRefreshing(false);
@@ -153,9 +160,16 @@ const CartScreen = (props: Props) => {
 
                 return updatedCart;
             });
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Hệ thống đang bận', "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -354,9 +368,16 @@ const CartScreen = (props: Props) => {
                 } as CartModel
             })
             showToast('Loại bỏ sản phẩm thành công', "success");
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Hệ thống đang bận', "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -437,17 +458,18 @@ const CartScreen = (props: Props) => {
             })
         } catch (error: any) {
             console.log(error);
-            switch (error?.message) {
-                case 'Coupon không tồn tại, đã hết hạn, hết lượt dùng, hoặc chưa được lưu':
-                    showToast('Oops! Mã không tồn tại, đã hết hạn, hết lượt dùng', 'error');
-                    return;
-                case 'Tổng giá trị không đủ':
-                    showToast('Oops! Giá trị tối thiếu của đơn hàng không đạt yêu cầu', "error");
-                    return;
-                default:
-                    showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            if (error?.message === 'Coupon không tồn tại, đã hết hạn, hết lượt dùng, hoặc chưa được lưu') {
+                showToast(MessageError.INVALID_COUPON, 'error');
+            } else if (error?.message === 'Tổng giá trị không đủ') {
+                showToast(MessageError.NOT_ENOUGH_SUM, 'error');
+            } else if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
             }
-
         }
     }
 
@@ -464,9 +486,16 @@ const CartScreen = (props: Props) => {
                 }
                 return updatedCart;
             })
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 

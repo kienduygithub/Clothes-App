@@ -104,6 +104,14 @@ const InfoDetailScreen = ({
             setLoading(true);
             await UserManagement.editInfoUser(user);
             dispatch(UserActions.UpdateInfoLogged(user));
+            const userStorage = await new AppConfig().getUserInfo();
+            if (userStorage) {
+                userStorage.name = user.name;
+                userStorage.phone = user.phone;
+                userStorage.gender = user.gender;
+                userStorage.address = user.address;
+                await new AppConfig().setUserInfo(userStorage);
+            }
             setLoading(false);
             setTimeout(() => {
                 showToast("Thay đổi thông tin hồ sơ thành công", "success");
@@ -129,6 +137,11 @@ const InfoDetailScreen = ({
             };
 
             const response = await UserManagement.editAvatarUser(imageFile);
+            const userStorage = await new AppConfig().getUserInfo();
+            if (userStorage) {
+                userStorage.image_url = response;
+                await new AppConfig().setUserInfo(userStorage);
+            }
             setAvatarImage(response);
             dispatch(UserActions.UpdateImageInfo(response));
             showToast("Chỉnh sửa ảnh đại diện thành công", "success");

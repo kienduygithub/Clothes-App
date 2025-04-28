@@ -54,9 +54,12 @@ CustomAxios.interceptors.response.use(
                 }
                 throw new Error('Original request is undefined');
             } catch (error) {
-                await new AppConfig().clear();
                 console.log('>>> Refresh token failed', error);
-
+                const userInfo = await new AppConfig().getUserInfo();
+                if (userInfo) {
+                    userInfo.expires = false;
+                    new AppConfig().setUserInfo(userInfo);
+                }
                 return Promise.reject({
                     message: 'Session expired, please log in again',
                     status: HttpCode.UNAUTHORIZED

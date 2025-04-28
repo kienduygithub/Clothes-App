@@ -14,6 +14,9 @@ import { useRoute } from '@react-navigation/native';
 import { ActionWebs } from '@/src/common/resource/action';
 import SwitchComponent from '@/src/components/switch/switch.component';
 import DialogNotification from '@/src/components/dialog-notification/dialog-notification.component';
+import { MessageError } from '@/src/common/resource/message-error';
+import { useDispatch } from 'react-redux';
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 type FormData = {
     id: number;
@@ -41,6 +44,7 @@ const CRUAddressScreen = (props: Props) => {
     const [selectedWard, setSelectedWard] = useState<WardModel | null>(null);
     const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
     const [isVisibleDefaultAddress, setIsVibleDefaultAddress] = useState(false);
+    const dispatch = useDispatch();
 
     const {
         control,
@@ -105,9 +109,16 @@ const CRUAddressScreen = (props: Props) => {
             await AddressManagement.addAddressByUser(model);
             showToast('Tạo địa chỉ nhận hàng thành công', 'success');
             router.back();
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                router.navigate('/(routes)/sign-in');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
 
     };
@@ -150,9 +161,15 @@ const CRUAddressScreen = (props: Props) => {
             setSelectedProvince(response.city ?? null);
             setSelectedDistrict(response.district ?? null);
             setSelectedWard(response.ward ?? null);
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 

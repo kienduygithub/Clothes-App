@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/src/data/types/global"
 import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer"
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
+import { MessageError } from "@/src/common/resource/message-error"
 
 type Props = {};
 
@@ -119,9 +120,13 @@ const ProductDetailScreen = (props: Props) => {
         } catch (error: any) {
             console.log(error);
             if (error?.message?.includes("Vượt quá số lượng hàng tồn kho")) {
-                showToast("Quá số lượng tồn kho có thể thêm!", "error");
+                showToast(MessageError.EXCEED_QUANTITY_STOCK, "error");
+            } else if (error?.message === 'Session expired, please log in again') {
+                sheetRef.current?.close();
+                router.navigate('/(routes)/sign-in');
+                showToast(MessageError.EXPIRES_SESSION, "error");
             } else {
-                showToast("Hệ thống đang bận", "error");
+                showToast(MessageError.BUSY_SYSTEM, "error");
                 sheetRef.current?.close();
             }
 

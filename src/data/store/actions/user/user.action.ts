@@ -6,6 +6,7 @@ export enum UserActions {
     UPDATE_INFO_LOGGED = '@User/UpdateInfoLogged',
     UPDATE_IMAGE_INFO = '@User/UpdateImageInfo',
     RESET_INFO_LOGGED = '@User/ResetInfoLogged',
+    UPDATE_EXPIRES_LOGGED = '@User/UpdateExpiresLogged'
 }
 
 export const SaveInfoLogged = (data: UserModel) => ({
@@ -25,4 +26,9 @@ export const UpdateInfoLogged = (data: UserModel) => ({
 export const UpdateImageInfo = (image_url: string) => ({
     type: UserActions.UPDATE_IMAGE_INFO,
     data: image_url
+} as ActionState)
+
+export const UpdateExpiresLogged = (expires: boolean) => ({
+    type: UserActions.UPDATE_EXPIRES_LOGGED,
+    data: expires
 } as ActionState)

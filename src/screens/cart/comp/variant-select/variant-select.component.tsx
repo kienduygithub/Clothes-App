@@ -8,8 +8,12 @@ import { useEffect, useRef, useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ProductManagement from "@/src/data/management/product.management";
 import * as CartManagement from "@/src/data/management/cart.management";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { useToast } from "@/src/customize/toast.context";
 import { formatPriceRender } from "@/src/common/utils/currency.helper";
+import { router } from "expo-router";
+import { MessageError } from "@/src/common/resource/message-error";
+import { useDispatch } from "react-redux";
 
 type Props = {
     selectedCartShopId: number,
@@ -44,6 +48,7 @@ const VariantSelectComponent = ({
     const [resetQuantity, setResetQuantity] = useState(false);
     const [loading, setLoading] = useState(false);
     const isInitialLoad = useRef(false);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (selectedCartItem) {
@@ -206,9 +211,16 @@ const VariantSelectComponent = ({
                 setChangeVariantCartItem(selectedCartShopId, selectedCartItem?.id ?? 0, variant, quantity);
                 showToast("Thay đổi sản phẩm thành công", "success");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 

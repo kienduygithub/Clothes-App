@@ -5,6 +5,15 @@ import * as CartService from "../service/cart.service";
 import { CartShopFinalType } from "../types/global";
 import { OrderModel } from "../model/order.model";
 
+export const fetchCartByUserNonAuthenticate = async () => {
+    try {
+        const result = await CartService.fetchCartByUserNonAuthenticate();
+        return new CartModel().convertObj(result?.carts[0]);
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const fetchCartByUser = async () => {
     try {
         const result = await CartService.fetchCartByUser();
