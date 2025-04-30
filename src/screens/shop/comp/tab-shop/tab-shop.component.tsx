@@ -54,6 +54,7 @@ const TabShopComponent = ({
     const fetchCoupons = async () => {
         try {
             const response = await CouponManagement.fetchCouponShopMobile(shop_id);
+            console.log(response);
             if (response) {
                 setCoupons(response);
             }
@@ -134,18 +135,6 @@ const TabShopComponent = ({
             console.log(error);
             showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
             isFetchingPopular.current = false;
-        }
-    }
-
-    const handleScrollPopular = async (event: any) => {
-        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-        const scrollPosition = contentOffset.x;
-        const maxScroll = contentSize.width - layoutMeasurement.width;
-
-        /** Nếu vuốt gần đến cuối (cách mép phải 100px) */
-        if (maxScroll - scrollPosition < 200 && !isFetchingPopular.current) {
-            const nextPage = paginatePopular.currentPage + 1;
-            await fetchPopularProducts(nextPage);
         }
     }
 

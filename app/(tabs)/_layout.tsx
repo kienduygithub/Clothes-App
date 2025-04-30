@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
+import { Tabs, useFocusEffect } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { TabConfig } from '@/src/common/resource/tab.config';
 import { Fonts } from '@/src/common/resource/fonts';
@@ -22,28 +22,15 @@ export default function TabLayout() {
   const firstFetching = useRef(true);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (userSelector.isLogged === false) {
-      console.log('Vào chưa đăng nhập');
-      return;
-    }
-    fetchUserInfo();
-    fetchCart();
-  }, []);
-
-  useEffect(() => {
-    if (firstFetching.current) {
-      firstFetching.current = false;
-      return;
-    }
-
+  useFocusEffect(useCallback(() => {
+    console.log('eaaa');
     if (userSelector.isLogged === false) {
       console.log('Access without logging in');
       return;
     }
     fetchUserInfo();
     fetchCart();
-  }, [userSelector.isLogged])
+  }, []));
 
   const fetchUserInfo = async () => {
     try {
