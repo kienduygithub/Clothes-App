@@ -118,7 +118,7 @@ const MeScreen = (props: Props) => {
                         <Ionicons name="pencil-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Chỉnh sửa thông tin</Text>
                     </TouchableOpacity>
-                    {userSelector.expires === false ? (
+                    {(!userSelector.isLogged || !userSelector.expires) ? (
                         <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/sign-in')}>
                             <AntDesign name="login" size={20} color={CommonColors.black} />
                             <Text style={styles.buttonText}>Đăng nhập</Text>

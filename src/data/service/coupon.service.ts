@@ -13,6 +13,31 @@ export const fetchCouponShopMobile = async (shop_id: number) => {
         throw error;
     }
 }
+export const fetchCouponShopOnlyMobile = async (shop_id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `coupon/shop/${shop_id}/only/mobile`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const fetchCouponUserMobile = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `coupon/user/mobile`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
 
 export const saveCouponMobile = async (coupon_id: number) => {
     try {

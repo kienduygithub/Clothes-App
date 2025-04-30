@@ -62,17 +62,17 @@ const FlashSaleComponent = ({ products, preImage }: Props) => {
         <View style={styles.container}>
             <View style={styles.titleWrapper}>
                 <View style={styles.timerWrapper}>
-                    <Text style={styles.title}>Flash Sale</Text>
-                    <View style={styles.timer}>
+                    <Text style={styles.title}>Mới ra mắt</Text>
+                    {/* <View style={styles.timer}>
                         <FontAwesome name="clock-o" size={16} color={CommonColors.black} />
                         <Text style={styles.timerTxt}>
                             {`${formatTime(timeUnits.days)}:${formatTime(timeUnits.hours)}:${formatTime(timeUnits.minutes)}:${formatTime(timeUnits.seconds)}`}
                         </Text>
-                    </View>
+                    </View> */}
                 </View>
-                <TouchableOpacity>
+                {/* <TouchableOpacity>
                     <Text style={styles.titleBtn}>Tất cả</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
             <FlatList
                 data={products}

@@ -5,7 +5,7 @@ import { Ionicons, Octicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import * as ShopManagement from "@/src/data/management/shop.management";
 import ShopHeaderComponent from "./comp/shop-header/shop-header.component";
 import { AppConfig } from "@/src/common/config/app.config";
@@ -14,6 +14,7 @@ import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import TabProductComponent from "./comp/tab-product/tab-product.component";
 import TabCategoryComponent from "./comp/tab-category/tab-category.component";
 import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
+import { MessageError } from "@/src/common/resource/message-error";
 
 type Props = {}
 
@@ -48,11 +49,9 @@ const ShopScreen = (props: Props) => {
             }
         } catch (error) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau");
+            showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
-
-
 
     useEffect(() => {
         fetchPreImage();
@@ -93,6 +92,7 @@ const ShopScreen = (props: Props) => {
                         })}
                         onIndexChange={setIndex}
                         initialLayout={{ width: WIDTH_SCREEN }}
+                        lazy={true}
                         renderTabBar={props => (
                             <TabBar
                                 {...props}

@@ -14,8 +14,10 @@ import { HttpCode } from "@/src/common/resource/http-code";
 import { AppConfig } from "@/src/common/config/app.config";
 import { UserModel } from "@/src/data/model/user.model";
 import { useToast } from "@/src/customize/toast.context";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as  UserActions from "@/src/data/store/actions/user/user.action";
+import { RootState } from "@/src/data/types/global";
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 
 const signInform = Yup.object().shape({
     email: Yup.string()
@@ -28,6 +30,7 @@ const signInform = Yup.object().shape({
 
 const SignInScreen = () => {
     const { showToast } = useToast();
+    const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const dispatch = useDispatch();
     const FormValidate = {
         REQUIRED: 'required',
@@ -50,7 +53,7 @@ const SignInScreen = () => {
             await new AppConfig().setUserInfo(userInfo);
             dispatch(UserActions.UpdateExpiresLogged(true));
             dispatch(UserActions.UpdateLoggedStatus(true));
-            router.dismissTo("/(tabs)");
+            router.navigate("/(tabs)");
         } catch (error: any) {
             console.log(error);
             const status = error?.status;

@@ -1,7 +1,7 @@
 import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CommonColors } from "@/src/common/resource/colors";
 import { CouponModel } from "@/src/data/model/coupon.model";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useToast } from "@/src/customize/toast.context";
 import * as CouponManagement from "@/src/data/management/coupon.management";
 import * as ShopManagement from "@/src/data/management/shop.management";
@@ -12,6 +12,11 @@ import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import ProductItemComponent from "@/src/screens/home/comp/product-item/product-item.comp";
 import { PaginateModel } from "@/src/common/model/paginate.model";
 import { router } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/src/data/types/global";
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+import { MessageError } from "@/src/common/resource/message-error";
+import * as  UserActions from "@/src/data/store/actions/user/user.action";
 
 type Props = {
     shop: ShopModel | null;
@@ -24,7 +29,7 @@ const { width: WIDTH_SCREEN } = Dimensions.get('screen');
 const TabShopComponent = ({
     shop,
     shop_id,
-    preImage = ''
+    preImage = '',
 }: Props) => {
     const { showToast } = useToast();
     const [coupons, setCoupons] = useState<CouponModel[]>([]);
@@ -46,26 +51,50 @@ const TabShopComponent = ({
             totalPages: 1
         })
     )
-    const [isEndReachedPopular, setIsEndReachedPopular] = useState(false);
-    const [isEndReachedLatest, setIsEndReachedLatest] = useState(false);
     const isFetchingPopular = useRef(false);
     const isFetchingLatest = useRef(false);
+    const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
+    const dispatch = useDispatch();
 
     const fetchCoupons = async () => {
         try {
-            const response = await CouponManagement.fetchCouponShopMobile(shop_id);
-            console.log(response);
-            if (response) {
-                setCoupons(response);
+            const couponShops = await CouponManagement.fetchCouponShopOnlyMobile(shop_id);
+            let userCoupons: CouponModel[] = [];
+
+            if (userSelector.isLogged) {
+                userCoupons = await CouponManagement.fetchCouponUserMobile();
             }
-        } catch (error) {
-            console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+
+            let couponMap = new Map<number, CouponModel>([]);
+            couponShops.forEach((coupon) => {
+                couponMap.set(coupon.id, coupon);
+            })
+
+            userCoupons.forEach((coupon) => {
+                if (couponMap.has(coupon.id)) {
+                    couponMap.set(coupon.id, coupon);
+                }
+            })
+
+            setCoupons(Array.from(couponMap.values()));
+        } catch (error: any) {
+            console.log('78:', error);
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                console.log(MessageError.EXPIRES_SESSION);
+                dispatch(UserActions.UpdateExpiresLogged(false));
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
     const handleSaveCoupon = async (coupon_id: number) => {
         try {
+            if (userSelector.isLogged === false) {
+                showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+                return;
+            }
             await CouponManagement.saveCouponMobile(coupon_id);
             setCoupons((prevCoupons) =>
                 prevCoupons.map((coupon) =>
@@ -74,9 +103,16 @@ const TabShopComponent = ({
                         : coupon
                 )
             );
-        } catch (error) {
-            console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        } catch (error: any) {
+            console.log('94:', error);
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                router.navigate('/(routes)/sign-in')
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -98,13 +134,10 @@ const TabShopComponent = ({
                 currentPage: page
             } as PaginateModel));
 
-            if (page >= paginate.totalPages) {
-                setIsEndReachedPopular(true);
-            }
             isFetchingPopular.current = false;
-        } catch (error) {
-            console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+        } catch (error: any) {
+            console.log('119:', error);
+            showToast(MessageError.BUSY_SYSTEM, 'error');
             isFetchingPopular.current = false;
         }
     }
@@ -127,13 +160,10 @@ const TabShopComponent = ({
                 currentPage: page
             } as PaginateModel));
 
-            if (page >= response.paginate.totalPages) {
-                setIsEndReachedLatest(true);
-            }
             isFetchingPopular.current = false;
         } catch (error) {
-            console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            console.log('145:', error);
+            showToast(MessageError.BUSY_SYSTEM, 'error');
             isFetchingPopular.current = false;
         }
     }
@@ -174,6 +204,7 @@ const TabShopComponent = ({
                             item={coupon}
                             preImage={preImage}
                             onSaveCoupon={(coupon_id) => handleSaveCoupon(coupon_id)}
+                            onUseCoupon={() => router.navigate('/(tabs)/cart')}
                         />
                     ))}
                 </ScrollView>

@@ -23,7 +23,6 @@ export default function TabLayout() {
   const dispatch = useDispatch();
 
   useFocusEffect(useCallback(() => {
-    console.log('eaaa');
     if (userSelector.isLogged === false) {
       console.log('Access without logging in');
       return;
@@ -35,7 +34,6 @@ export default function TabLayout() {
   const fetchUserInfo = async () => {
     try {
       const user = await UserManagement.fetchInfoUser();
-      user.expires = true;
       dispatch(UserActions.SaveInfoLogged(user));
     } catch (error: any) {
       console.log(error);
@@ -151,11 +149,11 @@ export default function TabLayout() {
           },
           tabBarIcon: ({ color }) => (
             <View style={style.avatarContainer}>
-              {userSelector?.isLogged ? (
+              {(userSelector.isLogged && userSelector.image_url !== '') ? (
                 <Image
                   source={{ uri: `${preImage}${userSelector.image_url}` }}
                   style={style.avatar}
-                  onError={() => console.log('Failed to load avatar')}
+                  onError={(error) => console.log('Failed to load avatar:', error)}
                 />
               ) : (
                 <FontAwesome size={24} name={'user'} color={color} />

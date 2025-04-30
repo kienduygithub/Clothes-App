@@ -2,6 +2,7 @@ import ProductListStyle from "./product-list.style"
 import ProductItemComponent from "../product-item/product-item.comp"
 import { View, TouchableOpacity, FlatList, Text } from "react-native"
 import { ProductModel } from "@/src/data/model/product.model"
+import { router } from "expo-router"
 
 type Props = {
     products: ProductModel[],
@@ -15,7 +16,14 @@ const ProductListComponent = ({ products, preImage, flatlist }: Props) => {
         <View style={styles.container}>
             <View style={styles.titleWrapper}>
                 <Text style={styles.title}>Dành cho bạn</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    router.push({
+                        pathname: '/(routes)/search-result',
+                        params: {
+                            search: ''
+                        }
+                    })
+                }}>
                     <Text style={styles.titleBtn}>Tất cả</Text>
                 </TouchableOpacity>
             </View>
