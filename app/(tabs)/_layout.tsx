@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
@@ -19,16 +19,36 @@ export default function TabLayout() {
   const preImage = new AppConfig().getPreImage();
   const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
   const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+  const firstFetching = useRef(true);
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (userSelector.isLogged === false) {
+      console.log('Vào chưa đăng nhập');
+      return;
+    }
     fetchUserInfo();
     fetchCart();
   }, []);
 
+  useEffect(() => {
+    if (firstFetching.current) {
+      firstFetching.current = false;
+      return;
+    }
+
+    if (userSelector.isLogged === false) {
+      console.log('Access without logging in');
+      return;
+    }
+    fetchUserInfo();
+    fetchCart();
+  }, [userSelector.isLogged])
+
   const fetchUserInfo = async () => {
     try {
       const user = await UserManagement.fetchInfoUser();
+      user.expires = true;
       dispatch(UserActions.SaveInfoLogged(user));
     } catch (error: any) {
       console.log(error);
@@ -36,6 +56,7 @@ export default function TabLayout() {
         const user = await new AppConfig().getUserInfo();
         if (user) {
           console.log('>>> User___: ', user);
+          user.expires = false;
           dispatch(UserActions.SaveInfoLogged(user));
         }
       }

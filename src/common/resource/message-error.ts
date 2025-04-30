@@ -3,5 +3,6 @@ export enum MessageError {
     EXPIRES_SESSION = 'Oops! Hết phiên đăng nhập, đăng nhập để tiếp tục',
     EXCEED_QUANTITY_STOCK = 'Quá số lượng tồn kho có thể thêm, chọn sản phẩm khác',
     NOT_ENOUGH_SUM = 'Oops! Giá trị tối thiếu của đơn hàng không đạt yêu cầu',
-    INVALID_COUPON = 'Oops! Mã không tồn tại, đã hết hạn, hết lượt dùng'
+    INVALID_COUPON = 'Oops! Mã không tồn tại, đã hết hạn, hết lượt dùng',
+    NOT_LOGGED_TO_EXECUTE = 'Đăng nhập để thao tác có hiệu lực'
 }

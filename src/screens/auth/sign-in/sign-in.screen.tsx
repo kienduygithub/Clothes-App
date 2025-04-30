@@ -15,6 +15,7 @@ import { AppConfig } from "@/src/common/config/app.config";
 import { UserModel } from "@/src/data/model/user.model";
 import { useToast } from "@/src/customize/toast.context";
 import { useDispatch } from "react-redux";
+import * as  UserActions from "@/src/data/store/actions/user/user.action";
 
 const signInform = Yup.object().shape({
     email: Yup.string()
@@ -47,6 +48,8 @@ const SignInScreen = () => {
             await new AppConfig().setAccessToken(response.access_token);
             await new AppConfig().setRefreshToken(response.refresh_token);
             await new AppConfig().setUserInfo(userInfo);
+            dispatch(UserActions.UpdateExpiresLogged(true));
+            dispatch(UserActions.UpdateLoggedStatus(true));
             router.dismissTo("/(tabs)");
         } catch (error: any) {
             console.log(error);

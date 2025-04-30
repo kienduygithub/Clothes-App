@@ -30,6 +30,7 @@ import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer";
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { MessageError } from "@/src/common/resource/message-error";
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 
 type Props = {}
 
@@ -48,6 +49,7 @@ const CartScreen = (props: Props) => {
     const sheetVarientSelectRef = useRef<BottomSheet>(null);
     const sheetCouponSelectRef = useRef<BottomSheet>(null);
     const snapPoints = ["50%"];
+    const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
     const dispatch = useDispatch();
 
@@ -63,17 +65,25 @@ const CartScreen = (props: Props) => {
     }
 
     const fetchCartByUser = async () => {
+        if (userSelector.isLogged === false) {
+            return;
+        }
         setLoading(true);
         try {
             const response = await CartManagement.fetchCartByUser();
             setCart(response);
         } catch (error: any) {
-            console.log(cart);
             console.log(error);
             if (error?.message === 'Session expired, please log in again') {
                 /** Không làm gì cả */
                 showToast(MessageError.EXPIRES_SESSION, 'error');
                 dispatch(UserActions.UpdateExpiresLogged(false));
+                const cart = new CartModel();
+                cart.id = cartSelector.id;
+                cart.user_id = cartSelector.user_id;
+                cart.cart_shops = [];
+                dispatch(CartActions.SaveCart(cart));
+                setCart(cart);
             } else {
                 showToast(MessageError.BUSY_SYSTEM, 'error');
             }

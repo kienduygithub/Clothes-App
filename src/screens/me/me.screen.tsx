@@ -2,10 +2,10 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 import MeStyle from "./me.style";
 
 import { useHeaderHeight } from "@react-navigation/elements";
-import { router, Stack } from "expo-router";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { router, Stack, useFocusEffect } from "expo-router";
+import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { AppConfig } from "@/src/common/config/app.config";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/data/types/global";
@@ -24,11 +24,16 @@ const MeScreen = (props: Props) => {
     const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        fetchInfoUser();
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            fetchInfoUser();
+        }, [])
+    )
 
     const fetchInfoUser = async () => {
+        if (!userSelector.isLogged) {
+            return;
+        }
         try {
             const userLogged = await UserManagement.fetchInfoUser();
             dispatch(UserActions.UpdateInfoLogged(userLogged));
@@ -36,6 +41,7 @@ const MeScreen = (props: Props) => {
             console.log(error);
             if (error?.message === 'Session expired, please log in again') {
                 /** Không làm gì cả */
+                dispatch(UserActions.UpdateExpiresLogged(false));
                 showToast(MessageError.EXPIRES_SESSION, 'error');
             } else {
                 showToast(MessageError.BUSY_SYSTEM, 'error');
@@ -84,7 +90,7 @@ const MeScreen = (props: Props) => {
                             style={styles.infoImage}
                         />
                     )}
-                    <Text style={styles.username}>{userSelector.name ?? 'Anonymous'}</Text>
+                    <Text style={styles.username}>{userSelector.name === '' ? 'Anonymous' : userSelector.name}</Text>
                 </View>
 
                 <View style={styles.buttonWrapper}>
@@ -112,10 +118,17 @@ const MeScreen = (props: Props) => {
                         <Ionicons name="pencil-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Chỉnh sửa thông tin</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => logout()}>
-                        <Ionicons name="log-out-outline" size={20} color={CommonColors.black} />
-                        <Text style={styles.buttonText}>Đăng xuất</Text>
-                    </TouchableOpacity>
+                    {userSelector.expires === false ? (
+                        <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/sign-in')}>
+                            <AntDesign name="login" size={20} color={CommonColors.black} />
+                            <Text style={styles.buttonText}>Đăng nhập</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity style={styles.button} onPress={() => logout()}>
+                            <AntDesign name="logout" size={20} color={CommonColors.black} />
+                            <Text style={styles.buttonText}>Đăng xuất</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
         </>

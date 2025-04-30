@@ -25,6 +25,7 @@ import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer"
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { MessageError } from "@/src/common/resource/message-error"
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer"
 
 type Props = {};
 
@@ -40,6 +41,7 @@ const ProductDetailScreen = (props: Props) => {
     const [variants, setVariants] = useState<ProductVariantModel[]>([]);
     const [availableVariants, setAvailableVariants] = useState<Map<number, string>>();
     const [products, setProducts] = useState<ProductModel[]>([]);
+    const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
     const dispatch = useDispatch();
 
@@ -110,6 +112,12 @@ const ProductDetailScreen = (props: Props) => {
 
     const handleAddToCart = async (variant: ProductVariantModel, quantity: number) => {
         try {
+            if (userSelector.isLogged === false) {
+                showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+
+                return;
+            }
+
             const response = await CartManagement.addCartItem(variant, quantity);
             dispatch(CartActions.AddCartItemToCart(
                 response.get('cart_item'),

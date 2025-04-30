@@ -47,6 +47,11 @@ export const UserReducer = (state = initialState, actions: ActionState) => {
                 ...state,
                 expires: actions.data ?? false
             } as UserStoreState
+        case UserActions.UPDATE_LOGGED_STATUS:
+            return {
+                ...state,
+                isLogged: actions.data ?? false
+            } as UserStoreState
         default:
             return state;
     }
