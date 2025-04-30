@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QuantityProductComponent from "../quantity-product/quantity-product.comp";
 import { formatPriceRender } from "@/src/common/utils/currency.helper";
+import { useToast } from "@/src/customize/toast.context";
 
 type Props = {
     product: ProductModel,
@@ -26,6 +27,7 @@ const SelectVariantComponent = ({
     cartPosition = { x: 0, y: 0 },
     handleAddToCart
 }: Props) => {
+    const { showToast } = useToast();
     const [colors, setColors] = useState<ColorType[]>([]);
     const [sizes, setSizes] = useState<SizeType[]>([]);
     const [selectedSize, setSelectedSize] = useState<number | null>(null);
@@ -154,12 +156,23 @@ const SelectVariantComponent = ({
             setIsAnimating(false);
         })
     }
+
     const addToCart = () => {
         // animateToCart();
+
+        if (!selectedColor && !selectedSize) {
+            showToast("Vui lòng chọn đầy đủ màu sắc và kích cỡ", "error");
+            return;
+        }
+
         const selectedVariant = variants.find(v => v.color?.id === selectedColor && v.size?.id === selectedSize);
         if (selectedVariant) {
             handleAddToCart(selectedVariant, quantity);
         }
+    }
+
+    const disableAddCart = (): boolean => {
+        return !selectedColor || !selectedSize || !!(selectedColor && selectedSize && stockQuantity <= 0);
     }
 
     return (
@@ -238,7 +251,8 @@ const SelectVariantComponent = ({
                 {/* Button */}
                 <View style={{ paddingHorizontal: 20 }}>
                     <TouchableOpacity
-                        style={styles.buttonAddCart}
+                        style={[styles.buttonAddCart, disableAddCart() && styles.disableButtonAddCart]}
+                        disabled={disableAddCart()}
                         onPress={() => addToCart()}
                     >
                         <Text style={styles.buttonAddCartText}>Thêm vào giỏ hàng</Text>
@@ -368,6 +382,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: CommonColors.white,
         fontWeight: '500'
+    },
+    disableButtonAddCart: {
+        opacity: 0.7
     },
 
     // Styles cho hình ảnh bay

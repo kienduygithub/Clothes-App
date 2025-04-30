@@ -15,6 +15,9 @@ import * as CartManagement from "@/src/data/management/cart.management";
 import * as AddressManagement from "@/src/data/management/address.management";
 import { AddressModel } from "@/src/data/model/address.model";
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
+import { MessageError } from "@/src/common/resource/message-error";
+import { useDispatch } from "react-redux";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 type Props = {}
 
@@ -27,6 +30,7 @@ const PaymentScreen = (props: Props) => {
         final_total: number;
         address_id: number;
     };
+    const dispatch = useDispatch();
     const parsedCartShops: CartShopFinalType[] = JSON.parse(cart_shops);
     const { showToast } = useToast();
     const [preImage, setPreImage] = useState("");
@@ -58,9 +62,15 @@ const PaymentScreen = (props: Props) => {
                 }
             }, 500);
 
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -109,21 +119,21 @@ const PaymentScreen = (props: Props) => {
                     id: 1
                 }
             });
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
     return (
         <>
-            <Stack.Screen
-                options={{
-                    title: 'Thanh toán',
-                    headerTitleAlign: 'center',
-                    headerShown: false
-                }}
-            />
             {/* Header */}
             <View style={styles.headerContainer}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>

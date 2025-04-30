@@ -14,6 +14,7 @@ import { CommonColors } from "@/src/common/resource/colors"
 import * as ImagePicker from 'expo-image-picker';
 import * as UserActions from '@/src/data/store/actions/user/user.action';
 import { useDispatch } from "react-redux"
+import { MessageError } from "@/src/common/resource/message-error"
 
 type FormData = {
     name: string;
@@ -66,9 +67,15 @@ const InfoDetailScreen = ({
             setValue("phone", user.phone !== '' ? `${user.phone.slice(3)}` : '');
             setValue("address", user.address);
             dispatch(UserActions.UpdateInfoLogged(user));
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -116,10 +123,17 @@ const InfoDetailScreen = ({
             setTimeout(() => {
                 showToast("Thay đổi thông tin hồ sơ thành công", "success");
             }, 500)
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
             setLoading(false);
-            showToast("Oops! Hệ thống đang bận, quay lại sau");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 
@@ -145,9 +159,16 @@ const InfoDetailScreen = ({
             setAvatarImage(response);
             dispatch(UserActions.UpdateImageInfo(response));
             showToast("Chỉnh sửa ảnh đại diện thành công", "success");
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            if (error?.message === 'Session expired, please log in again') {
+                /** Không làm gì cả */
+                router.navigate('/(routes)/sign-in');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
     }
 

@@ -68,6 +68,7 @@ const CartScreen = (props: Props) => {
             const response = await CartManagement.fetchCartByUser();
             setCart(response);
         } catch (error: any) {
+            console.log(cart);
             console.log(error);
             if (error?.message === 'Session expired, please log in again') {
                 /** Không làm gì cả */
@@ -652,7 +653,7 @@ const CartScreen = (props: Props) => {
                             }}
                         />
                     )}
-                    {cart && cart.cart_shops.length === 0 && (
+                    {(!cart || cart?.cart_shops.length === 0) && (
                         <Animated.View style={styles.emptyCartContainer}>
                             <Image
                                 style={styles.emptyCartImage}

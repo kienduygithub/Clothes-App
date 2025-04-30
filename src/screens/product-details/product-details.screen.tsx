@@ -24,6 +24,7 @@ import { RootState } from "@/src/data/types/global"
 import { CartStoreState } from "@/src/data/store/reducers/cart/cart.reducer"
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { MessageError } from "@/src/common/resource/message-error"
+import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
 
 type Props = {};
 
@@ -229,44 +230,6 @@ const ProductDetailScreen = (props: Props) => {
                                     <RenderHTML contentWidth={Dimensions.get('window').width} source={{ html: product.description }} />
                                 </View>
                             </Animated.View>
-
-                            {/* <Animated.View style={styles.productVariantWrapper} entering={FadeInDown.delay(1300).duration(500)}>
-                            <View style={styles.productVariantType}>
-                                <Text style={styles.productVariantTitle}>Color</Text>
-
-                                <View style={styles.productVariantValueWrapper}>
-                                    <View style={styles.productSeletedVariantColor}>
-                                        <View style={[styles.productVariantColorValue, { backgroundColor: CommonColors.yellow }]}></View>
-                                    </View>
-                                    <View style={[styles.productVariantColorValue, { backgroundColor: CommonColors.gray }]}></View>
-                                    <View style={[styles.productVariantColorValue, { backgroundColor: CommonColors.green }]}></View>
-                                    <View style={[styles.productVariantColorValue, { backgroundColor: CommonColors.primary }]}></View>
-                                    <View style={[styles.productVariantColorValue, { backgroundColor: CommonColors.red }]}></View>
-                                    <View style={[styles.productVariantColorValue, { backgroundColor: CommonColors.purple }]}></View>
-                                </View>
-                            </View>
-                            <View style={styles.productVariantType}>
-                                <Text style={styles.productVariantTitle}>Size</Text>
-
-                                <View style={styles.productVariantValueWrapper}>
-                                    <View style={[styles.productVariantSizeValue, styles.productSeletedVariantSize]}>
-                                        <Text style={[styles.productVariantSizeValueTxt, styles.productSeletedVariantSizeTxt]}>S</Text>
-                                    </View>
-                                    <View style={[styles.productVariantSizeValue]}>
-                                        <Text style={[styles.productVariantSizeValueTxt]}>M</Text>
-                                    </View>
-                                    <View style={[styles.productVariantSizeValue]}>
-                                        <Text style={[styles.productVariantSizeValueTxt]}>L</Text>
-                                    </View>
-                                    <View style={[styles.productVariantSizeValue]}>
-                                        <Text style={[styles.productVariantSizeValueTxt]}>XL</Text>
-                                    </View>
-                                    <View style={[styles.productVariantSizeValue]}>
-                                        <Text style={[styles.productVariantSizeValueTxt]}>XXL</Text>
-                                    </View>
-                                </View>
-                            </View>
-                        </Animated.View> */}
                         </Animated.View>
                     )}
                     {/* Shop */}
@@ -330,7 +293,7 @@ const ProductDetailScreen = (props: Props) => {
                         <Ionicons name="cart-outline" size={20} color={CommonColors.primary} />
                         <Text style={[styles.buttonTxt, { color: CommonColors.primary }]}>Thêm vào giỏ</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={() => handleSnapPress(0)}>
                         <Text style={styles.buttonTxt}>Mua ngay</Text>
                     </TouchableOpacity>
                 </Animated.View>
