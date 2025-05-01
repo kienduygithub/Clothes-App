@@ -171,6 +171,16 @@ function RootLayoutNav() {
             }}
           />
 
+          {/* Chatbot */}
+          <Stack.Screen
+            name="(routes)/chatbot/index"
+            options={{
+              title: 'Chatbot hỏi đáp',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
           <Stack.Screen
             name="(tabs)"
             options={{

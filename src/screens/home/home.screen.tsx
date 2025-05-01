@@ -5,13 +5,15 @@ import HeaderComponent from "@/src/components/header/header.comp";
 import ProductListComponent from "./comp/product-list/product-list.comp";
 import CategoryListComponent from "./comp/category-list/category-list.comp";
 import FlashSaleComponent from "./comp/flash-sale/flash-sale.comp";
-import { ActivityIndicator, Image, ScrollView, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { CategoryModel } from "@/src/data/model/category.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import * as CategoryManagement from "../../data/management/category.management";
 import * as ProductManagement from "../../data/management/product.management";
 import { ProductModel } from "@/src/data/model/product.model";
 import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
+import { FontAwesome } from "@expo/vector-icons";
+import { CommonColors } from "@/src/common/resource/colors";
 
 const HomeScreen = () => {
     const [preImage, setPreImage] = useState('');
@@ -85,6 +87,14 @@ const HomeScreen = () => {
         setSearchOverlayVisible(false);
     }
 
+    const ChatbotButton: React.FC<{ onPress: () => void }> = ({ onPress }) => {
+        return (
+            <TouchableOpacity style={styles.chatbotButton} onPress={onPress}>
+                <FontAwesome name="comments" size={26} color={CommonColors.white} />
+            </TouchableOpacity>
+        );
+    };
+
     return (
         <>
             <HeaderComponent openSearch={() => setSearchOverlayVisible(true)} />
@@ -111,6 +121,7 @@ const HomeScreen = () => {
                             <ProductListComponent preImage={preImage} products={products} flatlist={false} />
                         </ScrollView>
                         <SearchOverlayComponent isVisible={isSearchOverlayVisible} onHandleSearch={onHandleSearch} onClose={() => setSearchOverlayVisible(false)} />
+                        <ChatbotButton onPress={() => router.navigate('/(routes)/chatbot')} />
                     </>
                 )
             }
