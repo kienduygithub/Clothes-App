@@ -132,3 +132,41 @@ export const searchAndFilterProductShopMobile = async (
         throw error;
     }
 }
+
+export const searchAndFilterProductsByParentCategoryMobile = async (
+    parentCategoryId: number,
+    searchValue: string,
+    page: number,
+    limit: number,
+    origins: string[],
+    sortPrice: Sort,
+    minPrice: number,
+    maxPrice: number,
+    minRatings: number[]
+) => {
+    try {
+        const result = await ProductService.searchAndFilterProductsByParentCategoryMobile(
+            parentCategoryId,
+            searchValue,
+            page,
+            limit,
+            origins,
+            sortPrice,
+            minPrice,
+            maxPrice,
+            minRatings
+        );
+        const products: ProductModel[] = result?.products?.map(
+            (product: any) => new ProductModel().convertObj(product)
+        ) ?? [];
+        const paginate = new PaginateModel().convertObj(result?.paginate);
+        const response: ProductPaginate = {
+            products: products,
+            paginate: paginate
+        }
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

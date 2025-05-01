@@ -82,6 +82,14 @@ type FilterParams = {
     minRatings: number[]
 }
 
+type FilterCategoryParams = {
+    origins: string[],
+    sortPrice: Sort,
+    minPrice: number,
+    maxPrice: number,
+    minRatings: number[]
+}
+
 type PriceRange = {
     label: string,
     minPrice: number,

@@ -148,3 +148,46 @@ export const searchAndFilterProductShopMobile = async (
         throw error;
     }
 }
+
+export const searchAndFilterProductsByParentCategoryMobile = async (
+    parentCategoryId: number,
+    searchValue: string,
+    page: number,
+    limit: number,
+    origins: string[],
+    sortPrice: Sort,
+    minPrice: number,
+    maxPrice: number,
+    minRatings: number[]
+) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const queryParams = new URLSearchParams({
+            search: searchValue,
+            page: page.toString(),
+            limit: limit.toString(),
+            sortPrice: sortPrice,
+            minPrice: minPrice.toString(),
+            maxPrice: maxPrice.toString()
+        });
+
+        if (origins && origins.length > 0) {
+            let originParams = origins.join(',');
+            queryParams.append('origins', originParams);
+        }
+
+        if (minRatings && minRatings.length > 0) {
+            let minRatingParams = minRatings.map((rating) => rating.toString()).join(',');
+            queryParams.append('minRatings', minRatingParams);
+        }
+
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `product/search-and-filter/category/${parentCategoryId}?${queryParams.toString()}`
+        )
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

@@ -1,7 +1,7 @@
-import { FlatList, Image, RefreshControl, Text, View } from "react-native";
+import { FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 import SearchStyle from "./search.style";
 import { useEffect, useState } from "react";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { useHeaderHeight } from "@react-navigation/elements"
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as CategoryManagement from "../../data/management/category.management";
@@ -49,6 +49,16 @@ const SearchScreen = (props: Props) => {
         setRefreshing(false);
     }
 
+    const navigateCategorySearch = (parent_id: number) => {
+        router.navigate({
+            pathname: "/(routes)/category-search",
+            params: {
+                id: parent_id,
+                search: ''
+            }
+        })
+    }
+
     const headerHeight = useHeaderHeight();
     return (
         <>
@@ -69,12 +79,14 @@ const SearchScreen = (props: Props) => {
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[CommonColors.primary]} />
                     }
                     renderItem={({ index, item }) => (
-                        <Animated.View style={styles.itemWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
-                            <View style={styles.textWrapper}>
-                                <Text style={styles.itemTitle}>{item.category_name}</Text>
-                                <Text style={styles.itemCount}>{item.count} sản phẩm</Text>
-                            </View>
-                            <Image source={{ uri: `${preImage}/${item.image_url}` }} style={styles.itemImage} />
+                        <Animated.View entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
+                            <TouchableOpacity onPress={() => navigateCategorySearch(item.id)} style={styles.itemWrapper}>
+                                <View style={styles.textWrapper}>
+                                    <Text style={styles.itemTitle}>{item.category_name}</Text>
+                                    <Text style={styles.itemCount}>{item.count} sản phẩm</Text>
+                                </View>
+                                <Image source={{ uri: `${preImage}/${item.image_url}` }} style={styles.itemImage} />
+                            </TouchableOpacity>
                         </Animated.View>
                     )}
                 />

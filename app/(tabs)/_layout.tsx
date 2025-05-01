@@ -22,10 +22,10 @@ export default function TabLayout() {
   const dispatch = useDispatch();
 
   useFocusEffect(useCallback(() => {
-    // if (userSelector.isLogged === false) {
-    //   console.log('Access without logging in');
-    //   return;
-    // }
+    if (userSelector.isLogged === false) {
+      console.log('Access without logging in');
+      return;
+    }
     fetchUserInfo();
     fetchCart();
   }, []));

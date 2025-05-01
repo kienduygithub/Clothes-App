@@ -180,6 +180,15 @@ function RootLayoutNav() {
               headerShown: false
             }}
           />
+          {/* Explore */}
+          <Stack.Screen
+            name="(routes)/category-search/index"
+            options={{
+              title: 'Tìm kiếm danh mục',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
 
           <Stack.Screen
             name="(tabs)"
