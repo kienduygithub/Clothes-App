@@ -61,7 +61,7 @@ export const fetchAddressesByUser = async () => {
 export const fetchAddressById = async (address_id: number) => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = ServiceCore.GET(
+        const response = await ServiceCore.GET(
             `${domain}`,
             `address/details/${address_id}`,
         );
@@ -74,7 +74,7 @@ export const fetchAddressById = async (address_id: number) => {
 export const fetchDefaultAddress = async () => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = ServiceCore.GET(
+        const response = await ServiceCore.GET(
             `${domain}`,
             `address/default`,
         );
@@ -89,7 +89,7 @@ export const addAddressByUser = async (data: AddressModel) => {
     try {
         const domain = new AppConfig().getDomain();
         const newAddress = new AddressModel().convertToExecute(data);
-        const response = ServiceCore.POST(
+        const response = await ServiceCore.POST(
             `${domain}`,
             `address`,
             newAddress
@@ -105,7 +105,7 @@ export const editAddressByUser = async (data: AddressModel) => {
     try {
         const domain = new AppConfig().getDomain();
         const editAddress = new AddressModel().convertToExecute(data);
-        const response = ServiceCore.PUT(
+        const response = await ServiceCore.PUT(
             `${domain}`,
             `address/${data.id}`,
             editAddress
@@ -120,7 +120,7 @@ export const editAddressByUser = async (data: AddressModel) => {
 export const deleteAddressById = async (address_id: number) => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = ServiceCore.DELETE(
+        const response = await ServiceCore.DELETE(
             `${domain}`,
             `address/${address_id}`,
         );
@@ -134,7 +134,7 @@ export const deleteAddressById = async (address_id: number) => {
 export const setAddressAsDefault = async (address_id: number) => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = ServiceCore.PATCH(
+        const response = await ServiceCore.PATCH(
             `${domain}`,
             `address/${address_id}`,
             {}

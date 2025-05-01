@@ -5,7 +5,7 @@ import { AuthModel } from "../model/auth.model";
 export const signIn = async (data: AuthModel) => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = ServiceCore.POST(
+        const response = await ServiceCore.POST(
             `${domain}`,
             `auth/sign-in/mobile`,
             data
