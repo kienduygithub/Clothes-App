@@ -19,14 +19,13 @@ export default function TabLayout() {
   const preImage = new AppConfig().getPreImage();
   const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
   const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
-  const firstFetching = useRef(true);
   const dispatch = useDispatch();
 
   useFocusEffect(useCallback(() => {
-    if (userSelector.isLogged === false) {
-      console.log('Access without logging in');
-      return;
-    }
+    // if (userSelector.isLogged === false) {
+    //   console.log('Access without logging in');
+    //   return;
+    // }
     fetchUserInfo();
     fetchCart();
   }, []));
@@ -34,6 +33,7 @@ export default function TabLayout() {
   const fetchUserInfo = async () => {
     try {
       const user = await UserManagement.fetchInfoUser();
+      user.expires = true;
       dispatch(UserActions.SaveInfoLogged(user));
     } catch (error: any) {
       console.log(error);

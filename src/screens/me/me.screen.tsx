@@ -36,6 +36,7 @@ const MeScreen = (props: Props) => {
         }
         try {
             const userLogged = await UserManagement.fetchInfoUser();
+            userLogged.expires = true;
             dispatch(UserActions.UpdateInfoLogged(userLogged));
         } catch (error: any) {
             console.log(error);
@@ -118,15 +119,15 @@ const MeScreen = (props: Props) => {
                         <Ionicons name="pencil-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Chỉnh sửa thông tin</Text>
                     </TouchableOpacity>
-                    {(!userSelector.isLogged || !userSelector.expires) ? (
-                        <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/sign-in')}>
-                            <AntDesign name="login" size={20} color={CommonColors.black} />
-                            <Text style={styles.buttonText}>Đăng nhập</Text>
-                        </TouchableOpacity>
-                    ) : (
+                    {(userSelector.isLogged && userSelector.expires) ? (
                         <TouchableOpacity style={styles.button} onPress={() => logout()}>
                             <AntDesign name="logout" size={20} color={CommonColors.black} />
                             <Text style={styles.buttonText}>Đăng xuất</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/sign-in')}>
+                            <AntDesign name="login" size={20} color={CommonColors.black} />
+                            <Text style={styles.buttonText}>Đăng nhập</Text>
                         </TouchableOpacity>
                     )}
                 </View>
