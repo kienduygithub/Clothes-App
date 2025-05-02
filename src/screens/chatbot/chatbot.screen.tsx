@@ -123,7 +123,7 @@ const ChatbotScreen = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId]);
+    }, [inputText, userId]);
 
     const renderMessageItem: ListRenderItem<Message> = ({ item }) => {
         if (item.isUser) {
