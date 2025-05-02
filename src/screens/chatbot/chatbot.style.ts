@@ -8,7 +8,7 @@ const ChatbotStyle = StyleSheet.create({
     },
     header: {
         backgroundColor: CommonColors.primary,
-        paddingVertical: 15,
+        paddingBottom: 15,
         paddingHorizontal: 20,
         paddingTop: 50,
         borderBottomWidth: 1,
@@ -49,15 +49,66 @@ const ChatbotStyle = StyleSheet.create({
         fontSize: 18,
     },
     userText: {
-        color: '#fff',
+        color: CommonColors.white,
     },
     botText: {
         color: CommonColors.black,
     },
     typingText: {
+        color: '#555',
         fontSize: 14,
-        color: CommonColors.black,
         marginLeft: 5,
+    },
+    productLink: {
+        color: CommonColors.primary,
+        textDecorationLine: 'underline',
+        fontWeight: 'bold',
+    },
+    messageImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 8,
+        marginTop: 8,
+        marginBottom: 4,
+        resizeMode: 'cover',
+        backgroundColor: '#f0f0f0',
+    },
+    imageContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    productCard: {
+        backgroundColor: '#f9f9f9',
+        borderRadius: 8,
+        padding: 10,
+        marginTop: 8,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    productTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 5,
+    },
+    productPrice: {
+        fontSize: 14,
+        color: CommonColors.primary,
+        fontWeight: 'bold',
+    },
+    productButton: {
+        backgroundColor: CommonColors.primary,
+        borderRadius: 5,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        alignSelf: 'flex-start',
+        marginTop: 8,
+    },
+    productButtonText: {
+        color: CommonColors.white,
+        fontSize: 13,
     },
     inputContainer: {
         flexDirection: 'row',

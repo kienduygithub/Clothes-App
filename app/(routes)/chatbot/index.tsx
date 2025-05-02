@@ -1,7 +1,9 @@
 import ChatbotScreen from "@/src/screens/chatbot/chatbot.screen"
 
 const index = () => {
-    return <ChatbotScreen />
+    return (
+        <ChatbotScreen />
+    )
 }
 
 export default index;

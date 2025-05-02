@@ -17,6 +17,7 @@ import ChatbotIcon from "@/assets/images/chatbot.svg";
 import { CommonColors } from '@/src/common/resource/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 interface Message {
     id: string;
@@ -38,16 +39,23 @@ const ChatbotScreen = () => {
     const [inputText, setInputText] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [userId, setUserId] = useState<number | null>(null);
+    const [preImage, setPreImage] = useState<string>('');
 
     useEffect(() => {
         loadUserAndHistory();
+        fetchPreImage();
     }, [])
+
+    const fetchPreImage = () => {
+        const preImage = new AppConfig().getPreImage();
+        setPreImage(preImage);
+    }
 
     const loadUserAndHistory = async () => {
         try {
             const storedUser = await new AppConfig().getUserInfo();
             let currentUserId: number;
-            if (storedUser) {
+            if (storedUser && Object.keys(storedUser).length > 0) {
                 currentUserId = storedUser.id;
                 setUserId(currentUserId);
             } else {
@@ -117,30 +125,130 @@ const ChatbotScreen = () => {
         }
     }, [inputText, userId]);
 
-    const renderMessageItem: ListRenderItem<Message> = ({ item }) => (
-        <View style={[
-            styles.messageBubble,
-            item.isUser ? styles.userBubble : styles.botBubble
-        ]}>
-            <Text style={[
-                styles.messageText,
-                item.isUser ? styles.userText : styles.botText
-            ]}>
-                {item.text}
-            </Text>
-        </View>
-    );
+    const renderMessageItem: ListRenderItem<Message> = ({ item }) => {
+        if (item.isUser) {
+            return (
+                <View style={[styles.messageBubble, styles.userBubble]}>
+                    <Text style={[styles.messageText, styles.userText]}>
+                        {item.text}
+                    </Text>
+                </View>
+            )
+        } else {
+            /** Đối với bot thì kiểm tra product IDs và đường dần ảnh **/
+            const productIdRegex = /sản phẩm #(\d+)/g;
+            const imageUrlRegex = /Hình ảnh:[\s\S]*?([\w-]+\.[a-zA-z]+)/g;
+
+            let message = item.text;
+            let productMatches = [...message.matchAll(productIdRegex)];
+            let imageMatches = [...message.matchAll(imageUrlRegex)];
+
+            // Nếu không có product IDs hoặc ảnh, render message bình thường
+            if (productMatches.length === 0 && imageMatches.length === 0) {
+                return (
+                    <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
+                        <Text style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
+                            {message}
+                        </Text>
+                    </View>
+                );
+            }
+
+            // Chuẩn bị các component với đường dẫn links và ảnh
+            const messageComponents = [];
+            let lastIndex = 0;
+
+            // Xử lý product ID links
+            for (const match of productMatches) {
+                const productId = match[1];
+                const index = match.index || 0;
+
+                // Thêm text trước product ID
+                if (index > lastIndex) {
+                    messageComponents.push(
+                        <Text key={`text-${lastIndex}`} style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
+                            {message.substring(lastIndex, index)}
+                        </Text>
+                    );
+                }
+
+                // Thêm button click link
+                messageComponents.push(
+                    <TouchableOpacity
+                        key={`product-${index}`}
+                        onPress={() => handleProductPress(parseInt(productId))}
+                    >
+                        <Text style={[ChatbotStyle.messageText, ChatbotStyle.productLink]}>
+                            {match[0]}
+                        </Text>
+                    </TouchableOpacity>
+                );
+
+                lastIndex = index + match[0].length;
+            }
+
+            // Thêm text còn lại
+            if (lastIndex < message.length) {
+                messageComponents.push(
+                    <Text key={`text-end`} style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
+                        {message.substring(lastIndex)}
+                    </Text>
+                );
+            }
+
+            // Thêm ảnh (nếu có)
+            if (imageMatches.length > 0) {
+                const imageComponents = [];
+
+                for (const match of imageMatches) {
+                    const imageUrl = match[1];
+                    // Remove any escaped backslashes if present
+                    const cleanImageUrl = imageUrl.replace(/\\/g, '');
+
+                    imageComponents.push(
+                        <Image
+                            key={`image-${cleanImageUrl}`}
+                            source={{ uri: `${preImage}/products/${cleanImageUrl}` }}
+                            style={ChatbotStyle.messageImage}
+                            resizeMode="cover"
+                        />
+                    );
+                }
+
+                // Add images in a grid-like layout
+                messageComponents.push(
+                    <View key="image-container" style={ChatbotStyle.imageContainer}>
+                        {imageComponents}
+                    </View>
+                );
+            }
+            return (
+                <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
+                    {messageComponents}
+                </View>
+            )
+        }
+    };
 
     const renderTypingIndicator = () => {
         if (!loading) return null;
 
         return (
-            <View style={[styles.messageBubble, styles.botBubble]}>
+            <View style={[styles.messageBubble, styles.botBubble, { flexDirection: 'row', gap: 5 }]}>
                 <ActivityIndicator size="small" color="#444" />
-                <Text style={styles.typingText}>...</Text>
+                <Text style={[styles.typingText, { fontSize: 16 }]}>...</Text>
             </View>
         );
     };
+
+    const handleProductPress = (productId: number) => {
+        router.navigate({
+            pathname: "/(routes)/product-details",
+            params: {
+                id: productId
+            }
+        })
+    }
 
     return (
         <View style={styles.container}>
@@ -166,7 +274,7 @@ const ChatbotScreen = () => {
                     style={styles.input}
                     value={inputText}
                     onChangeText={setInputText}
-                    placeholder="Ask something about our products..."
+                    placeholder="Đặt câu hỏi..."
                     placeholderTextColor="#999"
                     onSubmitEditing={sendMessage}
                 />
@@ -175,7 +283,7 @@ const ChatbotScreen = () => {
                     onPress={sendMessage}
                     disabled={!inputText.trim() || loading}
                 >
-                    <Text style={styles.sendButtonText}>Send</Text>
+                    <Text style={styles.sendButtonText}>Gửi</Text>
                 </TouchableOpacity>
             </View>
         </View>
