@@ -4,7 +4,7 @@ import { ProductModel } from '../model/product.model';
 export const fetchFavoritesByUser = async () => {
     try {
         const result = await FavoriteService.fetchFavoritesByUser();
-        const response = result?.products?.map(
+        const response: ProductModel[] = result?.products?.map(
             (product: any) => new ProductModel().convertObj(product)
         ) ?? [];
 

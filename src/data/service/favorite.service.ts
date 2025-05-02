@@ -4,9 +4,10 @@ import { ServiceCore } from "@/src/common/service/service.core";
 export const fetchFavoritesByUser = async () => {
     try {
         const domain = new AppConfig().getDomain();
+        const userLogged = await new AppConfig().getUserInfo();
         const response = await ServiceCore.GET(
             `${domain}`,
-            `product-favorite`
+            `product-favorite/user/${userLogged.id}`
         );
         return response;
     } catch (error) {

@@ -8,6 +8,9 @@ export enum UserActions {
     RESET_INFO_LOGGED = '@User/ResetInfoLogged',
     UPDATE_EXPIRES_LOGGED = '@User/UpdateExpiresLogged',
     UPDATE_LOGGED_STATUS = '@User/UpdateLoggedStatus',
+    SAVE_FAVORITES = '@User/SaveFavorites',
+    ADD_FAVORITE = '@User/AddFavorite',
+    REMOVE_FAVORITE = '@User/RemoveFavorite'
 }
 
 export const SaveInfoLogged = (data: UserModel) => ({
@@ -37,4 +40,19 @@ export const UpdateExpiresLogged = (expires: boolean) => ({
 export const UpdateLoggedStatus = (isLogged: boolean) => ({
     type: UserActions.UPDATE_LOGGED_STATUS,
     data: isLogged
+} as ActionState)
+
+export const SaveFavorites = (favorites: number[]) => ({
+    type: UserActions.SAVE_FAVORITES,
+    data: favorites
+} as ActionState)
+
+export const AddFavorite = (product_id: number) => ({
+    type: UserActions.ADD_FAVORITE,
+    data: product_id
+} as ActionState)
+
+export const RemoveFavorite = (product_id: number) => ({
+    type: UserActions.REMOVE_FAVORITE,
+    data: product_id
 } as ActionState)

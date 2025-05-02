@@ -6,6 +6,7 @@ export interface UserStoreState {
     name: string;
     image_url: string;
     cart_id: number;
+    favorites: number[],
     isLogged: boolean;
     expires: boolean;
 }
@@ -15,6 +16,7 @@ const initialState: UserStoreState = {
     name: '',
     image_url: '',
     cart_id: 0,
+    favorites: [],
     isLogged: false,
     expires: false
 }
@@ -52,6 +54,29 @@ export const UserReducer = (state = initialState, actions: ActionState) => {
                 ...state,
                 isLogged: actions.data ?? false
             } as UserStoreState
+        case UserActions.SAVE_FAVORITES:
+            return {
+                ...state,
+                favorites: actions.data
+            } as UserStoreState
+        case UserActions.ADD_FAVORITE:
+            {
+                let currFavorites = [...state.favorites];
+                currFavorites.push(actions.data);
+                return {
+                    ...state,
+                    favorites: currFavorites
+                } as UserStoreState
+            }
+        case UserActions.REMOVE_FAVORITE:
+            {
+                let currFavorites = [...state.favorites];
+                currFavorites = currFavorites.filter(favorite => favorite !== actions.data);
+                return {
+                    ...state,
+                    favorites: currFavorites
+                } as UserStoreState
+            }
         default:
             return state;
     }

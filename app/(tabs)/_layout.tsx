@@ -7,6 +7,7 @@ import { Fonts } from '@/src/common/resource/fonts';
 import { AppConfig } from '@/src/common/config/app.config';
 import * as UserManagement from "@/src/data/management/user.management";
 import * as CartManagement from "@/src/data/management/cart.management";
+import * as FavoriteManagement from "@/src/data/management/favorite.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,7 +27,9 @@ export default function TabLayout() {
       console.log('Access without logging in');
       return;
     }
+
     fetchUserInfo();
+    fetchFavoriteUsers();
     fetchCart();
   }, []));
 
@@ -45,6 +48,16 @@ export default function TabLayout() {
           dispatch(UserActions.SaveInfoLogged(user));
         }
       }
+    }
+  }
+
+  const fetchFavoriteUsers = async () => {
+    try {
+      const products = await FavoriteManagement.fetchFavoritesByUser();
+      let productIds = products.map(product => product.id);
+      dispatch(UserActions.SaveFavorites(productIds));
+    } catch (error: any) {
+      console.log(error);
     }
   }
 
