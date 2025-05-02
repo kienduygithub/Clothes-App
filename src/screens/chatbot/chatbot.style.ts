@@ -101,14 +101,15 @@ const ChatbotStyle = StyleSheet.create({
     productButton: {
         backgroundColor: CommonColors.primary,
         borderRadius: 5,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        alignSelf: 'flex-start',
-        marginTop: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        marginVertical: 8,
+        width: '100%'
     },
     productButtonText: {
         color: CommonColors.white,
-        fontSize: 13,
+        fontSize: 14,
+        fontWeight: '500',
     },
     inputContainer: {
         flexDirection: 'row',

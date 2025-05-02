@@ -123,7 +123,7 @@ const ChatbotScreen = () => {
         } finally {
             setLoading(false);
         }
-    }, [inputText, userId]);
+    }, [userId]);
 
     const renderMessageItem: ListRenderItem<Message> = ({ item }) => {
         if (item.isUser) {
@@ -136,19 +136,23 @@ const ChatbotScreen = () => {
             )
         } else {
             /** Đối với bot thì kiểm tra product IDs và đường dần ảnh **/
-            const productIdRegex = /sản phẩm #(\d+)/g;
-            const imageUrlRegex = /Hình ảnh:[\s\S]*?([\w-]+\.[a-zA-z]+)/g;
+            const productIdRegex = /Sản phẩm #(\d+)/g;
+            const imageUrlRegex = /\[IMAGE:products\/([\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif))\]/g;
+            const viewDetailRegex = /\[Xem chi tiết sản phẩm #(\d+)\]/g;
 
             let message = item.text;
             let productMatches = [...message.matchAll(productIdRegex)];
             let imageMatches = [...message.matchAll(imageUrlRegex)];
+            let viewDetailMatches = [...message.matchAll(viewDetailRegex)];
+            let cleanMessage = message;
+            cleanMessage = cleanMessage.replace(/\s*\[IMAGE:products\/[\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif)\]\s*/g, '');
 
             // Nếu không có product IDs hoặc ảnh, render message bình thường
-            if (productMatches.length === 0 && imageMatches.length === 0) {
+            if (productMatches.length === 0 && imageMatches.length === 0 && viewDetailMatches.length === 0) {
                 return (
                     <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
                         <Text style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                            {message}
+                            {cleanMessage}
                         </Text>
                     </View>
                 );
@@ -156,45 +160,12 @@ const ChatbotScreen = () => {
 
             // Chuẩn bị các component với đường dẫn links và ảnh
             const messageComponents = [];
-            let lastIndex = 0;
 
-            // Xử lý product ID links
-            for (const match of productMatches) {
-                const productId = match[1];
-                const index = match.index || 0;
-
-                // Thêm text trước product ID
-                if (index > lastIndex) {
-                    messageComponents.push(
-                        <Text key={`text-${lastIndex}`} style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                            {message.substring(lastIndex, index)}
-                        </Text>
-                    );
-                }
-
-                // Thêm button click link
-                messageComponents.push(
-                    <TouchableOpacity
-                        key={`product-${index}`}
-                        onPress={() => handleProductPress(parseInt(productId))}
-                    >
-                        <Text style={[ChatbotStyle.messageText, ChatbotStyle.productLink]}>
-                            {match[0]}
-                        </Text>
-                    </TouchableOpacity>
-                );
-
-                lastIndex = index + match[0].length;
-            }
-
-            // Thêm text còn lại
-            if (lastIndex < message.length) {
-                messageComponents.push(
-                    <Text key={`text-end`} style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                        {message.substring(lastIndex)}
-                    </Text>
-                );
-            }
+            messageComponents.push(
+                <Text key={`text-${message.length}`} style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
+                    {cleanMessage}
+                </Text>
+            );
 
             // Thêm ảnh (nếu có)
             if (imageMatches.length > 0) {
@@ -204,15 +175,16 @@ const ChatbotScreen = () => {
                     const imageUrl = match[1];
                     // Remove any escaped backslashes if present
                     const cleanImageUrl = imageUrl.replace(/\\/g, '');
-
                     imageComponents.push(
                         <Image
                             key={`image-${cleanImageUrl}`}
-                            source={{ uri: `${preImage}/products/${cleanImageUrl}` }}
-                            style={ChatbotStyle.messageImage}
+                            source={{ uri: `${preImage}/${cleanImageUrl}` }}
+                            style={styles.messageImage}
                             resizeMode="cover"
                         />
                     );
+                    // Hiển thị 1 ảnh đại diện thôi
+                    break;
                 }
 
                 // Add images in a grid-like layout
@@ -222,6 +194,23 @@ const ChatbotScreen = () => {
                     </View>
                 );
             }
+
+            // Thêm nút xem chi tiết (nếu có)
+            if (viewDetailMatches.length > 0) {
+                for (const match of viewDetailMatches) {
+                    const productId = match[1];
+                    messageComponents.push(
+                        <TouchableOpacity
+                            key={`view-detail-${productId}`}
+                            style={styles.productButton}
+                            onPress={() => handleProductPress(parseInt(productId))}
+                        >
+                            <Text style={styles.productButtonText}>Xem chi tiết sản phẩm</Text>
+                        </TouchableOpacity>
+                    );
+                }
+            }
+
             return (
                 <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
                     {messageComponents}
