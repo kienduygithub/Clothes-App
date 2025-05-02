@@ -26,6 +26,8 @@ import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import { MessageError } from "@/src/common/resource/message-error"
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer"
+import * as FavoriteManagement from "@/src/data/management/favorite.management";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 type Props = {};
 
@@ -43,6 +45,7 @@ const ProductDetailScreen = (props: Props) => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+    const isFavorite = userSelector.favorites.includes(product?.id ?? 0);
     const dispatch = useDispatch();
 
     const sheetRef = useRef<BottomSheet>(null);
@@ -155,6 +158,44 @@ const ProductDetailScreen = (props: Props) => {
         router.navigate("/(tabs)/cart");
     }
 
+    const favoriteProduct = async () => {
+        try {
+            if (userSelector.isLogged === false) {
+                showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+                return;
+            }
+            await FavoriteManagement.favoriteProductByUser(product?.id ?? 0);
+            dispatch(UserActions.AddFavorite(product?.id ?? 0));
+        } catch (error: any) {
+            console.log('ProductItemComponent 39: ', error);
+            if (error?.message === 'Session expired, please log in again') {
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
+        }
+    }
+
+    const unFavoriteProduct = async () => {
+        try {
+            if (userSelector.isLogged === false) {
+                showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+                return;
+            }
+            await FavoriteManagement.unfavoriteProductByUser(product?.id ?? 0);
+            dispatch(UserActions.RemoveFavorite(product?.id ?? 0));
+        } catch (error: any) {
+            console.log('ProductItemComponent 54: ', error);
+            if (error?.message === 'Session expired, please log in again') {
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+                dispatch(UserActions.UpdateExpiresLogged(false));
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
+        }
+    }
+
     return (
         <>
             <Stack.Screen options={{
@@ -214,9 +255,15 @@ const ProductDetailScreen = (props: Props) => {
                                 </View>
                                 <View style={styles.soldAndLikeWrapper}>
                                     <Text style={styles.soldTxt}>Đã bán {product.sold_quantity}</Text>
-                                    <TouchableOpacity>
-                                        <FontAwesome name="heart-o" size={20} color={CommonColors.lightGray} />
-                                    </TouchableOpacity>
+                                    {isFavorite ? (
+                                        <TouchableOpacity onPress={unFavoriteProduct}>
+                                            <FontAwesome name="heart" size={20} color={CommonColors.red} />
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <TouchableOpacity onPress={favoriteProduct}>
+                                            <FontAwesome name="heart-o" size={20} color={CommonColors.lightGray} />
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
                             </Animated.View>
 

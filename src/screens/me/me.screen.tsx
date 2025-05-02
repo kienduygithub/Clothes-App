@@ -68,6 +68,15 @@ const MeScreen = (props: Props) => {
         }
     }
 
+    const navigateFavoriteScreen = () => {
+        if (userSelector.isLogged === false) {
+            showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+            return;
+        }
+
+        router.navigate('/(routes)/favorite');
+    }
+
     const headerHeight = useHeaderHeight();
     return (
         <>
@@ -101,7 +110,7 @@ const MeScreen = (props: Props) => {
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button}>
                         <Ionicons name="heart-outline" size={20} color={CommonColors.black} />
-                        <Text style={styles.buttonText}>Danh sách mong muốn</Text>
+                        <Text style={styles.buttonText} onPress={() => navigateFavoriteScreen()}>Danh sách mong muốn</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress={() => router.navigate('/(routes)/address')}>
                         <FontAwesome name="address-card-o" size={20} color={CommonColors.black} />
