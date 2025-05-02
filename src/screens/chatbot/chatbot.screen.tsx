@@ -144,8 +144,11 @@ const ChatbotScreen = () => {
             let productMatches = [...message.matchAll(productIdRegex)];
             let imageMatches = [...message.matchAll(imageUrlRegex)];
             let viewDetailMatches = [...message.matchAll(viewDetailRegex)];
+
+            // Remove image and view detail markers from the text
             let cleanMessage = message;
             cleanMessage = cleanMessage.replace(/\s*\[IMAGE:products\/[\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif)\]\s*/g, '');
+            cleanMessage = cleanMessage.replace(/\s*\[Xem chi tiết sản phẩm #\d+\]\s*/g, '');
 
             // Nếu không có product IDs hoặc ảnh, render message bình thường
             if (productMatches.length === 0 && imageMatches.length === 0 && viewDetailMatches.length === 0) {
@@ -158,58 +161,115 @@ const ChatbotScreen = () => {
                 );
             }
 
-            // Chuẩn bị các component với đường dẫn links và ảnh
-            const messageComponents = [];
+            // Extract product sections from the message
+            interface ProductSection {
+                text: string;
+                images: string[];
+                productId: string;
+            }
 
-            messageComponents.push(
-                <Text key={`text-${message.length}`} style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                    {cleanMessage}
-                </Text>
-            );
+            const productSections: ProductSection[] = [];
+            let currentProductId: string | null = null;
 
-            // Thêm ảnh (nếu có)
-            if (imageMatches.length > 0) {
-                const imageComponents = [];
+            // Split the message by product entries
+            const lines = message.split('\n');
+            let currentSection = [];
+            let currentImages = [];
 
-                for (const match of imageMatches) {
-                    const imageUrl = match[1];
-                    // Remove any escaped backslashes if present
-                    const cleanImageUrl = imageUrl.replace(/\\/g, '');
-                    imageComponents.push(
-                        <Image
-                            key={`image-${cleanImageUrl}`}
-                            source={{ uri: `${preImage}/${cleanImageUrl}` }}
-                            style={styles.messageImage}
-                            resizeMode="cover"
-                        />
-                    );
-                    // Hiển thị 1 ảnh đại diện thôi
-                    break;
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const productMatch = line.match(/Sản phẩm #(\d+)/);
+
+                // If this is a new product line and we already had a section, save it
+                if (productMatch && currentSection.length > 0) {
+                    if (currentProductId) {
+                        productSections.push({
+                            text: currentSection.join('\n'),
+                            images: [...currentImages],
+                            productId: currentProductId
+                        });
+                    }
+                    currentSection = [];
+                    currentImages = [];
                 }
 
-                // Add images in a grid-like layout
+                // If this is a product line, update current product ID
+                if (productMatch) {
+                    currentProductId = productMatch[1];
+                    currentSection.push(line);
+                }
+                // If this is an image line for the current product
+                else if (line.includes('[IMAGE:products/') && currentProductId) {
+                    const imageMatch = line.match(/\[IMAGE:products\/([\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif))\]/);
+                    if (imageMatch) {
+                        currentImages.push(imageMatch[1]);
+                    }
+                }
+                // If this is a view detail line, skip it for now - we'll add buttons separately
+                else if (line.includes('[Xem chi tiết sản phẩm #')) {
+                    // Skip
+                }
+                // Otherwise, add to current section if we have a product
+                else if (currentProductId) {
+                    currentSection.push(line);
+                }
+            }
+
+            // Add the last section if there is one
+            if (currentSection.length > 0 && currentProductId) {
+                productSections.push({
+                    text: currentSection.join('\n'),
+                    images: [...currentImages],
+                    productId: currentProductId
+                });
+            }
+
+            // General text outside of product sections
+            const generalText = lines.filter(line =>
+                !line.match(/Sản phẩm #\d+/) &&
+                !line.includes('[IMAGE:products/') &&
+                !line.includes('[Xem chi tiết sản phẩm #')).join('\n');
+
+            // Build the components for the message
+            const messageComponents: any = [];
+
+            // Add general text if it exists
+            if (generalText.trim()) {
                 messageComponents.push(
-                    <View key="image-container" style={ChatbotStyle.imageContainer}>
-                        {imageComponents}
-                    </View>
+                    <Text key="general-text" style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
+                        {generalText.trim()}
+                    </Text>
                 );
             }
 
-            // Thêm nút xem chi tiết (nếu có)
-            if (viewDetailMatches.length > 0) {
-                for (const match of viewDetailMatches) {
-                    const productId = match[1];
-                    messageComponents.push(
-                        <TouchableOpacity
-                            key={`view-detail-${productId}`}
-                            style={styles.productButton}
-                            onPress={() => handleProductPress(parseInt(productId))}
-                        >
-                            <Text style={styles.productButtonText}>Xem chi tiết sản phẩm</Text>
-                        </TouchableOpacity>
-                    );
-                }
-            }
+            // Add each product section with its image and button
+            productSections.forEach((section, index) => {
+                messageComponents.push(
+                    <View key={`product-section-${index}`} style={{ marginTop: 10 }}>
+                        <Text style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
+                            {section.text}
+                        </Text>
+
+                        {section.images.length > 0 && (
+                            <Image
+                                key={`image-${section.images[0]}`}
+                                source={{ uri: `${preImage}/${section.images[0]}` }}
+                                style={styles.messageImage}
+                                resizeMode="cover"
+                            />
+                        )}
+
+                        {section.productId && (
+                            <TouchableOpacity
+                                style={styles.productButton}
+                                onPress={() => handleProductPress(parseInt(section.productId))}
+                            >
+                                <Text style={styles.productButtonText}>Xem chi tiết sản phẩm</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                );
+            });
 
             return (
                 <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
