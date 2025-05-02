@@ -190,6 +190,16 @@ function RootLayoutNav() {
             }}
           />
 
+          {/* Favorite */}
+          <Stack.Screen
+            name="(routes)/favorite/index"
+            options={{
+              title: 'Danh sách sản phẩm yêu thích',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
           <Stack.Screen
             name="(tabs)"
             options={{
