@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FlatList, Image, ScrollView, Text, TouchableOpacity, View, StyleSheet } from "react-native";
+import { FlatList, Image, ScrollView, Text, TouchableOpacity, View, StyleSheet, Modal, TextInput } from "react-native";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import { useToast } from "@/src/customize/toast.context";
@@ -21,7 +21,6 @@ const ReviewScreen = () => {
     const { showToast } = useToast();
     const tabs = ["Chưa đánh giá", "Đã đánh giá"];
     const [activeTab, setActiveTab] = useState(tabs[0]);
-    const [reviews, setReviews] = useState<any[]>([]);
     const [displayReviews, setDisplayReviews] = useState<any[]>([]);
     const [unreviewedPurchases, setUnreviewedPurchases] = useState<ProductReviewModel[]>([]);
     const [reviewedPurchases, setReviewedPurchases] = useState<ProductReviewModel[]>([]);
@@ -29,6 +28,12 @@ const ReviewScreen = () => {
     const firstFetch = useRef(true);
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const dispatch = useDispatch();
+
+    const [selectedItem, setSelectedItem] = useState<ProductReviewModel | null>(null);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState("");
+    const [modalVisible, setModalVisible] = useState(false);
+
 
     useEffect(() => {
         fetchUnreviewedPurchases();
@@ -82,7 +87,7 @@ const ReviewScreen = () => {
 
     const renderPendingReviewItem = ({ item, index }: { item: ProductReviewModel, index: number }) => {
         return (
-            <TouchableOpacity style={styles.pendingReviewCard} onPress={() => { /* Chuyển đến form đánh giá */ }}>
+            <TouchableOpacity style={styles.pendingReviewCard}>
                 <Image
                     style={styles.productImage}
                     source={{ uri: `${preImage}/${item.image_url}` }}
@@ -90,7 +95,13 @@ const ReviewScreen = () => {
                 <View style={styles.reviewContent}>
                     <Text style={styles.productName}>{item.product_name}</Text>
                     <Text style={styles.orderDate}>Đơn hàng: {formatDate(new Date(item.purchased_at ?? new Date()))}</Text>
-                    <TouchableOpacity style={styles.rateButton}>
+                    <TouchableOpacity
+                        style={styles.rateButton}
+                        onPress={() => {
+                            setSelectedItem(item);
+                            setModalVisible(true);
+                        }}
+                    >
                         <Text style={styles.rateButtonText}>Đánh giá ngay</Text>
                     </TouchableOpacity>
                 </View>
@@ -158,6 +169,52 @@ const ReviewScreen = () => {
         </View>
     );
 
+    const handleSubmitReview = async () => {
+        if (!selectedItem || rating === 0) {
+            showToast("Vui lòng chọn số sao và kiểm tra lại thông tin", "error");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const reviewData = {
+                product_id: selectedItem.product_id,
+                product_variant_id: selectedItem.product_variant_id,
+                rating: rating,
+                comment: comment,
+            };
+            console.log(reviewData);
+            // await ReviewManagement.submitReview(reviewData);
+            showToast("Đánh giá thành công", "success");
+            setModalVisible(false);
+            setRating(0);
+            setComment("");
+            fetchUnreviewedPurchases();
+            fetchReviewedPurchases();
+        } catch (error) {
+            console.log('ReviewScreen 170: ', error);
+            showToast(MessageError.BUSY_SYSTEM, 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const renderRatingStars = () => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                <TouchableOpacity key={i} onPress={() => setRating(i)}>
+                    <AntDesign
+                        name="star"
+                        size={30}
+                        color={i <= rating ? "#FFD700" : "#D1D5DB"}
+                    />
+                </TouchableOpacity>
+            );
+        }
+        return <View style={styles.ratingContainer}>{stars}</View>;
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -178,10 +235,135 @@ const ReviewScreen = () => {
                 contentContainerStyle={styles.listContainer}
                 ListEmptyComponent={renderEmpty}
             />
+
+            {/* Model */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    setModalVisible(false);
+                    setRating(0);
+                    setComment("");
+                }}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Đánh giá sản phẩm</Text>
+                        <Image
+                            style={styles.modalProductImage}
+                            source={{ uri: `${preImage}/${selectedItem?.image_url}` }}
+                        />
+                        <Text style={styles.modalProductName}>{selectedItem?.product_name}</Text>
+                        <Text style={styles.modalInstruction}>Vui lòng đánh giá sản phẩm của bạn</Text>
+                        {renderRatingStars()}
+                        <TextInput
+                            style={styles.commentInput}
+                            placeholder="Nhập bình luận của bạn (không bắt buộc)"
+                            value={comment}
+                            onChangeText={setComment}
+                            multiline={true}
+                            numberOfLines={4}
+                        />
+                        <View style={styles.modalButtonContainer}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: '#D1D5DB' }]}
+                                onPress={() => {
+                                    setModalVisible(false);
+                                    setRating(0);
+                                    setComment("");
+                                }}
+                            >
+                                <Text style={styles.modalButtonText}>Hủy</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: CommonColors.primary }]}
+                                onPress={handleSubmitReview}
+                                disabled={loading}
+                            >
+                                <Text style={styles.modalButtonText}>{loading ? "Đang gửi..." : "Gửi đánh giá"}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
 
-const styles = ReviewStyle;
+const styles = StyleSheet.create({
+    ...ReviewStyle,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        width: '90%',
+        maxHeight: '80%',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1F2937',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    modalProductImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 8,
+        alignSelf: 'center',
+        marginBottom: 12,
+    },
+    modalProductName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1F2937',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    modalInstruction: {
+        fontSize: 14,
+        color: '#6B7280',
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    ratingContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    commentInput: {
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 8,
+        padding: 8,
+        marginBottom: 16,
+        textAlignVertical: 'top',
+        fontSize: 14,
+        color: '#1F2937',
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    modalButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+    modalButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '500',
+    },
+});
 
 export default ReviewScreen;

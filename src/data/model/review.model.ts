@@ -97,4 +97,13 @@ export class ProductReviewModel {
 
         return obj;
     }
+
+    convertModelToExecute(data: ProductReviewModel) {
+        return {
+            product_id: data.product_id,
+            product_variant_id: data.product_variant_id,
+            rating: data.review?.rating,
+            comment: data.review?.comment
+        }
+    }
 }
