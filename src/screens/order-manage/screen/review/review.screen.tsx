@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlatList, Image, ScrollView, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
@@ -26,10 +26,13 @@ const ReviewScreen = () => {
     const [unreviewedPurchases, setUnreviewedPurchases] = useState<ProductReviewModel[]>([]);
     const [reviewedPurchases, setReviewedPurchases] = useState<ProductReviewModel[]>([]);
     const [loading, setLoading] = useState(false);
+    const firstFetch = useRef(true);
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const dispatch = useDispatch();
+
     useEffect(() => {
         fetchUnreviewedPurchases();
+        fetchReviewedPurchases();
         fetchReviews();
     }, []);
 
@@ -37,9 +40,22 @@ const ReviewScreen = () => {
         try {
             const unreviewedSource = await ReviewManagement.fetchListUnreviewPurchaseUser();
             setUnreviewedPurchases(unreviewedSource);
-            setDisplayReviews(unreviewedSource);
+            if (firstFetch.current) {
+                firstFetch.current = false;
+                setDisplayReviews(unreviewedSource);
+            }
         } catch (error) {
-            console.log('ReviewScreen 24: ', error);
+            console.log('ReviewScreen 47: ', error);
+            showToast(MessageError.BUSY_SYSTEM, 'error');
+        }
+    }
+
+    const fetchReviewedPurchases = async () => {
+        try {
+            const reviewedSource = await ReviewManagement.fetchListReviewedPurchaseUser();
+            setReviewedPurchases(reviewedSource);
+        } catch (error) {
+            console.log('ReviewScreen 57: ', error);
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
@@ -57,9 +73,9 @@ const ReviewScreen = () => {
     const filterReviews = (tab: string) => {
         setActiveTab(tab);
         if (tab === "Chưa đánh giá") {
-            setDisplayReviews(reviews.filter(review => !review.rating));
+            setDisplayReviews(unreviewedPurchases);
         } else {
-            setDisplayReviews(reviews.filter(review => review.rating));
+            setDisplayReviews(reviewedPurchases);
         }
     };
 
@@ -77,25 +93,23 @@ const ReviewScreen = () => {
 
     const renderPendingReviewItem = ({ item, index }: { item: ProductReviewModel, index: number }) => {
         return (
-            <View key={`${item.id}-${index}`}>
-                <TouchableOpacity style={styles.pendingReviewCard} onPress={() => { /* Chuyển đến form đánh giá */ }}>
-                    <Image
-                        style={styles.productImage}
-                        source={{ uri: `${preImage}/${item.image_url}` }}
-                    />
-                    <View style={styles.reviewContent}>
-                        <Text style={styles.productName}>{item.product_name}</Text>
-                        <Text style={styles.orderDate}>Đơn hàng: {formatDate(new Date(item.purchased_at ?? new Date()))}</Text>
-                        <TouchableOpacity style={styles.rateButton}>
-                            <Text style={styles.rateButtonText}>Đánh giá ngay</Text>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.pendingReviewCard} onPress={() => { /* Chuyển đến form đánh giá */ }}>
+                <Image
+                    style={styles.productImage}
+                    source={{ uri: `${preImage}/${item.image_url}` }}
+                />
+                <View style={styles.reviewContent}>
+                    <Text style={styles.productName}>{item.product_name}</Text>
+                    <Text style={styles.orderDate}>Đơn hàng: {formatDate(new Date(item.purchased_at ?? new Date()))}</Text>
+                    <TouchableOpacity style={styles.rateButton}>
+                        <Text style={styles.rateButtonText}>Đánh giá ngay</Text>
+                    </TouchableOpacity>
+                </View>
+            </TouchableOpacity>
         );
     };
 
-    const renderRatedReviewItem = ({ item }: { item: any }) => {
+    const renderRatedReviewItem = ({ item }: { item: ProductReviewModel }) => {
         const renderStars = (rating: number) => {
             const stars = [];
             for (let i = 0; i < 5; i++) {
@@ -115,30 +129,24 @@ const ReviewScreen = () => {
             <View style={styles.ratedReviewCard}>
                 <View style={styles.userInfo}>
                     <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>{item.user?.username?.charAt(0)}</Text>
+                        <Image style={{ width: '100%', height: '100%' }} source={{ uri: `${preImage}/${item.user?.image_url}` }} />
                     </View>
                     <View style={styles.userDetails}>
-                        <Text style={styles.userName}>{item.user?.username}</Text>
-                        <View style={styles.starContainer}>{renderStars(item.rating)}</View>
+                        <Text style={styles.userName}>{item.user?.name === '' ? 'Anonymous' : item.user?.name}</Text>
+                        <View style={styles.starContainer}>{renderStars(item.review?.rating ?? 0)}</View>
                     </View>
                 </View>
                 <Text style={styles.variantText}>
-                    Phân loại: {item.product?.variant || "Không có phân loại"}
+                    Phân loại: {"Không có phân loại"}
                 </Text>
-                <Text style={styles.reviewComment}>{item.comment}</Text>
-                <Text style={styles.reviewDate}>{formatDate(new Date())}</Text>
+                <Text style={styles.reviewComment}>{item.review?.comment}</Text>
+                <Text style={styles.reviewDate}>{formatDate(new Date(item.created_at ?? new Date()))}</Text>
                 <View style={styles.productInfo}>
                     <Image
                         style={styles.ratedProductImage}
-                        source={{ uri: `${preImage}/${item.product?.image}` }}
+                        source={{ uri: `${preImage}/${item.image_url}` }}
                     />
-                    <Text style={styles.ratedProductName}>{item.product?.name}</Text>
-                </View>
-                <View style={styles.feedbackContainer}>
-                    <TouchableOpacity style={styles.feedbackButton}>
-                        <AntDesign name="like1" size={16} color="#6B7280" />
-                        <Text style={styles.feedbackText}>Hữu ích</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.ratedProductName}>{item.product_name}</Text>
                 </View>
             </View>
         );

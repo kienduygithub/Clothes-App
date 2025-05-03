@@ -15,3 +15,18 @@ export const fetchListUnreviewPurchaseUser = async () => {
         throw error;
     }
 }
+
+export const fetchListReviewedPurchaseUser = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const userInfo = await new AppConfig().getUserInfo();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `review/user/${userInfo.id}/product/reviewed`
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
