@@ -1,3 +1,4 @@
+import { CommonColors } from "@/src/common/resource/colors";
 import { StyleSheet } from "react-native";
 
 const OrderManageStyle = StyleSheet.create({
@@ -11,27 +12,30 @@ const OrderManageStyle = StyleSheet.create({
         fontWeight: '700',
         color: '#1F2937',
         marginBottom: 16,
-        marginTop: 8,
+        marginTop: 25,
     },
     tabContainer: {
-        marginBottom: 16,
+        height: 80
     },
     tab: {
         paddingVertical: 12,
         paddingHorizontal: 16,
         marginRight: 8,
-        borderRadius: 20,
+        borderRadius: 5,
         backgroundColor: '#FFFFFF',
-        minWidth: 80,
+        minWidth: 100,
+        maxWidth: 120,
         alignItems: 'center',
+        height: 80,
+        gap: 5
     },
     activeTab: {
-        backgroundColor: '#FF6200',
+        backgroundColor: CommonColors.primary,
     },
     tabText: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#1F2937',
+        color: CommonColors.black,
     },
     activeTabText: {
         color: '#FFFFFF',
@@ -75,11 +79,16 @@ const OrderManageStyle = StyleSheet.create({
         paddingTop: 8,
         marginBottom: 8,
     },
+    shopNameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        marginBottom: 10
+    },
     shopName: {
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: '600',
         color: '#1F2937',
-        marginBottom: 4,
     },
     itemPreview: {
         fontSize: 13,
@@ -95,7 +104,7 @@ const OrderManageStyle = StyleSheet.create({
     orderTotal: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#FF6200',
+        color: CommonColors.primary,
     },
     emptyText: {
         fontSize: 16,

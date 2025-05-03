@@ -14,6 +14,7 @@ export const fetchFavoritesByUser = async () => {
         throw error;
     }
 }
+
 export const favoriteProductByUser = async (product_id: number) => {
     try {
         const domain = new AppConfig().getDomain();

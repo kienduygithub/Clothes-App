@@ -1,37 +1,69 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import OrderManageStyle from "./order-manage.style";
 import { OrderModel } from "@/src/data/model/order.model";
 import { getStatusTextAndColorOrder, OrderStatus } from "@/src/common/resource/order_status";
 import { mockOrders } from "@/src/data/json/order.data-json";
-import { MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import * as OrderManagement from "@/src/data/management/order.management";
+import { formatDate } from "@/src/common/utils/time.helper";
+import { useToast } from "@/src/customize/toast.context";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/src/data/types/global";
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+import { MessageError } from "@/src/common/resource/message-error";
+import { CommonColors } from "@/src/common/resource/colors";
 
 const OrderManageScreen = () => {
+    const { showToast } = useToast();
+    const tabs = [
+        OrderStatus.ALL,
+        OrderStatus.PENDING,
+        OrderStatus.PAID,
+        OrderStatus.SHIPPED,
+        OrderStatus.COMPLETED,
+        OrderStatus.CANCELED
+    ];
+    const [activeTab, setActiveTab] = useState(OrderStatus.ALL);
     const [selectedOrder, setSelectedOrder] = useState<OrderModel | null>(null);
-    const [activeTab, setActiveTab] = useState('Tất cả');
-    const tabs = ['Tất cả', OrderStatus.PENDING, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.COMPLETED];
-    const filteredOrders = mockOrders.filter(
-        (order) => activeTab === 'Tất cả' || order.status === activeTab
-    );
-    const formatDate = (date: Date | null) => {
-        if (!date) return '-';
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
+    const [orders, setOrders] = useState<OrderModel[]>([]);
+    const [displayOrders, setDisplayOrders] = useState<OrderModel[]>([]);
+    const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
+    const dispatch = useDispatch();
 
-    const renderTab = (tab: string) => (
+    useEffect(() => {
+        fetchListOrderUser();
+    }, [])
+
+    const fetchListOrderUser = async () => {
+        try {
+            const response = await OrderManagement.fetchFavoritesByUser();
+            setOrders(response);
+            setDisplayOrders(response);
+        } catch (error) {
+            console.log('OrderManageScreen 48: ', error);
+            showToast(MessageError.BUSY_SYSTEM, 'error');
+        }
+    }
+
+    const changeTab = (tab: OrderStatus) => {
+        setActiveTab(tab);
+        if (tab === OrderStatus.ALL) {
+            setDisplayOrders(orders);
+            return;
+        }
+        setDisplayOrders(orders.filter(order => order.status === tab));
+    }
+
+    const renderTab = (tab: OrderStatus) => (
         <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab ? styles.activeTab : null]}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => changeTab(tab)}
         >
+            <AntDesign name="carryout" size={25} color={activeTab === tab ? CommonColors.white : CommonColors.black} />
             <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : null]}>
-                {tab}
+                {getStatusTextAndColorOrder(tab).text}
             </Text>
         </TouchableOpacity>
     );
@@ -44,12 +76,15 @@ const OrderManageScreen = () => {
                     <Text style={styles.orderId}>Đơn hàng #{item.id}</Text>
                     <Text style={[styles.orderStatus, { color: statusColor }]}>{statusText}</Text>
                 </View>
-                <Text style={styles.orderDate}>Ngày đặt: {formatDate(item.created_at)}</Text>
+                <Text style={styles.orderDate}>Ngày đặt: {formatDate(new Date(item.created_at ?? ''))}</Text>
                 {item.order_shops.map((shop) => (
                     <View key={shop.id} style={styles.shopContainer}>
-                        <Text style={styles.shopName}>
-                            <MaterialIcons name="store" size={16} color="#FF6200" /> {shop.shop?.shop_name}
-                        </Text>
+                        <View style={styles.shopNameContainer}>
+                            <MaterialIcons name="store" size={20} color={CommonColors.primary} />
+                            <Text style={styles.shopName}>
+                                {shop.shop?.shop_name}
+                            </Text>
+                        </View>
                         {shop.order_items.map((orderItem) => (
                             <Text key={orderItem.id} style={styles.itemPreview}>
                                 {orderItem.product_variant?.product?.product_name ?? ''} x{orderItem.quantity}
@@ -138,11 +173,13 @@ const OrderManageScreen = () => {
         <>
             <View style={styles.container}>
                 <Text style={styles.title}>Quản lý đơn hàng</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
-                    {tabs.map(renderTab)}
-                </ScrollView>
+                <View style={{ marginBottom: 16 }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
+                        {tabs.map(renderTab)}
+                    </ScrollView>
+                </View>
                 <FlatList
-                    data={filteredOrders}
+                    data={displayOrders}
                     renderItem={renderOrderItem}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.listContainer}

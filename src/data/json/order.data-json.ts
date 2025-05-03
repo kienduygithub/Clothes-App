@@ -5,14 +5,14 @@ export const mockOrders: OrderModel[] = [
     new OrderModel(
         1,
         undefined,
-        undefined,
+        { full_address: '123 Nguyễn Huệ, Quận 1, TP.HCM' } as any,
         [
             new OrderShopModel(
                 1,
                 { name: 'Tech Store' } as any,
                 [
-                    new OrderItemModel(1, { name: 'Wireless Earbuds', price: 599000 } as any, 2),
-                    new OrderItemModel(2, { name: 'Phone Case', price: 99000 } as any, 1),
+                    new OrderItemModel(1, { name: 'Tai nghe không dây', price: 599000, image: 'https://via.placeholder.com/50' } as any, 2),
+                    new OrderItemModel(2, { name: 'Ốp lưng điện thoại', price: 99000, image: 'https://via.placeholder.com/50' } as any, 1),
                 ],
                 undefined,
                 697000,
@@ -29,13 +29,13 @@ export const mockOrders: OrderModel[] = [
     new OrderModel(
         2,
         undefined,
-        undefined,
+        { full_address: '456 Lê Lợi, Quận 5, TP.HCM' } as any,
         [
             new OrderShopModel(
                 2,
                 { name: 'Fashion Hub' } as any,
                 [
-                    new OrderItemModel(3, { name: 'Summer Dress', price: 299000 } as any, 1),
+                    new OrderItemModel(3, { name: 'Váy mùa hè', price: 299000, image: 'https://via.placeholder.com/50' } as any, 1),
                 ],
                 undefined,
                 299000,
@@ -44,9 +44,32 @@ export const mockOrders: OrderModel[] = [
             ),
         ],
         299000,
-        OrderStatus.COMPLETED,
+        OrderStatus.PAID,
         new Date('2025-04-30T15:00:00'),
         new Date('2025-04-30T15:00:00'),
         new Date('2025-04-30T14:45:00')
+    ),
+    new OrderModel(
+        3,
+        undefined,
+        { full_address: '789 Hai Bà Trưng, Quận 3, TP.HCM' } as any,
+        [
+            new OrderShopModel(
+                3,
+                { name: 'Grocery Shop' } as any,
+                [
+                    new OrderItemModel(4, { name: 'Gạo 5kg', price: 150000, image: 'https://via.placeholder.com/50' } as any, 1),
+                ],
+                undefined,
+                150000,
+                0,
+                150000
+            ),
+        ],
+        150000,
+        OrderStatus.CANCELED,
+        new Date('2025-05-02T09:00:00'),
+        undefined,
+        new Date('2025-05-02T08:30:00')
     ),
 ];

@@ -13,6 +13,7 @@ export const fetchFavoritesByUser = async () => {
         throw error;
     }
 }
+
 export const favoriteProductByUser = async (product_id: number) => {
     try {
         await FavoriteService.favoriteProductByUser(product_id);
@@ -21,6 +22,7 @@ export const favoriteProductByUser = async (product_id: number) => {
         throw error;
     }
 }
+
 export const unfavoriteProductByUser = async (product_id: number) => {
     try {
         await FavoriteService.unfavoriteProductByUser(product_id);

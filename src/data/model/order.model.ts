@@ -50,7 +50,7 @@ export class OrderModel {
         model.status = data?.status ?? OrderStatus.COMPLETED;
         model.status_changed_at = data?.status_changed_at ? new Date(data.status_changed_at) : null;
         model.payment_date = data?.payment_date ? new Date(data.payment_date) : null;
-        model.created_at = data?.createdAt ? new Date(data.createdAt) : null;
+        model.created_at = data?.created_at ? new Date(data.created_at) : null;
 
         return model;
     }
