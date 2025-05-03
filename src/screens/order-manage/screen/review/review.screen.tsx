@@ -8,7 +8,7 @@ import { formatDate } from "@/src/common/utils/time.helper";
 import { router } from "expo-router";
 import { mockReviews } from "@/src/data/json/review.data-json";
 import ReviewStyle from "./review.style";
-import { ProductReviewModel } from "@/src/data/model/review.model";
+import { ProductReviewModel, ReviewModel } from "@/src/data/model/review.model";
 import * as ReviewManagement from "@/src/data/management/review.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { useDispatch, useSelector } from "react-redux";
@@ -177,20 +177,35 @@ const ReviewScreen = () => {
 
         setLoading(true);
         try {
-            const reviewData = {
-                product_id: selectedItem.product_id,
-                product_variant_id: selectedItem.product_variant_id,
-                rating: rating,
-                comment: comment,
-            };
-            console.log(reviewData);
-            // await ReviewManagement.submitReview(reviewData);
+            const reviewModel = new ReviewModel();
+            reviewModel.rating = rating;
+            reviewModel.comment = comment;
+
+            const payload = new ProductReviewModel();
+            payload.id = selectedItem.id;
+            payload.user = selectedItem.user;
+            payload.product_id = selectedItem.product_id;
+            payload.product_variant_id = selectedItem.product_variant_id;
+            payload.product_name = selectedItem.product_name;
+            payload.image_url = selectedItem.image_url;
+            payload.review = reviewModel;
+
+            // const resposne = await ReviewManagement.addReviewPurchaseUser(payload);
+            // payload.id = resposne.id;
+            // payload.review.id = resposne.id;
+            // payload.created_at = resposne.created_at;
+
             showToast("Đánh giá thành công", "success");
+
+            setReviewedPurchases(prev => [payload, ...prev]);
+            let updatedList = [...unreviewedPurchases];
+            updatedList = updatedList.filter(item => item.id !== payload.id);
+            setUnreviewedPurchases(updatedList);
+            setDisplayReviews(updatedList);
+
             setModalVisible(false);
             setRating(0);
             setComment("");
-            fetchUnreviewedPurchases();
-            fetchReviewedPurchases();
         } catch (error) {
             console.log('ReviewScreen 170: ', error);
             showToast(MessageError.BUSY_SYSTEM, 'error');

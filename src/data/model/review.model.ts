@@ -8,6 +8,7 @@ export class ReviewModel {
     product: ProductModel | undefined;
     rating: number;
     comment: string;
+    created_at: Date | null;
 
     constructor(
         id?: number,
@@ -15,30 +16,26 @@ export class ReviewModel {
         product?: ProductModel | undefined,
         rating?: number,
         comment?: string,
+        created_at?: Date | null,
     ) {
         this.id = id ?? 0;
         this.user = user;
         this.product = product;
         this.rating = rating ?? 0;
-        this.comment = comment ?? ''
+        this.comment = comment ?? '';
+        this.created_at = created_at ?? null;
     }
 
     convertObj(data: any) {
         const model = new ReviewModel();
-        this.id = data?.id ?? 0;
-        this.user = data?.user ? new UserModel().convertObj(data.user) : undefined;
-        this.product = data?.product ? new ProductModel().convertObj(data.product) : undefined;
-        this.rating = data?.rating ?? 0;
-        this.comment = data?.comment ?? '';
+        model.id = data?.id ?? 0;
+        model.user = data?.user ? new UserModel().convertObj(data.user) : undefined;
+        model.product = data?.product ? new ProductModel().convertObj(data.product) : undefined;
+        model.rating = data?.rating ?? 0;
+        model.comment = data?.comment ?? '';
+        model.created_at = data?.created_at ?? null;
 
         return model;
-    }
-
-    convertModelToExecute(data: ReviewModel) {
-        return {
-            rating: data.rating,
-            comment: data.comment
-        }
     }
 }
 

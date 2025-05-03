@@ -1,5 +1,5 @@
 import * as ReviewService from "@/src/data/service/review.service";
-import { ProductReviewModel } from "../model/review.model";
+import { ProductReviewModel, ReviewModel } from "../model/review.model";
 
 export const fetchListUnreviewPurchaseUser = async () => {
     try {
@@ -26,3 +26,13 @@ export const fetchListReviewedPurchaseUser = async () => {
         throw error;
     }
 }
+
+export const addReviewPurchaseUser = async (data: ProductReviewModel) => {
+    try {
+        const result = await ReviewService.addReviewPurchaseUser(data);
+        return new ReviewModel().convertObj(result?.reviewedPurchases[0]);
+    } catch (error) {
+        throw error;
+    }
+}
+
