@@ -18,9 +18,10 @@ export const fetchListOrderUser = async () => {
 export const cancelOrderUser = async (order_id: number) => {
     try {
         const domain = new AppConfig().getDomain();
-        const response = await ServiceCore.GET(
+        const response = await ServiceCore.POST(
             `${domain}`,
-            `order/cancel/${order_id}/mobile`
+            `order/cancel/${order_id}/mobile`,
+            {}
         );
         return response;
     } catch (error) {
