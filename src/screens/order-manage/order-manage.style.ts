@@ -115,7 +115,7 @@ const OrderManageStyle = StyleSheet.create({
     modalContainer: {
         flex: 1,
         backgroundColor: '#FFFFFF',
-        padding: 16,
+        paddingVertical: 16,
     },
     modalHeader: {
         flexDirection: 'row',
@@ -130,6 +130,9 @@ const OrderManageStyle = StyleSheet.create({
     },
     modalSection: {
         marginBottom: 16,
+        backgroundColor: '#F5F5F5',
+        borderRadius: 8,
+        padding: 12,
     },
     sectionTitle: {
         fontSize: 16,
@@ -143,7 +146,7 @@ const OrderManageStyle = StyleSheet.create({
         marginBottom: 4,
     },
     shopDetail: {
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#F5F5F5',
         borderRadius: 8,
         padding: 12,
         marginBottom: 12,
@@ -151,11 +154,17 @@ const OrderManageStyle = StyleSheet.create({
     itemDetail: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 8,
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    itemImage: {
+        width: 80,
+        height: 80,
+        marginRight: 10
     },
     itemName: {
-        fontSize: 14,
-        color: '#1F2937',
+        fontSize: 15,
+        color: CommonColors.black,
         flex: 1,
     },
     itemQuantity: {
@@ -180,25 +189,25 @@ const OrderManageStyle = StyleSheet.create({
     },
     shopDiscount: {
         fontSize: 14,
-        color: '#EF4444',
+        color: CommonColors.primary,
     },
     shopTotal: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#FF6200',
+        color: CommonColors.primary,
         marginTop: 4,
     },
     closeButton: {
-        backgroundColor: '#FF6200',
+        backgroundColor: CommonColors.primary,
         padding: 12,
-        borderRadius: 8,
+        borderRadius: 5,
         alignItems: 'center',
         marginTop: 16,
     },
     closeButtonText: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 18,
+        fontWeight: '500',
     },
 })
 

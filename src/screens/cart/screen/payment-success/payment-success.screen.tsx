@@ -26,7 +26,7 @@ const PaymentSuccessScreen = (props: Props) => {
 
     const navigateToOrderDetail = () => {
         router.dismissAll();
-        router.navigate('/(tabs)');
+        router.navigate('/(routes)/order-manage');
     }
 
     const backHome = () => {

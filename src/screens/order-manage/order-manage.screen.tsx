@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlatList, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { FlatList, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import OrderManageStyle from "./order-manage.style";
 import { OrderModel } from "@/src/data/model/order.model";
 import { getStatusTextAndColorOrder, OrderStatus } from "@/src/common/resource/order_status";
@@ -13,8 +13,11 @@ import { RootState } from "@/src/data/types/global";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { MessageError } from "@/src/common/resource/message-error";
 import { CommonColors } from "@/src/common/resource/colors";
+import { AppConfig } from "@/src/common/config/app.config";
+import { formatPriceRender } from "@/src/common/utils/currency.helper";
 
 const OrderManageScreen = () => {
+    const preImage = new AppConfig().getPreImage();
     const { showToast } = useToast();
     const tabs = [
         OrderStatus.ALL,
@@ -109,14 +112,14 @@ const OrderManageScreen = () => {
             onRequestClose={() => setSelectedOrder(null)}
         >
             <View style={styles.modalContainer}>
-                <View style={styles.modalHeader}>
+                <View style={[styles.modalHeader, { marginHorizontal: 16 }]}>
                     <TouchableOpacity onPress={() => setSelectedOrder(null)}>
                         <MaterialIcons name="arrow-back" size={24} color="#1F2937" />
                     </TouchableOpacity>
                     <Text style={styles.modalTitle}>Chi tiết đơn hàng #{selectedOrder?.id}</Text>
                 </View>
                 <ScrollView>
-                    <View style={styles.modalSection}>
+                    <View style={[styles.modalSection, { marginHorizontal: 16 }]}>
                         <Text style={styles.sectionTitle}>Thông tin đơn hàng</Text>
                         <Text style={styles.modalText}>
                             Ngày đặt: {formatDate(selectedOrder?.created_at ?? new Date())}
@@ -125,16 +128,20 @@ const OrderManageScreen = () => {
                             Trạng thái: {getStatusTextAndColorOrder(selectedOrder?.status || '').text}
                         </Text>
                         <Text style={styles.modalText}>
-                            Địa chỉ: {selectedOrder?.address?.address_detail || '-'}
+                            Địa chỉ: {`${selectedOrder?.address?.address_detail}, ${selectedOrder?.address?.city?.name}, ${selectedOrder?.address?.district?.name}, ${selectedOrder?.address?.ward?.name}`}
                         </Text>
                     </View>
                     {selectedOrder?.order_shops.map((shop) => (
-                        <View key={shop.id} style={styles.shopDetail}>
-                            <Text style={styles.shopName}>
-                                <MaterialIcons name="store" size={16} color="#FF6200" /> {shop.shop?.shop_name}
-                            </Text>
+                        <View key={shop.id} style={[styles.shopDetail, { marginHorizontal: 16 }]}>
+                            <View style={styles.shopNameContainer}>
+                                <MaterialIcons name="store" size={20} color={CommonColors.primary} />
+                                <Text style={styles.shopName}>
+                                    {shop.shop?.shop_name}
+                                </Text>
+                            </View>
                             {shop.order_items.map((item) => (
                                 <View key={item.id} style={styles.itemDetail}>
+                                    <Image style={styles.itemImage} source={{ uri: `${preImage}/${item.product_variant?.image_url}` }} />
                                     <Text style={styles.itemName}>{item.product_variant?.product?.product_name}</Text>
                                     <Text style={styles.itemQuantity}>x{item.quantity}</Text>
                                     <Text style={styles.itemPrice}>
@@ -155,10 +162,10 @@ const OrderManageScreen = () => {
                             </View>
                         </View>
                     ))}
-                    <View style={styles.modalSection}>
+                    <View style={[styles.modalSection, { marginHorizontal: 16 }]}>
                         <Text style={styles.sectionTitle}>Tổng đơn hàng</Text>
                         <Text style={styles.orderTotal}>
-                            {selectedOrder?.total_price.toLocaleString('vi-VN')} VNĐ
+                            {formatPriceRender(selectedOrder?.total_price ?? 0)} VNĐ
                         </Text>
                     </View>
                 </ScrollView>
