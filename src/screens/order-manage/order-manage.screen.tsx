@@ -64,7 +64,7 @@ const OrderManageScreen = () => {
         }
 
         try {
-            // await OrderManagement.cancelOrderUser(order.id);
+            await OrderManagement.cancelOrderUser(order.id);
             const updatedOrders = orders.map(o =>
                 o.id === order.id ? { ...o, status: OrderStatus.CANCELED } as OrderModel : o
             );
