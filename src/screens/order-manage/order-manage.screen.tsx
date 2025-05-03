@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import OrderManageStyle from "./order-manage.style";
 import { OrderModel } from "@/src/data/model/order.model";
 import { getStatusTextAndColorOrder, OrderStatus } from "@/src/common/resource/order_status";
@@ -64,7 +64,7 @@ const OrderManageScreen = () => {
         }
 
         try {
-            await OrderManagement.cancelOrderUser(order.id);
+            // await OrderManagement.cancelOrderUser(order.id);
             const updatedOrders = orders.map(o =>
                 o.id === order.id ? { ...o, status: OrderStatus.CANCELED } as OrderModel : o
             );
@@ -72,7 +72,6 @@ const OrderManageScreen = () => {
             setDisplayOrders(updatedOrders.filter(o =>
                 activeTab === OrderStatus.ALL || o.status === activeTab
             ));
-            setOpenCancelConfirmDialog(false);
             setSelectedOrder(null);
             showToast('Đơn hàng đã được hủy thành công', 'success');
         } catch (error: any) {
@@ -83,6 +82,8 @@ const OrderManageScreen = () => {
             } else {
                 showToast(MessageError.BUSY_SYSTEM, 'error');
             }
+        } finally {
+            setOpenCancelConfirmDialog(false);
         }
 
     };
@@ -147,7 +148,10 @@ const OrderManageScreen = () => {
         <Modal
             visible={!!selectedOrder}
             animationType="slide"
-            onRequestClose={() => setSelectedOrder(null)}
+            onRequestClose={() => {
+                setSelectedOrder(null);
+                setOpenCancelConfirmDialog(false)
+            }}
         >
             <View style={styles.modalContainer}>
                 <View style={[styles.modalHeader, { marginHorizontal: 16 }]}>
@@ -206,27 +210,33 @@ const OrderManageScreen = () => {
                             {formatPriceRender(selectedOrder?.total_price ?? 0)} VNĐ
                         </Text>
                     </View>
+
+                </ScrollView>
+                <View style={styles.buttonContainer}>
                     {selectedOrder && [OrderStatus.PENDING, OrderStatus.PROCESSING].includes(selectedOrder.status as OrderStatus) && (
                         <TouchableOpacity
-                            style={[styles.closeButton, { backgroundColor: '#EF4444', marginHorizontal: 16 }]}
+                            style={[styles.actionButton, { backgroundColor: '#EF4444' }]}
                             onPress={() => setOpenCancelConfirmDialog(true)}
                         >
-                            <Text style={styles.closeButtonText}>Hủy đơn hàng</Text>
+                            <Text style={styles.actionButtonText}>Hủy đơn hàng</Text>
                         </TouchableOpacity>
                     )}
-                </ScrollView>
-                <TouchableOpacity style={[styles.closeButton, { marginHorizontal: 16 }]} onPress={() => setSelectedOrder(null)}>
-                    <Text style={styles.closeButtonText}>Đóng</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: CommonColors.primary }]}
+                        onPress={() => setSelectedOrder(null)}
+                    >
+                        <Text style={styles.actionButtonText}>Đóng</Text>
+                    </TouchableOpacity>
+                </View>
+                <DialogNotification
+                    visible={openCancelConfirmDialog}
+                    message="Thao tác không thể hoàn tác. Bạn có chắc muốn tiếp tục?"
+                    textClose="Bỏ qua"
+                    textConfirm="Đồng ý"
+                    onClose={() => setOpenCancelConfirmDialog(false)}
+                    onConfirm={() => handleCancelOrder(selectedOrder ?? undefined)}
+                />
             </View>
-            <DialogNotification
-                visible={openCancelConfirmDialog}
-                message="Thao tác không thể hoàn tác. Bạn có chắc muốn tiếp tục?"
-                textClose="Bỏ qua"
-                textConfirm="Đồng ý"
-                onClose={() => setOpenCancelConfirmDialog(false)}
-                onConfirm={() => handleCancelOrder(selectedOrder ?? undefined)}
-            />
         </Modal>
     );
 
@@ -254,6 +264,29 @@ const OrderManageScreen = () => {
     )
 }
 
-const styles = OrderManageStyle;
+const styles = StyleSheet.create({
+    ...OrderManageStyle,
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderTopColor: '#E5E7EB',
+    },
+    actionButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+    actionButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+});
 
 export default OrderManageScreen;
