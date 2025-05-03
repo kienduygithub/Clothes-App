@@ -14,3 +14,16 @@ export const fetchListOrderUser = async () => {
         throw error;
     }
 }
+
+export const cancelOrderUser = async (order_id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `order/cancel/${order_id}/mobile`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

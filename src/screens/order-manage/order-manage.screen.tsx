@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FlatList, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { Alert, FlatList, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import OrderManageStyle from "./order-manage.style";
 import { OrderModel } from "@/src/data/model/order.model";
 import { getStatusTextAndColorOrder, OrderStatus } from "@/src/common/resource/order_status";
@@ -15,6 +15,9 @@ import { MessageError } from "@/src/common/resource/message-error";
 import { CommonColors } from "@/src/common/resource/colors";
 import { AppConfig } from "@/src/common/config/app.config";
 import { formatPriceRender } from "@/src/common/utils/currency.helper";
+import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component";
+import { router } from "expo-router";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
 
 const OrderManageScreen = () => {
     const preImage = new AppConfig().getPreImage();
@@ -31,16 +34,16 @@ const OrderManageScreen = () => {
     const [selectedOrder, setSelectedOrder] = useState<OrderModel | null>(null);
     const [orders, setOrders] = useState<OrderModel[]>([]);
     const [displayOrders, setDisplayOrders] = useState<OrderModel[]>([]);
+    const [openCancelConfirmDialog, setOpenCancelConfirmDialog] = useState(false);
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const dispatch = useDispatch();
-
     useEffect(() => {
         fetchListOrderUser();
     }, [])
 
     const fetchListOrderUser = async () => {
         try {
-            const response = await OrderManagement.fetchFavoritesByUser();
+            const response = await OrderManagement.fetchListOrderUser();
             setOrders(response);
             setDisplayOrders(response);
         } catch (error) {
@@ -48,6 +51,41 @@ const OrderManageScreen = () => {
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
+
+    const handleCancelOrder = async (order?: OrderModel) => {
+        if (!order) {
+            showToast('Trạng thái đơn hàng không cho phép thực hiện', 'error');
+            return;
+        }
+
+        if (!(order.status === OrderStatus.PENDING) && !(order.status === OrderStatus.PROCESSING)) {
+            showToast('Trạng thái đơn hàng không cho phép thực hiện', 'error');
+            return;
+        }
+
+        try {
+            await OrderManagement.cancelOrderUser(order.id);
+            const updatedOrders = orders.map(o =>
+                o.id === order.id ? { ...o, status: OrderStatus.CANCELED } as OrderModel : o
+            );
+            setOrders(updatedOrders);
+            setDisplayOrders(updatedOrders.filter(o =>
+                activeTab === OrderStatus.ALL || o.status === activeTab
+            ));
+            setOpenCancelConfirmDialog(false);
+            setSelectedOrder(null);
+            showToast('Đơn hàng đã được hủy thành công', 'success');
+        } catch (error: any) {
+            console.log('OrderManageScreen 79: ', error);
+            if (error?.message === 'Session expired, please log in again') {
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
+        }
+
+    };
 
     const changeTab = (tab: OrderStatus) => {
         setActiveTab(tab);
@@ -168,11 +206,27 @@ const OrderManageScreen = () => {
                             {formatPriceRender(selectedOrder?.total_price ?? 0)} VNĐ
                         </Text>
                     </View>
+                    {selectedOrder && [OrderStatus.PENDING, OrderStatus.PROCESSING].includes(selectedOrder.status as OrderStatus) && (
+                        <TouchableOpacity
+                            style={[styles.closeButton, { backgroundColor: '#EF4444', marginHorizontal: 16 }]}
+                            onPress={() => setOpenCancelConfirmDialog(true)}
+                        >
+                            <Text style={styles.closeButtonText}>Hủy đơn hàng</Text>
+                        </TouchableOpacity>
+                    )}
                 </ScrollView>
-                <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedOrder(null)}>
+                <TouchableOpacity style={[styles.closeButton, { marginHorizontal: 16 }]} onPress={() => setSelectedOrder(null)}>
                     <Text style={styles.closeButtonText}>Đóng</Text>
                 </TouchableOpacity>
             </View>
+            <DialogNotification
+                visible={openCancelConfirmDialog}
+                message="Thao tác không thể hoàn tác. Bạn có chắc muốn tiếp tục?"
+                textClose="Bỏ qua"
+                textConfirm="Đồng ý"
+                onClose={() => setOpenCancelConfirmDialog(false)}
+                onConfirm={() => handleCancelOrder(selectedOrder ?? undefined)}
+            />
         </Modal>
     );
 
