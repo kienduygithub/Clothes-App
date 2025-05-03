@@ -28,7 +28,7 @@ const OrderManageScreen = () => {
         OrderStatus.PAID,
         OrderStatus.SHIPPED,
         OrderStatus.COMPLETED,
-        OrderStatus.CANCELED
+        OrderStatus.CANCELED,
     ];
     const [activeTab, setActiveTab] = useState(OrderStatus.ALL);
     const [selectedOrder, setSelectedOrder] = useState<OrderModel | null>(null);
@@ -247,6 +247,15 @@ const OrderManageScreen = () => {
                 <View style={{ marginBottom: 16 }}>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
                         {tabs.map(renderTab)}
+                        <TouchableOpacity
+                            style={[styles.tab]}
+                            onPress={() => router.navigate('/(routes)/review')}
+                        >
+                            <AntDesign name="carryout" size={25} color={CommonColors.black} />
+                            <Text style={[styles.tabText]}>
+                                Đánh giá
+                            </Text>
+                        </TouchableOpacity>
                     </ScrollView>
                 </View>
                 <FlatList

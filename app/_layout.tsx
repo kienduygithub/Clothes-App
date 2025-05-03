@@ -220,6 +220,15 @@ function RootLayoutNav() {
           />
 
           <Stack.Screen
+            name="(routes)/review/index"
+            options={{
+              title: 'Quản lý đánh giá',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
             name="(tabs)"
             options={{
               headerShown: false
