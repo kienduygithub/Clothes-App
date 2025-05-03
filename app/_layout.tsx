@@ -200,6 +200,25 @@ function RootLayoutNav() {
             }}
           />
 
+          {/* Order Manage */}
+          <Stack.Screen
+            name="(routes)/order-manage/index"
+            options={{
+              title: 'Quản lý đơn hàng',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/order-detail/index"
+            options={{
+              title: 'Chi tiết đơn hàng',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
           <Stack.Screen
             name="(tabs)"
             options={{

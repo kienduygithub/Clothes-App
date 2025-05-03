@@ -77,6 +77,15 @@ const MeScreen = (props: Props) => {
         router.navigate('/(routes)/favorite');
     }
 
+    const navigateOrderManageScreen = () => {
+        if (userSelector.isLogged === false) {
+            showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+            return;
+        }
+
+        router.navigate('/(routes)/order-manage');
+    }
+
     const headerHeight = useHeaderHeight();
     return (
         <>
@@ -104,7 +113,7 @@ const MeScreen = (props: Props) => {
                 </View>
 
                 <View style={styles.buttonWrapper}>
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity onPress={navigateOrderManageScreen} style={styles.button}>
                         <Ionicons name="person-outline" size={20} color={CommonColors.black} />
                         <Text style={styles.buttonText}>Danh sách đơn hàng</Text>
                     </TouchableOpacity>
