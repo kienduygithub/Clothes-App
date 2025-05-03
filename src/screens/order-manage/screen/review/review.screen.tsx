@@ -33,7 +33,6 @@ const ReviewScreen = () => {
     useEffect(() => {
         fetchUnreviewedPurchases();
         fetchReviewedPurchases();
-        fetchReviews();
     }, []);
 
     const fetchUnreviewedPurchases = async () => {
@@ -59,16 +58,6 @@ const ReviewScreen = () => {
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
-
-    const fetchReviews = async () => {
-        try {
-            setReviews(mockReviews);
-            filterReviews(tabs[0]);
-        } catch (error) {
-            console.log('ReviewScreen 24: ', error);
-            showToast(MessageError.BUSY_SYSTEM, 'error');
-        }
-    };
 
     const filterReviews = (tab: string) => {
         setActiveTab(tab);
