@@ -2,24 +2,31 @@ import { CommonColors } from "@/src/common/resource/colors";
 import { formatDate } from "@/src/common/utils/time.helper";
 import { ProductModel } from "@/src/data/model/product.model";
 import { ProductReviewModel } from "@/src/data/model/review.model";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { Image, Text } from "react-native";
-import { TouchableOpacity } from "react-native";
 import { StyleSheet, View } from "react-native";
 
 type Props = {
     preImage: string,
     product: ProductModel,
     reviews: ProductReviewModel[],
-    totalItems: number,
+    totalReviews: number,
 }
 
 const ReviewListComponent = ({
     preImage,
     product,
     reviews = [],
-    totalItems = 0
+    totalReviews = 0
 }: Props) => {
+
+    const ratingDistribution = {
+        1: 1,
+        2: 4,
+        3: 15,
+        4: 40,
+        5: 80,
+    };
 
     const renderStars = (rating: number) => {
         const stars = [];
@@ -37,25 +44,54 @@ const ReviewListComponent = ({
         return stars;
     };
 
-    const navigateToAllReviewScreen = () => {
+    const renderFullStars = (rating: number) => {
+        const stars = [];
+        for (let i = 1; i <= rating; i++) {
+            stars.push(
+                <FontAwesome
+                    key={i}
+                    name="star"
+                    size={14}
+                    color={CommonColors.yellow}
+                />
+            );
+        }
+        return <Text>{stars}</Text>;
+    };
 
-    }
-
-    return (
-        <View style={reviewStyles.reviewWrapper}>
-            <TouchableOpacity onPress={navigateToAllReviewScreen} style={[reviewStyles.reviewHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
-                <View>
-                    <Text style={reviewStyles.reviewTitle}>Đánh giá sản phẩm</Text>
-                    <View style={reviewStyles.ratingSummary}>
-                        <Text style={reviewStyles.ratingText}>{Number(product.rating).toFixed(1)}/5.0</Text>
+    const renderRatingDistribution = () => {
+        return (
+            <View style={reviewStyles.ratingDistribution}>
+                <View style={{ borderRightWidth: 1, borderRightColor: CommonColors.extraLightGray, paddingRight: 16 }}>
+                    <View style={[reviewStyles.ratingAverage, { alignItems: 'center' }]}>
+                        <Text style={reviewStyles.ratingText}>{Number(product.rating).toFixed(1)}</Text>
                         <View style={reviewStyles.stars}>
                             {renderStars(Number(product.rating))}
                         </View>
-                        <Text style={reviewStyles.reviewCount}>({totalItems} đánh giá)</Text>
+                        <Text style={reviewStyles.reviewCount}>({totalReviews} đánh giá)</Text>
                     </View>
                 </View>
-                <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
-            </TouchableOpacity>
+                <View style={{ paddingLeft: 16 }}>
+                    {Object.entries(ratingDistribution).map(([stars, count]) => (
+                        <View key={stars} style={reviewStyles.ratingRow}>
+                            <Text>{stars}</Text>
+                            <View style={reviewStyles.ratingLabel}>
+                                {renderFullStars(Number(stars))}
+                            </View>
+                            <Text style={reviewStyles.ratingCountText}>({count} đánh giá)</Text>
+                        </View>
+                    ))}
+                </View>
+            </View>
+        );
+    };
+
+    return (
+        <View style={reviewStyles.reviewWrapper}>
+            <View style={reviewStyles.reviewHeader}>
+                <Text style={reviewStyles.reviewTitle}>Đánh giá sản phẩm</Text>
+                {renderRatingDistribution()}
+            </View>
             {reviews.slice(0, 2).map((review) => (
                 <View key={review.id} style={reviewStyles.reviewItem}>
                     <View style={reviewStyles.reviewUser}>
@@ -81,32 +117,52 @@ const reviewStyles = StyleSheet.create({
         backgroundColor: CommonColors.white,
     },
     reviewHeader: {
+        paddingHorizontal: 16,
         marginBottom: 12,
-        paddingHorizontal: 16
     },
     reviewTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#1F2937',
+        color: CommonColors.primary,
         marginBottom: 8,
     },
-    ratingSummary: {
+    ratingDistribution: {
+        paddingVertical: 8,
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    ratingRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 4,
     },
-    ratingText: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: CommonColors.primary,
-        marginRight: 8,
-    },
-    stars: {
-        flexDirection: 'row',
-        marginRight: 8,
+    totalReviews: {
+        flex: 1,
     },
     reviewCount: {
         fontSize: 14,
-        color: '#6B7280',
+        color: CommonColors.black,
+    },
+    ratingAverage: {
+        alignItems: 'baseline',
+    },
+    ratingText: {
+        fontSize: 60,
+        fontWeight: '700',
+        color: CommonColors.black,
+    },
+    stars: {
+        flexDirection: 'row',
+    },
+    ratingLabel: {
+        flexDirection: 'row',
+    },
+
+    ratingCountText: {
+        fontSize: 12,
+        color: '#1F2937',
+        fontWeight: '600',
     },
     reviewItem: {
         paddingVertical: 12,
@@ -152,18 +208,6 @@ const reviewStyles = StyleSheet.create({
     reviewDate: {
         fontSize: 12,
         color: '#9CA3AF',
-    },
-    viewMoreButton: {
-        marginTop: 12,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: CommonColors.primary,
-        alignItems: 'center',
-    },
-    viewMoreText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '500',
     },
 });
 

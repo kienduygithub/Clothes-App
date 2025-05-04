@@ -356,7 +356,7 @@ const ProductDetailScreen = (props: Props) => {
                                 preImage={preImage}
                                 product={product}
                                 reviews={reviews}
-                                totalItems={reviewPaginate.totalItems}
+                                totalReviews={reviewPaginate.totalItems}
                             />
                         </Animated.View>
                     )}
