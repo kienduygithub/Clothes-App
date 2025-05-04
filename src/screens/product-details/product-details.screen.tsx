@@ -27,28 +27,14 @@ import { MessageError } from "@/src/common/resource/message-error"
 import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer"
 import * as FavoriteManagement from "@/src/data/management/favorite.management";
+import * as ReviewManagement from "@/src/data/management/review.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { formatDate } from "@/src/common/utils/time.helper"
+import ReviewListComponent from "./comp/review-list/review-list.component"
+import { ProductReviewModel } from "@/src/data/model/review.model"
+import { PaginateModel } from "@/src/common/model/paginate.model"
 
 type Props = {};
-
-// Dữ liệu giả cho review
-const mockReviews = [
-    {
-        id: 1,
-        userName: "Nguyễn Văn A",
-        rating: 5,
-        comment: "Sản phẩm rất đẹp, chất lượng tốt, giao hàng nhanh. Sẽ mua lại!",
-        date: "2025-05-01",
-    },
-    {
-        id: 2,
-        userName: "Trần Thị B",
-        rating: 4,
-        comment: "Hàng đẹp nhưng giao hàng hơi chậm. Chất lượng thì ổn.",
-        date: "2025-04-28",
-    },
-];
 
 const { width, height } = Dimensions.get('window');
 
@@ -62,6 +48,13 @@ const ProductDetailScreen = (props: Props) => {
     const [variants, setVariants] = useState<ProductVariantModel[]>([]);
     const [availableVariants, setAvailableVariants] = useState<Map<number, string>>();
     const [products, setProducts] = useState<ProductModel[]>([]);
+    const [reviews, setReviews] = useState<ProductReviewModel[]>([]);
+    const [reviewPaginate, setReviewPaginate] = useState<PaginateModel>(new PaginateModel().convertObj({
+        currentPage: 1,
+        limit: 10,
+        totalItems: 0,
+        totalPages: 1
+    }))
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
     const isFavorite = userSelector.favorites.includes(product?.id ?? 0);
@@ -80,6 +73,7 @@ const ProductDetailScreen = (props: Props) => {
     useEffect(() => {
         if (product) {
             fetchProductShop();
+            fetchListProductReview();
         }
     }, [product])
 
@@ -122,6 +116,20 @@ const ProductDetailScreen = (props: Props) => {
             const response = await ProductManagement.fetchProductsByShopId(product?.shop?.id ?? 0);
             console.log('Danh sách sản phẩm cửa hàng: Done!');
             setProducts(response);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const fetchListProductReview = async () => {
+        try {
+            const response = await ReviewManagement.fetchListReviewProduct(
+                product?.shop?.id ?? 0,
+                1,
+                2
+            );
+            setReviews(response.get('reviews'));
+            setReviewPaginate(response.get('paginate'));
         } catch (error) {
             console.log(error);
         }
@@ -214,22 +222,6 @@ const ProductDetailScreen = (props: Props) => {
             }
         }
     }
-
-    const renderStars = (rating: number) => {
-        const stars = [];
-        for (let i = 1; i <= 5; i++) {
-            stars.push(
-                <FontAwesome
-                    key={i}
-                    name={i <= rating ? "star" : "star-o"}
-                    size={16}
-                    color={CommonColors.yellow}
-                    style={{ marginRight: 4 }}
-                />
-            );
-        }
-        return stars;
-    };
 
     return (
         <>
@@ -360,38 +352,12 @@ const ProductDetailScreen = (props: Props) => {
                     {/* Review */}
                     {product && (
                         <Animated.View style={[styles.container, { marginTop: 10, marginBottom: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
-                            <View style={reviewStyles.reviewWrapper}>
-                                <TouchableOpacity style={[reviewStyles.reviewHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
-                                    <View>
-                                        <Text style={reviewStyles.reviewTitle}>Đánh giá sản phẩm</Text>
-                                        <View style={reviewStyles.ratingSummary}>
-                                            <Text style={reviewStyles.ratingText}>{Number(product.rating).toFixed(1)}/5.0</Text>
-                                            <View style={reviewStyles.stars}>
-                                                {renderStars(Number(product.rating))}
-                                            </View>
-                                            <Text style={reviewStyles.reviewCount}>({mockReviews.length} đánh giá)</Text>
-                                        </View>
-                                    </View>
-                                    <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
-                                </TouchableOpacity>
-                                {mockReviews.slice(0, 2).map((review) => (
-                                    <View key={review.id} style={reviewStyles.reviewItem}>
-                                        <View style={reviewStyles.reviewUser}>
-                                            <View style={reviewStyles.avatar}>
-                                                <Text style={reviewStyles.avatarText}>{review.userName[0]}</Text>
-                                            </View>
-                                            <View style={reviewStyles.userDetails}>
-                                                <Text style={reviewStyles.userName}>{review.userName}</Text>
-                                                <View style={reviewStyles.starContainer}>
-                                                    {renderStars(review.rating)}
-                                                </View>
-                                            </View>
-                                        </View>
-                                        <Text style={reviewStyles.reviewComment}>{review.comment}</Text>
-                                        <Text style={reviewStyles.reviewDate}>{formatDate(new Date(review.date))}</Text>
-                                    </View>
-                                ))}
-                            </View>
+                            <ReviewListComponent
+                                preImage={preImage}
+                                product={product}
+                                reviews={reviews}
+                                totalItems={reviewPaginate.totalItems}
+                            />
                         </Animated.View>
                     )}
                 </ScrollView>

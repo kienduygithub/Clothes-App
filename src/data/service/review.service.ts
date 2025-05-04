@@ -32,6 +32,20 @@ export const fetchListReviewedPurchaseUser = async () => {
     }
 }
 
+export const fetchListReviewProduct = async (product_id: number, page: number, limit: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `reviews/product/${product_id}?page=${page}&limit=${limit}`
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const addReviewPurchaseUser = async (data: ProductReviewModel) => {
     try {
         const domain = new AppConfig().getDomain();
