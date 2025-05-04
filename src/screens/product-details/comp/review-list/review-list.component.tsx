@@ -2,8 +2,8 @@ import { CommonColors } from "@/src/common/resource/colors";
 import { formatDate } from "@/src/common/utils/time.helper";
 import { ProductModel } from "@/src/data/model/product.model";
 import { ProductReviewModel } from "@/src/data/model/review.model";
-import { FontAwesome } from "@expo/vector-icons";
-import { Image, Text } from "react-native";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { Image, Text, TouchableOpacity } from "react-native";
 import { StyleSheet, View } from "react-native";
 
 type Props = {
@@ -21,11 +21,11 @@ const ReviewListComponent = ({
 }: Props) => {
 
     const ratingDistribution = {
-        1: 1,
-        2: 4,
-        3: 15,
-        4: 40,
-        5: 80,
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 2,
     };
 
     const renderStars = (rating: number) => {
@@ -46,35 +46,36 @@ const ReviewListComponent = ({
 
     const renderFullStars = (rating: number) => {
         const stars = [];
-        for (let i = 1; i <= rating; i++) {
+        for (let i = 1; i <= 5; i++) {
             stars.push(
                 <FontAwesome
                     key={i}
-                    name="star"
+                    name={i <= rating ? "star" : "star-o"}
                     size={14}
                     color={CommonColors.yellow}
+                    style={{ marginRight: 2 }}
                 />
             );
         }
-        return <Text>{stars}</Text>;
+        return <View style={reviewStyles.ratingLabelStars}>{stars}</View>;
     };
 
     const renderRatingDistribution = () => {
         return (
-            <View style={reviewStyles.ratingDistribution}>
-                <View style={{ borderRightWidth: 1, borderRightColor: CommonColors.extraLightGray, paddingRight: 16 }}>
-                    <View style={[reviewStyles.ratingAverage, { alignItems: 'center' }]}>
+            <TouchableOpacity style={reviewStyles.ratingDistribution}>
+                <View style={reviewStyles.ratingAverageContainer}>
+                    <View style={[reviewStyles.ratingAverage]}>
                         <Text style={reviewStyles.ratingText}>{Number(product.rating).toFixed(1)}</Text>
                         <View style={reviewStyles.stars}>
                             {renderStars(Number(product.rating))}
                         </View>
-                        <Text style={reviewStyles.reviewCount}>({totalReviews} đánh giá)</Text>
                     </View>
+                    <Text style={reviewStyles.reviewCount}>({totalReviews} đánh giá)</Text>
                 </View>
-                <View style={{ paddingLeft: 16 }}>
-                    {Object.entries(ratingDistribution).map(([stars, count]) => (
+                <View style={reviewStyles.ratingDistributionList}>
+                    {Object.entries(ratingDistribution).reverse().map(([stars, count]) => (
                         <View key={stars} style={reviewStyles.ratingRow}>
-                            <Text>{stars}</Text>
+                            <Text style={reviewStyles.ratingLabelText}>{stars} sao</Text>
                             <View style={reviewStyles.ratingLabel}>
                                 {renderFullStars(Number(stars))}
                             </View>
@@ -82,7 +83,8 @@ const ReviewListComponent = ({
                         </View>
                     ))}
                 </View>
-            </View>
+                <MaterialIcons style={{ marginLeft: 'auto' }} name="chevron-right" size={24} color="#6B7280" />
+            </TouchableOpacity>
         );
     };
 
@@ -121,81 +123,97 @@ const reviewStyles = StyleSheet.create({
         marginBottom: 12,
     },
     reviewTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '700',
         color: CommonColors.primary,
-        marginBottom: 8,
+        marginBottom: 12,
     },
     ratingDistribution: {
-        paddingVertical: 8,
+        width: '100%',
         flexDirection: 'row',
         alignItems: 'center'
+    },
+    ratingAverageContainer: {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingRight: 16
+    },
+    ratingAverage: {
+        alignItems: 'center',
+    },
+    ratingText: {
+        fontSize: 48,
+        fontWeight: '700',
+        color: '#111827',
+    },
+    stars: {
+        flexDirection: 'row',
+        marginLeft: 12,
+    },
+    reviewCount: {
+        fontSize: 16,
+        color: '#6B7280',
+        marginLeft: 12,
+    },
+    ratingDistributionList: {
+        flexDirection: 'column',
+        borderLeftColor: '#CCC',
+        borderLeftWidth: 1,
+        paddingLeft: 16
     },
     ratingRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 4,
+        marginBottom: 8,
     },
-    totalReviews: {
-        flex: 1,
+    ratingCount: {
+        backgroundColor: CommonColors.yellow,
+        paddingVertical: 6,
     },
-    reviewCount: {
-        fontSize: 14,
-        color: CommonColors.black,
-    },
-    ratingAverage: {
-        alignItems: 'baseline',
-    },
-    ratingText: {
-        fontSize: 60,
-        fontWeight: '700',
-        color: CommonColors.black,
-    },
-    stars: {
-        flexDirection: 'row',
+    ratingCountText: {
+        fontSize: 13,
+        color: CommonColors.lightGray,
     },
     ratingLabel: {
         flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 16,
     },
-
-    ratingCountText: {
-        fontSize: 12,
-        color: '#1F2937',
-        fontWeight: '600',
+    ratingLabelStars: {
+        flexDirection: 'row',
+    },
+    ratingLabelText: {
+        fontSize: 14,
+        color: '#374151',
+        marginRight: 8,
     },
     reviewItem: {
-        paddingVertical: 12,
+        paddingVertical: 16,
         paddingHorizontal: 16,
     },
     reviewUser: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 12,
     },
     avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: '#34D399',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 8,
+        marginRight: 12,
         overflow: 'hidden',
-    },
-    avatarText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
     },
     userDetails: {
         flex: 1,
     },
     userName: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '600',
         color: '#1F2937',
-        marginBottom: 4,
+        marginBottom: 6,
     },
     starContainer: {
         flexDirection: 'row',
@@ -203,7 +221,7 @@ const reviewStyles = StyleSheet.create({
     reviewComment: {
         fontSize: 14,
         color: '#1F2937',
-        marginBottom: 8,
+        marginBottom: 12,
     },
     reviewDate: {
         fontSize: 12,
