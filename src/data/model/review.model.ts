@@ -108,6 +108,22 @@ export class ProductReviewModel {
         return obj;
     }
 
+    convertDataToModel(selectedItem: ProductReviewModel, reviewModel: ReviewModel) {
+        const payload = new ProductReviewModel();
+        payload.id = selectedItem.id;
+        payload.user = selectedItem.user;
+        payload.product_id = selectedItem.product_id;
+        payload.product_variant_id = selectedItem.product_variant_id;
+        payload.product_name = selectedItem.product_name;
+        payload.order_id = selectedItem.order_id;
+        payload.category = selectedItem.category;
+        payload.order_item_id = selectedItem.order_item_id;
+        payload.image_url = selectedItem.image_url;
+        payload.review = reviewModel;
+
+        return payload;
+    }
+
     convertModelToExecute(data: ProductReviewModel) {
         return {
             product_id: data.product_id,

@@ -74,7 +74,7 @@ const ProductDetailScreen = (props: Props) => {
             const response = await ProductManagement.fetchProductVariantByProductId(+id);
             console.log('Danh sách biến thể: Done!');
             const availableVariantMap = new Map<number, string>(
-                response.map((variant: ProductVariantModel) => [variant.color?.id ?? 0, variant.image_url])
+                response?.map((variant: ProductVariantModel) => [variant.color?.id ?? 0, variant.image_url])
             );
             availableVariantMap.delete(0);
             setAvailableVariants(availableVariantMap);
@@ -292,7 +292,7 @@ const ProductDetailScreen = (props: Props) => {
                         <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
                             <View style={styles.shopWrapper}>
                                 <View style={styles.shopInfoWrapper}>
-                                    <View style={{ width: 60, height: 60 }}>
+                                    <View style={{ width: 60, height: 60, overflow: 'hidden', borderRadius: 30 }}>
                                         <Image
                                             style={{ width: '100%', height: '100%' }}
                                             source={{ uri: `${preImage}/${product.shop?.logo_url}` }}

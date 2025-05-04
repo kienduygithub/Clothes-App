@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/data/types/global";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { MessageError } from "@/src/common/resource/message-error";
+import { CategoryModel } from "@/src/data/model/category.model";
 
 const ReviewScreen = () => {
     const preImage = new AppConfig().getPreImage();
@@ -73,6 +74,15 @@ const ReviewScreen = () => {
         }
     };
 
+    const navigateProductDetail = (item: ProductReviewModel) => {
+        router.navigate({
+            pathname: "/(routes)/product-details",
+            params: {
+                id: item.product_id
+            }
+        })
+    }
+
     const renderTab = (tab: string) => (
         <TouchableOpacity
             key={tab}
@@ -125,8 +135,22 @@ const ReviewScreen = () => {
             return stars;
         };
 
+        const renderCategory = (category?: CategoryModel) => {
+            if (!category) {
+                return "Không có phân loại";
+            }
+
+            let render = [];
+            render.push(category.category_name);
+            if (category.parent) {
+                render.unshift(category.parent.category_name);
+            }
+
+            return render.join(', ');
+        }
+
         return (
-            <View style={styles.ratedReviewCard}>
+            <TouchableOpacity style={styles.ratedReviewCard}>
                 <View style={styles.userInfo}>
                     <View style={styles.avatar}>
                         <Image style={{ width: '100%', height: '100%' }} source={{ uri: `${preImage}/${item.user?.image_url}` }} />
@@ -137,18 +161,19 @@ const ReviewScreen = () => {
                     </View>
                 </View>
                 <Text style={styles.variantText}>
-                    Phân loại: {"Không có phân loại"}
+                    Phân loại: {renderCategory(item.category)}
                 </Text>
                 <Text style={styles.reviewComment}>{item.review?.comment}</Text>
                 <Text style={styles.reviewDate}>{formatDate(new Date(item.created_at ?? new Date()))}</Text>
-                <View style={styles.productInfo}>
+                <TouchableOpacity onPress={() => navigateProductDetail(item)} style={styles.productInfo}>
                     <Image
                         style={styles.ratedProductImage}
                         source={{ uri: `${preImage}/${item.image_url}` }}
                     />
                     <Text style={styles.ratedProductName}>{item.product_name}</Text>
-                </View>
-            </View>
+                    <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+                </TouchableOpacity>
+            </TouchableOpacity>
         );
     };
 
@@ -181,19 +206,9 @@ const ReviewScreen = () => {
             reviewModel.rating = rating;
             reviewModel.comment = comment;
 
-            const payload = new ProductReviewModel();
-            payload.id = selectedItem.id;
-            payload.user = selectedItem.user;
-            payload.product_id = selectedItem.product_id;
-            payload.product_variant_id = selectedItem.product_variant_id;
-            payload.product_name = selectedItem.product_name;
-            payload.order_id = selectedItem.order_id;
-            payload.category = selectedItem.category;
-            payload.order_item_id = selectedItem.order_item_id;
-            payload.image_url = selectedItem.image_url;
-            payload.review = reviewModel;
-
+            const payload = new ProductReviewModel().convertDataToModel(selectedItem, reviewModel);
             const response = await ReviewManagement.addReviewPurchaseUser(payload);
+
             payload.id = response.id;
             payload.review = response;
             payload.created_at = response.created_at;
@@ -202,7 +217,7 @@ const ReviewScreen = () => {
 
             setReviewedPurchases(prev => [payload, ...prev]);
             let updatedList = [...unreviewedPurchases];
-            updatedList = updatedList.filter(item => item.id !== payload.id);
+            updatedList = updatedList.filter(item => item.id !== selectedItem.id);
             setUnreviewedPurchases(updatedList);
             setDisplayReviews(updatedList);
 

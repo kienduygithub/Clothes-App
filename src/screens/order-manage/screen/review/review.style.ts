@@ -117,6 +117,7 @@ const ReviewStyle = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 8,
+        overflow: 'hidden'
     },
     avatarText: {
         color: '#FFFFFF',
