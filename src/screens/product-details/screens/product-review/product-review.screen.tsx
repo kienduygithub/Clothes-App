@@ -32,20 +32,16 @@ const ProductReviewScreen = () => {
     const isReachedEnd = useRef<boolean>(false);
     const isFetching = useRef<boolean>(false);
     const isFirstFetching = useRef<boolean>(true);
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
     useEffect(() => {
         fetchListProductReview(1);
     }, [])
 
-    useEffect(() => {
-        if (isFirstFetching.current) {
-            isFirstFetching.current = false;
-            return;
-        }
-    }, [reviewPaginate.currentPage])
-
     const fetchListProductReview = async (page: number) => {
         try {
-            if (isReachedEnd.current) {
+            if (isReachedEnd.current || isFetching.current) {
+                setIsRefreshing(false);
                 return;
             }
             isFetching.current = true;
@@ -55,24 +51,38 @@ const ProductReviewScreen = () => {
                 reviewPaginate.limit
             );
 
-            setReviews(prev => [...prev, ...response.get('reviews')]);
+            if (page === 1) {
+                setReviews(response.get("reviews"));
+            } else {
+                setReviews((prev) => [...prev, ...response.get("reviews")]);
+            }
             setReviewPaginate(response.get('paginate'));
 
             if (page >= response.get('paginate').totalPages) {
                 isReachedEnd.current = true;
             }
             isFetching.current = false;
+            setIsRefreshing(false);
         } catch (error) {
             console.log(error);
             isFetching.current = false;
+            setIsRefreshing(false);
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
 
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        setReviewPaginate((prev) => ({ ...prev, currentPage: 1 } as PaginateModel));
+        fetchListProductReview(1);
+    };
+
     const loadingMore = async () => {
-        const currentPage = reviewPaginate.currentPage + 1;
-        setReviewPaginate(prev => ({ ...prev, currentPage: currentPage } as PaginateModel))
-        await fetchListProductReview(currentPage);
+        if (!isFetching.current && !isReachedEnd.current) {
+            const currentPage = reviewPaginate.currentPage + 1;
+            setReviewPaginate((prev) => ({ ...prev, currentPage: currentPage } as PaginateModel));
+            await fetchListProductReview(currentPage);
+        }
     }
 
     const calculatRatingDistribution = () => {
@@ -177,6 +187,9 @@ const ProductReviewScreen = () => {
                         <Text style={styles.reviewDate}>{formatDate(new Date(item.review?.created_at ?? new Date()))}</Text>
                     </View>
                 )}
+                onRefresh={handleRefresh}
+                refreshing={isRefreshing}
+                onEndReachedThreshold={0.5}
                 ListFooterComponent={() => (
                     <View style={styles.footerContainer}>
                         <View style={styles.footerLine} />
