@@ -187,13 +187,16 @@ const ReviewScreen = () => {
             payload.product_id = selectedItem.product_id;
             payload.product_variant_id = selectedItem.product_variant_id;
             payload.product_name = selectedItem.product_name;
+            payload.order_id = selectedItem.order_id;
+            payload.category = selectedItem.category;
+            payload.order_item_id = selectedItem.order_item_id;
             payload.image_url = selectedItem.image_url;
             payload.review = reviewModel;
 
-            // const resposne = await ReviewManagement.addReviewPurchaseUser(payload);
-            // payload.id = resposne.id;
-            // payload.review.id = resposne.id;
-            // payload.created_at = resposne.created_at;
+            const response = await ReviewManagement.addReviewPurchaseUser(payload);
+            payload.id = response.id;
+            payload.review = response;
+            payload.created_at = response.created_at;
 
             showToast("Đánh giá thành công", "success");
 
@@ -206,9 +209,13 @@ const ReviewScreen = () => {
             setModalVisible(false);
             setRating(0);
             setComment("");
-        } catch (error) {
+        } catch (error: any) {
             console.log('ReviewScreen 170: ', error);
-            showToast(MessageError.BUSY_SYSTEM, 'error');
+            if (error?.message === 'OrderItem này đã được đánh giá') {
+                showToast(MessageError.ALREADY_REVIEWED_PRODUCT, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         } finally {
             setLoading(false);
         }

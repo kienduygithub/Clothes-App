@@ -30,8 +30,9 @@ export const fetchListReviewedPurchaseUser = async () => {
 export const addReviewPurchaseUser = async (data: ProductReviewModel) => {
     try {
         const result = await ReviewService.addReviewPurchaseUser(data);
-        return new ReviewModel().convertObj(result?.reviewedPurchases[0]);
+        return new ReviewModel().convertObj(result?.updatedReviews[0]);
     } catch (error) {
+        console.log(error);
         throw error;
     }
 }
