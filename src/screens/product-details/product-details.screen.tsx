@@ -1,9 +1,9 @@
-import { Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import ProductDetailStyle from "./product-details.style"
 import { router, Stack, useLocalSearchParams } from "expo-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import ImageSliderComponent from "@/src/components/imageSlider/image-slider.comp"
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons"
+import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { CommonColors } from "@/src/common/resource/colors"
 import Animated, { FadeInDown } from "react-native-reanimated"
 import { ProductImageModel, ProductModel } from "@/src/data/model/product.model";
@@ -28,8 +28,27 @@ import DialogNotification from "@/src/components/dialog-notification/dialog-noti
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer"
 import * as FavoriteManagement from "@/src/data/management/favorite.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
+import { formatDate } from "@/src/common/utils/time.helper"
 
 type Props = {};
+
+// Dữ liệu giả cho review
+const mockReviews = [
+    {
+        id: 1,
+        userName: "Nguyễn Văn A",
+        rating: 5,
+        comment: "Sản phẩm rất đẹp, chất lượng tốt, giao hàng nhanh. Sẽ mua lại!",
+        date: "2025-05-01",
+    },
+    {
+        id: 2,
+        userName: "Trần Thị B",
+        rating: 4,
+        comment: "Hàng đẹp nhưng giao hàng hơi chậm. Chất lượng thì ổn.",
+        date: "2025-04-28",
+    },
+];
 
 const { width, height } = Dimensions.get('window');
 
@@ -196,6 +215,22 @@ const ProductDetailScreen = (props: Props) => {
         }
     }
 
+    const renderStars = (rating: number) => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                <FontAwesome
+                    key={i}
+                    name={i <= rating ? "star" : "star-o"}
+                    size={16}
+                    color={CommonColors.yellow}
+                    style={{ marginRight: 4 }}
+                />
+            );
+        }
+        return stars;
+    };
+
     return (
         <>
             <Stack.Screen options={{
@@ -324,8 +359,39 @@ const ProductDetailScreen = (props: Props) => {
                     )}
                     {/* Review */}
                     {product && (
-                        <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
-
+                        <Animated.View style={[styles.container, { marginTop: 10, marginBottom: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
+                            <View style={reviewStyles.reviewWrapper}>
+                                <TouchableOpacity style={[reviewStyles.reviewHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                                    <View>
+                                        <Text style={reviewStyles.reviewTitle}>Đánh giá sản phẩm</Text>
+                                        <View style={reviewStyles.ratingSummary}>
+                                            <Text style={reviewStyles.ratingText}>{Number(product.rating).toFixed(1)}/5.0</Text>
+                                            <View style={reviewStyles.stars}>
+                                                {renderStars(Number(product.rating))}
+                                            </View>
+                                            <Text style={reviewStyles.reviewCount}>({mockReviews.length} đánh giá)</Text>
+                                        </View>
+                                    </View>
+                                    <MaterialIcons name="chevron-right" size={24} color="#6B7280" />
+                                </TouchableOpacity>
+                                {mockReviews.slice(0, 2).map((review) => (
+                                    <View key={review.id} style={reviewStyles.reviewItem}>
+                                        <View style={reviewStyles.reviewUser}>
+                                            <View style={reviewStyles.avatar}>
+                                                <Text style={reviewStyles.avatarText}>{review.userName[0]}</Text>
+                                            </View>
+                                            <View style={reviewStyles.userDetails}>
+                                                <Text style={reviewStyles.userName}>{review.userName}</Text>
+                                                <View style={reviewStyles.starContainer}>
+                                                    {renderStars(review.rating)}
+                                                </View>
+                                            </View>
+                                        </View>
+                                        <Text style={reviewStyles.reviewComment}>{review.comment}</Text>
+                                        <Text style={reviewStyles.reviewDate}>{formatDate(new Date(review.date))}</Text>
+                                    </View>
+                                ))}
+                            </View>
                         </Animated.View>
                     )}
                 </ScrollView>
@@ -382,5 +448,97 @@ const ProductDetailScreen = (props: Props) => {
 }
 
 const styles = ProductDetailStyle;
+
+const reviewStyles = StyleSheet.create({
+    reviewWrapper: {
+        paddingVertical: 12,
+        backgroundColor: CommonColors.white,
+    },
+    reviewHeader: {
+        marginBottom: 12,
+        paddingHorizontal: 16
+    },
+    reviewTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginBottom: 8,
+    },
+    ratingSummary: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    ratingText: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#FF6200',
+        marginRight: 8,
+    },
+    stars: {
+        flexDirection: 'row',
+        marginRight: 8,
+    },
+    reviewCount: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    reviewItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+    },
+    reviewUser: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    avatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#34D399',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 8,
+        overflow: 'hidden',
+    },
+    avatarText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    userDetails: {
+        flex: 1,
+    },
+    userName: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1F2937',
+        marginBottom: 4,
+    },
+    starContainer: {
+        flexDirection: 'row',
+    },
+    reviewComment: {
+        fontSize: 14,
+        color: '#1F2937',
+        marginBottom: 8,
+    },
+    reviewDate: {
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    viewMoreButton: {
+        marginTop: 12,
+        paddingVertical: 10,
+        borderRadius: 8,
+        backgroundColor: CommonColors.primary,
+        alignItems: 'center',
+    },
+    viewMoreText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+});
 
 export default ProductDetailScreen;
