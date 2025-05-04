@@ -3,6 +3,8 @@ import { formatDate } from "@/src/common/utils/time.helper";
 import { ProductModel } from "@/src/data/model/product.model";
 import { ProductReviewModel } from "@/src/data/model/review.model";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useState } from "react";
 import { Image, Text, TouchableOpacity } from "react-native";
 import { StyleSheet, View } from "react-native";
 
@@ -20,13 +22,29 @@ const ReviewListComponent = ({
     totalReviews = 0
 }: Props) => {
 
-    const ratingDistribution = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 2,
-    };
+    const navigateListReviewProductScreen = () => {
+        router.navigate({
+            pathname: '/(routes)/address',
+            params: {
+                product_id: product.id,
+                avgRating: product.rating
+            }
+        })
+    }
+
+    const calculatRatingDistribution = () => {
+        let distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        reviews.forEach(review => {
+            const rating = review.review?.rating ?? 0;
+            if (rating >= 1 && rating <= 5) {
+                distribution[rating as keyof typeof distribution] = (distribution[rating as keyof typeof distribution] || 0) + 1;
+            }
+        });
+
+        return distribution;
+    }
+
+    const ratingDistribution: { [key: number]: number } = calculatRatingDistribution();
 
     const renderStars = (rating: number) => {
         const stars = [];
@@ -34,9 +52,9 @@ const ReviewListComponent = ({
             stars.push(
                 <FontAwesome
                     key={i}
-                    name={i <= rating ? "star" : "star-o"}
+                    name={"star"}
                     size={16}
-                    color={CommonColors.yellow}
+                    color={i <= rating ? "#FFD700" : "#D1D5DB"}
                     style={{ marginRight: 4 }}
                 />
             );
@@ -50,9 +68,9 @@ const ReviewListComponent = ({
             stars.push(
                 <FontAwesome
                     key={i}
-                    name={i <= rating ? "star" : "star-o"}
+                    name={"star"}
                     size={14}
-                    color={CommonColors.yellow}
+                    color={i <= rating ? CommonColors.yellow : CommonColors.lightGray}
                     style={{ marginRight: 2 }}
                 />
             );
@@ -62,7 +80,7 @@ const ReviewListComponent = ({
 
     const renderRatingDistribution = () => {
         return (
-            <TouchableOpacity style={reviewStyles.ratingDistribution}>
+            <TouchableOpacity onPress={navigateListReviewProductScreen} style={reviewStyles.ratingDistribution}>
                 <View style={reviewStyles.ratingAverageContainer}>
                     <View style={[reviewStyles.ratingAverage]}>
                         <Text style={reviewStyles.ratingText}>{Number(product.rating).toFixed(1)}</Text>
@@ -157,7 +175,7 @@ const reviewStyles = StyleSheet.create({
     },
     ratingDistributionList: {
         flexDirection: 'column',
-        borderLeftColor: '#CCC',
+        borderLeftColor: CommonColors.lightGray,
         borderLeftWidth: 1,
         paddingLeft: 16
     },
