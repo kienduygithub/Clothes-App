@@ -124,7 +124,7 @@ const ProductDetailScreen = (props: Props) => {
     const fetchListProductReview = async () => {
         try {
             const response = await ReviewManagement.fetchListReviewProduct(
-                product?.shop?.id ?? 0,
+                product?.id ?? 0,
                 1,
                 2
             );

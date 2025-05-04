@@ -24,7 +24,7 @@ const ReviewListComponent = ({
 
     const navigateListReviewProductScreen = () => {
         router.navigate({
-            pathname: '/(routes)/address',
+            pathname: '/(routes)/product-review',
             params: {
                 product_id: product.id,
                 avgRating: product.rating

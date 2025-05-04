@@ -229,6 +229,15 @@ function RootLayoutNav() {
           />
 
           <Stack.Screen
+            name="(routes)/product-review/index"
+            options={{
+              title: 'Danh sách đánh giá sản phẩm',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
             name="(tabs)"
             options={{
               headerShown: false
