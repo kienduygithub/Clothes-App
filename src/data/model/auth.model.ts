@@ -1,3 +1,5 @@
+import { UserModel } from "./user.model";
+
 export class AuthModel {
     email: string;
     password: string;
@@ -14,6 +16,17 @@ export class AuthModel {
         return {
             email: data.email,
             password: data.password
+        }
+    }
+
+    convertRegisterObj(user: UserModel, auth: AuthModel) {
+        return {
+            name: user.name,
+            gender: user.gender,
+            phone: user.phone,
+            address: user.address,
+            email: auth.email,
+            password: auth.password
         }
     }
 }

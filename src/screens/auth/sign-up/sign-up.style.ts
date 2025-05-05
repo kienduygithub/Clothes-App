@@ -99,8 +99,8 @@ const SignUpStyle = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        borderWidth: 2,
-        borderColor: '#f472b6',
+        borderWidth: 1,
+        borderColor: '#33adff',
     },
     avatarPlaceholder: {
         width: 80,

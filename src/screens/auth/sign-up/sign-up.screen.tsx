@@ -18,6 +18,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { CommonColors } from '@/src/common/resource/colors';
 import { Gender } from '@/src/common/resource/gender';
 import SignUpStyle from './sign-up.style';
+import { useToast } from '@/src/customize/toast.context';
+import { UserModel } from '@/src/data/model/user.model';
+import { AuthModel } from '@/src/data/model/auth.model';
+import * as AuthManagement from "@/src/data/management/auth.management";
+import { router } from 'expo-router';
+import { MessageError } from '@/src/common/resource/message-error';
 
 interface FormData {
     name: string;
@@ -28,11 +34,13 @@ interface FormData {
 }
 
 const SignUpScreen = () => {
+    const { showToast } = useToast();
     const {
         control,
         handleSubmit,
         formState: { errors },
         setValue,
+        setError
     } = useForm<FormData>({
         defaultValues: {
             name: '',
@@ -46,7 +54,7 @@ const SignUpScreen = () => {
     });
 
     const [gender, setGender] = useState<Gender>(Gender.MALE);
-    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<ImagePicker.ImagePickerResult & { assets?: ImagePicker.ImagePickerAsset[] } | null>(null);
     const [fadeAnim] = useState(new Animated.Value(0));
 
     React.useEffect(() => {
@@ -72,27 +80,56 @@ const SignUpScreen = () => {
         });
 
         if (!result.canceled && result.assets[0].uri) {
-            setValue('avatar', result.assets[0].uri);
-            setAvatarPreview(result.assets[0].uri);
+            setAvatarPreview(result);
         }
     };
 
-    const onSubmit = (data: FormData) => {
-        if (!gender) {
-            Alert.alert('Error', 'Please select a gender');
+    const onSubmit = async (data: FormData) => {
+        if (!avatarPreview || avatarPreview.canceled || !avatarPreview.assets || !avatarPreview.assets[0]) {
+            console.log(avatarPreview);
+            console.log(avatarPreview?.canceled);
+            console.log(avatarPreview?.assets);
+            console.log(avatarPreview?.assets[0]);
+            showToast('Hình đại diện không được bỏ trống', 'error');
             return;
         }
-        if (!data.avatar) {
-            Alert.alert('Error', 'Please upload an avatar');
-            return;
+
+        const imageFile = {
+            uri: avatarPreview.assets[0].uri,
+            type: avatarPreview.assets[0].mimeType,
+            name: avatarPreview.assets[0].fileName,
+            size: avatarPreview.assets[0].fileSize,
+        };
+
+        const authModel = new AuthModel();
+        authModel.email = data.email;
+        authModel.password = data.password;
+        const registerModel = new UserModel();
+        registerModel.name = data.name;
+        registerModel.gender = gender;
+        registerModel.phone = `+84${data.phone}`;
+        registerModel.address = '';
+
+        try {
+            await AuthManagement.signUp(registerModel, authModel, imageFile);
+            showToast('Đăng ký tài khoản thành công', 'success');
+            router.back();
+        } catch (error: any) {
+            console.log(error);
+            if (error?.message === 'Người dùng đã tồn tại') {
+                setError('email', {
+                    type: 'manual',
+                    message: 'Tài khoản này đã được đăng ký'
+                });
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
         }
-        console.log('Form Data:', { ...data, gender });
-        Alert.alert('Success', 'Registration submitted successfully!');
     };
 
     return (
         <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3' }}
+            source={require('@/assets/images/ecommerce-splash.jpg')}
             style={styles.background}
         >
             <LinearGradient
@@ -243,8 +280,8 @@ const SignUpScreen = () => {
                         <View style={styles.section}>
                             <Text style={styles.label}>Ảnh địa diện</Text>
                             <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
-                                {avatarPreview ? (
-                                    <Image source={{ uri: avatarPreview }} style={styles.avatar} />
+                                {(avatarPreview && !avatarPreview.canceled) ? (
+                                    <Image source={{ uri: avatarPreview.assets[0].uri }} style={styles.avatar} />
                                 ) : (
                                     <View style={styles.avatarPlaceholder}>
                                         <FontAwesome5 name="camera" size={20} color="#a1a1aa" />
@@ -256,7 +293,7 @@ const SignUpScreen = () => {
 
                         {/* Gender */}
                         <View style={styles.section}>
-                            <Text style={styles.label}>Gender</Text>
+                            <Text style={styles.label}>Giới tính</Text>
                             <View style={styles.genderSelectionWrapper}>
                                 <TouchableOpacity
                                     onPress={() => setGender(Gender.MALE)}
