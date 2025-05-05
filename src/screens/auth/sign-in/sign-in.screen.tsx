@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { Animated, ImageBackground, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import SignInStyle from "./sign-in.style";
 import { Link, router } from "expo-router";
 import InputField from "@/src/components/inputField/inputField.comp";
@@ -18,34 +18,49 @@ import { useDispatch, useSelector } from "react-redux";
 import * as  UserActions from "@/src/data/store/actions/user/user.action";
 import { RootState } from "@/src/data/types/global";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+import { MessageError } from "@/src/common/resource/message-error";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 
-const signInform = Yup.object().shape({
-    email: Yup.string()
-        .email('invalidEmail')
-        .required('required'),
-    password: Yup.string()
-        .min(6, 'minLength6')
-        .required('required')
-})
+interface FormData {
+    email: string;
+    password: string;
+}
 
 const SignInScreen = () => {
     const { showToast } = useToast();
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const dispatch = useDispatch();
-    const FormValidate = {
-        REQUIRED: 'required',
-        INVALID_EMAIL: 'invalidEmail',
-        MIN_LENGTH_6: 'minLength6',
-        INVALID_INFO: 'invalidInfo'
-    }
-    const handleSignIn = async (
-        email: string,
-        password: string,
-        setErrors: (errors: Record<string, string>) => void
-    ) => {
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+        setValue,
+        setError
+    } = useForm<FormData>({
+        defaultValues: {
+            email: '',
+            password: '',
+        },
+        reValidateMode: 'onChange',
+        mode: 'onChange'
+    });
+    const [fadeAnim] = useState(new Animated.Value(0));
+
+    useEffect(() => {
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+        }).start();
+    }, []);
+
+    const onSubmit = async (data: FormData) => {
         try {
-            let data = new AuthModel(email, password);
-            const response = await AuthManagement.signIn(data);
+            let payload = new AuthModel(data.email, data.password);
+            const response = await AuthManagement.signIn(payload);
             const userInfo = new UserModel().convertObj(response?.info);
             userInfo.expires = true;
             await new AppConfig().setAccessToken(response.access_token);
@@ -60,99 +75,114 @@ const SignInScreen = () => {
             const message = error?.message;
             if (status === HttpCode.BAD_REQUEST) {
                 if (message?.includes('Thông tin đăng nhập không chính xác')) {
-                    setErrors({ email: FormValidate.INVALID_INFO });
+                    setError('email', {
+                        type: 'manual',
+                        message: 'Thông tin đăng nhập không chính xác'
+                    });
+                    setError('password', {
+                        type: 'manual',
+                        message: 'Thông tin đăng nhập không chính xác'
+                    });
                 }
                 return;
             }
             showToast('Oops! Hệ thống đang bận, quay lại sau', "error");
         }
-    }
+    };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>
-                Đăng nhập tài khoản
-            </Text>
-            <View style={FormStyle.formContainer}>
-                <Formik
-                    initialValues={{ email: '', password: '' }}
-                    validationSchema={signInform}
-                    validateOnChange={true}
-                    validateOnBlur={true}
-                    onSubmit={(values, { setErrors }) => {
-                        handleSignIn(values.email, values.password, setErrors);
-                    }}
-                >
-                    {({ handleChange, handleSubmit, handleBlur, errors, touched }) => {
-                        return (
-                            <>
-                                <View style={FormStyle.inputContainer}>
-                                    <InputField
-                                        placeholder="Nhập email"
-                                        placeholderTextColor={CommonColors.gray}
-                                        autoCapitalize="none"
-                                        keyboardType="email-address"
-                                        onChangeText={handleChange('email')}
-                                        onBlur={handleBlur('email')}
-                                        invalid={!!(touched.email && errors.email) || errors.email === FormValidate.INVALID_INFO}
-                                    />
+        <ImageBackground
+            source={require('@/assets/images/ecommerce-splash.jpg')}
+            style={styles.background}
+        >
+            <LinearGradient
+                colors={['rgba(240,248,255,0.9)', 'rgba(224,242,254,0.95)']}
+                style={styles.overlay}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <Animated.View style={[styles.container, { opacity: fadeAnim, paddingTop: 30 }]}>
+                        <Text style={styles.title}>Tham gia công đồng yêu thời trang</Text>
 
-                                    {touched.email && errors.email === FormValidate.REQUIRED && (
-                                        <Text style={FormStyle.valiTextFalse}>Email không được để trống</Text>
+                        {/* Email */}
+                        <View style={styles.section}>
+                            <Text style={styles.label}>Email</Text>
+                            <View style={[styles.inputContainer, errors.email && styles.inputError]}>
+                                <Controller
+                                    control={control}
+                                    name="email"
+                                    rules={{
+                                        required: 'Địa chỉ Email không được bỏ trống',
+                                        pattern: {
+                                            value: /\S+@\S+\.\S+/,
+                                            message: 'Địa chỉ Email không hợp lệ',
+                                        },
+                                    }}
+                                    render={({ field: { onChange, onBlur, value } }) => (
+                                        <TextInput
+                                            style={styles.input}
+                                            value={value}
+                                            onChangeText={onChange}
+                                            placeholder="Nhập địa chỉ Email"
+                                            keyboardType="email-address"
+                                            autoComplete="off"
+                                            autoCorrect={false}
+                                            placeholderTextColor="#a1a1aa"
+                                        />
                                     )}
-                                    {touched.email && errors.email === FormValidate.INVALID_EMAIL && (
-                                        <Text style={FormStyle.valiTextFalse}>Email không hợp lệ</Text>
-                                    )}
-                                    {errors.email === FormValidate.INVALID_INFO && (
-                                        <Text style={FormStyle.valiTextFalse}>Thông tin đăng nhập không chính xác</Text>
-                                    )}
+                                />
+                                <View style={styles.icon}>
+                                    <Ionicons name="mail" size={20} color={CommonColors.primary} />
                                 </View>
-                                <View style={FormStyle.inputContainer}>
-                                    <InputField
-                                        placeholder="Nhập mật khẩu"
-                                        placeholderTextColor={CommonColors.gray}
-                                        secureTextEntry={true}
-                                        onChangeText={handleChange('password')}
-                                        onBlur={handleBlur('password')}
-                                        invalid={!!(touched.password && errors.password) || errors.email === FormValidate.INVALID_INFO}
-                                    />
-                                    {touched.password && errors.password === FormValidate.REQUIRED && (
-                                        <Text style={FormStyle.valiTextFalse}>Mật khẩu không được để trống</Text>
+                            </View>
+                            {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
+                        </View>
+
+                        {/* Password */}
+                        <View style={styles.section}>
+                            <Text style={styles.label}>Mật khẩu</Text>
+                            <View style={[styles.inputContainer, errors.password && styles.inputError]}>
+                                <Controller
+                                    control={control}
+                                    name="password"
+                                    rules={{
+                                        required: 'Mật khẩu không được bỏ trống',
+                                    }}
+                                    render={({ field: { onChange, onBlur, value } }) => (
+                                        <TextInput
+                                            style={styles.input}
+                                            value={value}
+                                            onChangeText={onChange}
+                                            placeholder="Nhập mật khẩu"
+                                            secureTextEntry
+                                            autoComplete="off"
+                                            autoCorrect={false}
+                                            placeholderTextColor="#a1a1aa"
+                                        />
                                     )}
-                                    {touched.password && errors.password === FormValidate.MIN_LENGTH_6 && (
-                                        <Text style={FormStyle.valiTextFalse}>Mật khẩu phải có độ dài tối thiểu 6 ký tự</Text>
-                                    )}
-                                    {errors.email === FormValidate.INVALID_INFO && (
-                                        <Text style={FormStyle.valiTextFalse}>Thông tin đăng nhập không chính xác</Text>
-                                    )}
+                                />
+                                <View style={styles.icon}>
+                                    <FontAwesome5 name="lock" size={16} color={CommonColors.primary} />
                                 </View>
+                            </View>
+                            {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
+                        </View>
 
-                                <TouchableOpacity
-                                    style={styles.btn}
-                                    onPress={() => handleSubmit()}
-                                >
-                                    <Text style={styles.btnTxt}>Đăng nhập</Text>
-                                </TouchableOpacity>
-                            </>
-                        )
-                    }}
-                </Formik>
-            </View>
-            <View style={styles.signInWrapper}>
-                <Text style={styles.signInTxt}>
-                    Bạn chưa có tài khoản?
-                </Text>
-                <Link href={Routes.SIGN_UP} asChild>
-                    <TouchableOpacity>
-                        <Text style={styles.signInTxtSpan}>Đăng ký</Text>
-                    </TouchableOpacity>
-                </Link>
-            </View>
-
-            <View style={styles.divider}></View>
-
-            <SocialSignInButtons emailHref={Routes.SIGN_IN} />
-        </View>
+                        {/* Submit Button */}
+                        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit(onSubmit)}>
+                            <Text style={styles.submitButtonText}>Đăng nhập</Text>
+                        </TouchableOpacity>
+                        <View style={styles.signInWrapper}>
+                            <Text style={styles.signInTxt}>
+                                Bạn chưa có tài khoản?
+                            </Text>
+                            <TouchableOpacity onPress={() => router.navigate("/(routes)/sign-up")}>
+                                <Text style={styles.signInTxtSpan}>Đăng ký</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                </ScrollView>
+            </LinearGradient>
+        </ImageBackground>
     );
 };
 

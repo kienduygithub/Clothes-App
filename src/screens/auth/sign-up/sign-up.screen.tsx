@@ -332,6 +332,11 @@ const SignUpScreen = () => {
                         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit(onSubmit)}>
                             <Text style={styles.submitButtonText}>Đăng ký</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.signInWrapper} onPress={() => router.back()}>
+                            <Ionicons name="arrow-back-sharp" size={18} color={"#33adff"} />
+                            <Text style={styles.signInTxtSpan}>Quay lại</Text>
+                        </TouchableOpacity>
                     </Animated.View>
                 </ScrollView>
             </LinearGradient>

@@ -158,6 +158,24 @@ const SignUpStyle = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
     },
+
+    signInWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 15,
+        gap: 3,
+    },
+    signInTxt: {
+        fontSize: 14,
+        color: CommonColors.black,
+    },
+    signInTxtSpan: {
+        color: '#33adff',
+        fontWeight: '700',
+        letterSpacing: 0.5,
+        marginBottom: 2
+    },
 });
 
 export default SignUpStyle;
