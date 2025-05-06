@@ -5,7 +5,7 @@ import HeaderComponent from "@/src/components/header/header.comp";
 import ProductListComponent from "./comp/product-list/product-list.comp";
 import CategoryListComponent from "./comp/category-list/category-list.comp";
 import FlashSaleComponent from "./comp/flash-sale/flash-sale.comp";
-import { ActivityIndicator, Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 import { CategoryModel } from "@/src/data/model/category.model";
 import { AppConfig } from "@/src/common/config/app.config";
 import * as CategoryManagement from "../../data/management/category.management";
@@ -20,6 +20,7 @@ const HomeScreen = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [refreshCategory, setRefreshCategory] = useState(false);
     const [refreshProduct, setRefreshProduct] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
     const [isSearchOverlayVisible, setSearchOverlayVisible] = useState(false);
@@ -64,6 +65,8 @@ const HomeScreen = () => {
             setProducts(response);
         } catch (error) {
             console.log(error);
+        } finally {
+            setRefreshing(false);
         }
     }
 
@@ -76,6 +79,11 @@ const HomeScreen = () => {
             console.log(error);
         }
     }
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchProducts();
+    };
 
     const onHandleSearch = (searchValue: string) => {
         router.push({
@@ -105,7 +113,16 @@ const HomeScreen = () => {
                     </View>
                 ) : (
                     <>
-                        <ScrollView showsVerticalScrollIndicator={false}>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            refreshControl={
+                                <RefreshControl
+                                    refreshing={refreshing}
+                                    onRefresh={onRefresh}
+                                    colors={["#33adff"]}
+                                />
+                            }
+                        >
                             <CategoryListComponent categories={categories} preImage={preImage} setRefreshCategory={setRefreshCategory} />
                             <FlashSaleComponent preImage={preImage} products={products} />
                             <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
