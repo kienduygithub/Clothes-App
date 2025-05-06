@@ -96,6 +96,10 @@ const MeScreen = (props: Props) => {
     };
 
     const navigateToInfoDetailScreen = () => {
+        if (userSelector.isLogged === false) {
+            showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
+            return;
+        }
         router.navigate('/(routes)/info-detail');
     };
 
