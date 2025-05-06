@@ -123,7 +123,7 @@ const RegisterShopScreen = () => {
     const pickImage = async (type: 'logo' | 'background') => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
-            showToast("Quyền bị từ chối, vui lòng cho phép truy cập thư viện ảnh.")
+            showToast("Quyền bị từ chối, vui lòng cho phép truy cập thư viện ảnh.", 'error');
             return;
         }
 
