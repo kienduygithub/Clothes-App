@@ -1,42 +1,47 @@
-import { CommonColors } from "@/src/common/resource/colors";
-import { Fonts } from "@/src/common/resource/fonts";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from 'react-native';
 
 const ProductListStyle = StyleSheet.create({
     container: {
         marginHorizontal: 20,
-        flex: 1
+        flex: 1,
     },
     titleWrapper: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10
+        marginBottom: 12,
+        paddingVertical: 8,
     },
     title: {
         fontSize: 18,
-        fontFamily: Fonts.POPPINS_BOLD,
-        letterSpacing: 0.6,
-        color: CommonColors.black
+        fontWeight: '500',
+        color: '#1f2937',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        borderBottomWidth: 2,
+        borderBottomColor: '#33adff',
+    },
+    titleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     titleBtn: {
-        fontSize: 14,
-        fontFamily: Fonts.POPPINS_MEDIUM,
-        letterSpacing: 0.6,
-        color: CommonColors.black
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#33adff',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
     },
     itemsWrapper: {
         width: '100%',
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'stretch',
-        marginBottom: 50
+        marginBottom: 50,
     },
     productWrapper: {
         width: '50%',
         paddingLeft: 5,
-        marginBottom: 20
-    }
+    },
 });
 
 export default ProductListStyle;
