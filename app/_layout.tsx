@@ -238,6 +238,15 @@ function RootLayoutNav() {
           />
 
           <Stack.Screen
+            name="(routes)/register-shop/index"
+            options={{
+              title: 'Đăng ký cửa hàng',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
             name="(tabs)"
             options={{
               headerShown: false

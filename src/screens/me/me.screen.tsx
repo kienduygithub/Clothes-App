@@ -122,7 +122,8 @@ const MeScreen = (props: Props) => {
             showToast(MessageError.NOT_LOGGED_TO_EXECUTE, 'error');
             return;
         }
-        // router.navigate('/(routes)/register-shop');
+
+        router.navigate('/(routes)/register-shop');
     };
 
     const navigateToProductDetail = (productId: number) => {
