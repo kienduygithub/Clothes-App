@@ -1,48 +1,39 @@
 import { CommonColors } from "@/src/common/resource/colors";
 import { Fonts } from "@/src/common/resource/fonts";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 const FlashSaleComponentStyle = StyleSheet.create({
     container: {
-        marginBottom: 20
+        marginBottom: 8,
     },
     titleWrapper: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginBottom: 12,
+        paddingVertical: 8,
         marginHorizontal: 20,
-        marginBottom: 20
+
     },
     title: {
         fontSize: 18,
-        fontFamily: Fonts.POPPINS_BOLD,
-        letterSpacing: 0.6,
-        color: CommonColors.black
+        fontWeight: '500',
+        color: '#1f2937',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        borderBottomWidth: 2,
+        borderBottomColor: '#33adff',
+    },
+    titleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     titleBtn: {
-        fontSize: 14,
-        fontFamily: Fonts.POPPINS_MEDIUM,
-        letterSpacing: 0.6,
-        color: CommonColors.black
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#33adff',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
     },
-    timerWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10
-    },
-    timer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-        backgroundColor: CommonColors.highlight,
-        paddingHorizontal: 8,
-        paddingVertical: 5,
-        borderRadius: 12
-    },
-    timerTxt: {
-        color: CommonColors.black,
-        fontFamily: Fonts.POPPINS_MEDIUM
-    }
 })
 
 export default FlashSaleComponentStyle;
