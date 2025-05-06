@@ -16,15 +16,14 @@ import * as ImagePicker from 'expo-image-picker';
 import RegisterShopStyle from './register-shop.style';
 import { useToast } from '@/src/customize/toast.context';
 import { router } from 'expo-router';
-
-// Mock user data (replace with actual user data from your auth system)
-const mockUser = {
-    email: 'user@example.com',
-    password: '********',
-    avatar: 'https://via.placeholder.com/80',
-    phone: '+84123456789',
-    address: '123 Fashion Street, Hanoi, Vietnam',
-};
+import { UserModel } from '@/src/data/model/user.model';
+import * as UserManagement from '@/src/data/management/user.management';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/src/data/types/global';
+import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
+import * as UserActions from '@/src/data/store/actions/user/user.action';
+import { MessageError } from '@/src/common/resource/message-error';
+import { AppConfig } from '@/src/common/config/app.config';
 
 interface FormDataStep1 {
     email: string;
@@ -35,53 +34,83 @@ interface FormDataStep1 {
 }
 
 interface FormDataStep2 {
-    logo: string | null;
-    name: string;
-    contactEmail: string;
-    contactAddress: string;
+    logo_url: string | null;
+    shop_name: string;
+    contact_email: string;
+    contact_address: string;
     description: string;
-    background: string | null;
+    background_url: string | null;
 }
 
 const RegisterShopScreen = () => {
     const { showToast } = useToast();
+    const preImage = new AppConfig().getPreImage();
     const [step, setStep] = useState(1);
     const [fadeAnim] = useState(new Animated.Value(0));
     const [logoPreview, setLogoPreview] = useState<ImagePicker.ImagePickerResult & { assets?: ImagePicker.ImagePickerAsset[] } | null>(null);
     const [backgroundPreview, setBackgroundPreview] = useState<ImagePicker.ImagePickerResult & { assets?: ImagePicker.ImagePickerAsset[] } | null>(null);
+    const [user, setUser] = useState<UserModel | null>(null);
+    const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
+    const dispatch = useDispatch();
 
     const {
         control: controlStep1,
         handleSubmit: handleSubmitStep1,
-        formState: { errors: errorsStep1 },
+        setValue: setValueFormStep1,
     } = useForm<FormDataStep1>({
         defaultValues: {
-            email: mockUser.email,
-            password: mockUser.password,
-            avatar: mockUser.avatar,
-            phone: mockUser.phone,
-            address: mockUser.address,
+            email: '',
+            password: '********',
+            avatar: '',
+            phone: '',
+            address: ''
         },
-        reValidateMode: 'onChange',
-        mode: 'onChange',
     });
 
     const {
         control: controlStep2,
         handleSubmit: handleSubmitStep2,
         formState: { errors: errorsStep2 },
+        setValue: setValueFormStep2
     } = useForm<FormDataStep2>({
         defaultValues: {
-            logo: null,
-            name: '',
-            contactEmail: mockUser.email,
-            contactAddress: '',
+            logo_url: null,
+            shop_name: '',
+            contact_email: '',
+            contact_address: '',
             description: '',
-            background: null,
+            background_url: null,
         },
         reValidateMode: 'onChange',
         mode: 'onChange',
     });
+
+    const fetchInfoUser = async () => {
+        try {
+            const userLogged = await UserManagement.fetchInfoUser();
+            setUser(userLogged);
+            setValueFormStep1('email', userLogged.email);
+            setValueFormStep1('phone', userLogged.phone);
+            setValueFormStep1('avatar', userLogged.image_url);
+            setValueFormStep1('address', userLogged.address);
+            setValueFormStep2('contact_email', userLogged.email);
+            userLogged.expires = true;
+            dispatch(UserActions.UpdateInfoLogged(userLogged));
+        } catch (error: any) {
+            console.log(error);
+            if (error?.message === 'Session expired, please log in again') {
+                router.back();
+                dispatch(UserActions.UpdateExpiresLogged(false));
+                showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else {
+                showToast(MessageError.BUSY_SYSTEM, 'error');
+            }
+        }
+    };
+
+    useEffect(() => {
+        fetchInfoUser();
+    }, [])
 
     useEffect(() => {
         Animated.timing(fadeAnim, {
@@ -94,7 +123,7 @@ const RegisterShopScreen = () => {
     const pickImage = async (type: 'logo' | 'background') => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
-            Alert.alert('Quyền bị từ chối', 'Vui lòng cho phép truy cập thư viện ảnh.');
+            showToast("Quyền bị từ chối, vui lòng cho phép truy cập thư viện ảnh.")
             return;
         }
 
@@ -142,7 +171,6 @@ const RegisterShopScreen = () => {
             size: backgroundPreview.assets[0].fileSize,
         };
 
-        // Replace with actual API call to submit shop registration
         try {
             console.log('Submitting shop data:', { ...data, logoFile, backgroundFile });
             showToast('Đăng ký cửa hàng thành công', 'success');
@@ -227,7 +255,7 @@ const RegisterShopScreen = () => {
                             <View style={styles.section}>
                                 <Text style={styles.label}>Ảnh đại diện</Text>
                                 <TouchableOpacity style={styles.avatarContainer}>
-                                    <Image source={{ uri: mockUser.avatar }} style={styles.avatar} />
+                                    <Image source={{ uri: `${preImage}/${user?.image_url}` }} style={styles.avatar} />
                                 </TouchableOpacity>
                             </View>
                             {/* Phone */}
@@ -295,15 +323,15 @@ const RegisterShopScreen = () => {
                                         </View>
                                     )}
                                 </TouchableOpacity>
-                                {errorsStep2.logo && <Text style={styles.error}>{errorsStep2.logo.message}</Text>}
+                                {errorsStep2.logo_url && <Text style={styles.error}>{errorsStep2.logo_url.message}</Text>}
                             </View>
                             {/* Shop Name */}
                             <View style={styles.section}>
                                 <Text style={styles.label}>Tên cửa hàng</Text>
-                                <View style={[styles.inputContainer, errorsStep2.name && styles.inputError]}>
+                                <View style={[styles.inputContainer, errorsStep2.shop_name && styles.inputError]}>
                                     <Controller
                                         control={controlStep2}
-                                        name="name"
+                                        name="shop_name"
                                         rules={{ required: 'Tên cửa hàng không được bỏ trống' }}
                                         render={({ field: { onChange, onBlur, value } }) => (
                                             <TextInput
@@ -320,7 +348,7 @@ const RegisterShopScreen = () => {
                                         <FontAwesome5 name="store" size={16} color="#33adff" />
                                     </View>
                                 </View>
-                                {errorsStep2.name && <Text style={styles.error}>{errorsStep2.name.message}</Text>}
+                                {errorsStep2.shop_name && <Text style={styles.error}>{errorsStep2.shop_name.message}</Text>}
                             </View>
                             {/* Contact Email */}
                             <View style={styles.section}>
@@ -328,7 +356,7 @@ const RegisterShopScreen = () => {
                                 <View style={styles.inputContainer}>
                                     <Controller
                                         control={controlStep2}
-                                        name="contactEmail"
+                                        name="contact_email"
                                         render={({ field: { value } }) => (
                                             <TextInput
                                                 style={styles.input}
@@ -350,7 +378,7 @@ const RegisterShopScreen = () => {
                                 <View style={styles.inputContainer}>
                                     <Controller
                                         control={controlStep2}
-                                        name="contactAddress"
+                                        name="contact_address"
                                         render={({ field: { onChange, onBlur, value } }) => (
                                             <TextInput
                                                 style={styles.input}
@@ -404,7 +432,7 @@ const RegisterShopScreen = () => {
                                         </View>
                                     )}
                                 </TouchableOpacity>
-                                {errorsStep2.background && <Text style={styles.error}>{errorsStep2.background.message}</Text>}
+                                {errorsStep2.background_url && <Text style={styles.error}>{errorsStep2.background_url.message}</Text>}
                             </View>
                             {/* Buttons */}
                             <View style={styles.buttonWrapper}>
