@@ -26,9 +26,6 @@ const CategoryListComponent = ({ categories, setRefreshCategory, preImage }: Pro
             <View style={styles.container}>
                 <View style={styles.titleWrapper}>
                     <Text style={styles.title}>Danh mục</Text>
-                    <TouchableOpacity>
-                        <Text style={styles.titleBtn}>See all</Text>
-                    </TouchableOpacity>
                 </View>
                 <FlatList
                     ref={flatListRef}
