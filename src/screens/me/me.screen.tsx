@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
     View,
     Text,
@@ -22,15 +22,12 @@ import * as CartActions from '@/src/data/store/actions/cart/cart.action';
 import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
 import { useToast } from '@/src/customize/toast.context';
 import { MessageError } from '@/src/common/resource/message-error';
+import * as ProductManagement from '@/src/data/management/product.management';
+import { ProductModel } from '@/src/data/model/product.model';
+import { formatPriceRender } from '@/src/common/utils/currency.helper';
+import ProductItemComponent from '../home/comp/product-item/product-item.comp';
 
 type Props = {};
-
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    image: string;
-}
 
 const MeScreen = (props: Props) => {
     const { showToast } = useToast();
@@ -39,42 +36,17 @@ const MeScreen = (props: Props) => {
     const dispatch = useDispatch();
     const headerHeight = useHeaderHeight();
     const [fadeAnim] = useState(new Animated.Value(0));
-
-    // Dummy data for recently viewed products (replace with actual data)
-    const recentlyViewed: Product[] = [
-        {
-            id: '1',
-            name: 'Casual Blue T-Shirt',
-            price: 250000,
-            image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab',
-        },
-        {
-            id: '2',
-            name: 'Denim Jacket',
-            price: 850000,
-            image: 'https://images.unsplash.com/photo-1601333145486-5c5a8a3753ab',
-        },
-        {
-            id: '3',
-            name: 'Summer Dress',
-            price: 450000,
-            image: 'https://images.unsplash.com/photo-1591360238940-aee6c04ff07a',
-        },
-    ];
-
-    React.useEffect(() => {
+    const [products, setProducts] = useState<ProductModel[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
+    useEffect(() => {
+        fetchInfoUser();
+        fetchProducts();
         Animated.timing(fadeAnim, {
             toValue: 1,
             duration: 800,
             useNativeDriver: true,
         }).start();
     }, []);
-
-    useFocusEffect(
-        useCallback(() => {
-            fetchInfoUser();
-        }, [])
-    );
 
     const fetchInfoUser = async () => {
         if (!userSelector.isLogged) {
@@ -94,6 +66,18 @@ const MeScreen = (props: Props) => {
             }
         }
     };
+
+    const fetchProducts = async () => {
+        try {
+            const response = await ProductManagement.fetchProducts();
+            console.log('Sản phẩm: Done!');
+            setProducts(response);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setRefreshing(false);
+        }
+    }
 
     const navigateToInfoDetailScreen = () => {
         if (userSelector.isLogged === false) {
@@ -141,7 +125,7 @@ const MeScreen = (props: Props) => {
         // router.navigate('/(routes)/register-shop');
     };
 
-    const navigateToProductDetail = (productId: string) => {
+    const navigateToProductDetail = (productId: number) => {
         router.navigate({
             pathname: '/(routes)/product-details',
             params: { id: productId }
@@ -201,7 +185,7 @@ const MeScreen = (props: Props) => {
                             onPress={navigateOrderManageScreen}
                             activeOpacity={0.7}
                         >
-                            <Ionicons name="person-outline" size={20} color="#33adff" />
+                            <Ionicons name="card-outline" size={22} color="#33adff" />
                             <Text style={styles.buttonText}>Danh sách đơn hàng</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -219,14 +203,6 @@ const MeScreen = (props: Props) => {
                         >
                             <FontAwesome name="address-card-o" size={20} color="#33adff" />
                             <Text style={styles.buttonText}>Địa chỉ giao hàng</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} activeOpacity={0.7}>
-                            <Ionicons name="card-outline" size={20} color="#33adff" />
-                            <Text style={styles.buttonText}>Lịch sử thanh toán</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} activeOpacity={0.7}>
-                            <Ionicons name="help-circle-outline" size={20} color="#33adff" />
-                            <Text style={styles.buttonText}>Chăm sóc khách hàng</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.button}
@@ -259,26 +235,12 @@ const MeScreen = (props: Props) => {
                     <View style={styles.recentlyViewedSection}>
                         <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>Sản phẩm đã xem gần đây</Text>
-                            <TouchableOpacity>
-                                <Text style={styles.viewAllText}>Xem tất cả</Text>
-                            </TouchableOpacity>
                         </View>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productCarousel}>
-                            {recentlyViewed.map((product) => (
-                                <TouchableOpacity
-                                    key={product.id}
-                                    style={styles.productCard}
-                                    onPress={() => navigateToProductDetail(product.id)}
-                                    activeOpacity={0.7}
-                                >
-                                    <Image source={{ uri: product.image }} style={styles.productImage} />
-                                    <Text style={styles.productName} numberOfLines={2}>
-                                        {product.name}
-                                    </Text>
-                                    <Text style={styles.productPrice}>
-                                        {product.price.toLocaleString('vi-VN')} ₫
-                                    </Text>
-                                </TouchableOpacity>
+                            {products.map((product) => (
+                                <View key={`${product.id}-latest`} style={{ marginRight: 16 }}>
+                                    <ProductItemComponent key={product.id} item={product} preImage={preImage} productType='regular' index={products.indexOf(product)} />
+                                </View>
                             ))}
                         </ScrollView>
                     </View>
