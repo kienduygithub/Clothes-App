@@ -18,19 +18,20 @@ const RegisterShopStyle = StyleSheet.create({
         alignItems: 'center',
         borderBottomWidth: 2,
         borderBottomColor: '#33adff',
+        position: 'relative',
     },
     headerTitle: {
         fontSize: 22,
         fontWeight: '700',
         color: '#1f2937',
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'Roboto-Bold',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : Fonts.ROBOTO_BOLD,
     },
     stepIndicator: {
         fontSize: 14,
         fontWeight: '500',
         color: '#6b7280',
         marginTop: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_MEDIUM,
     },
     card: {
         marginHorizontal: 16,
@@ -42,21 +43,26 @@ const RegisterShopStyle = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 3,
+        marginBottom: 20,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: '#1f2937',
         marginBottom: 16,
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'Roboto-Bold',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : Fonts.ROBOTO_BOLD,
     },
     section: {
         marginBottom: 12,
+        paddingBottom: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
     },
     label: {
         fontSize: 14,
         marginBottom: 6,
         color: '#374151',
+        fontWeight: '500',
         fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_MEDIUM,
     },
     inputContainer: {
@@ -78,7 +84,7 @@ const RegisterShopStyle = StyleSheet.create({
         paddingVertical: 10,
         fontSize: 14,
         color: '#1f2937',
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_REGULAR,
     },
     textArea: {
         height: 100,
@@ -91,7 +97,7 @@ const RegisterShopStyle = StyleSheet.create({
     error: {
         fontSize: 12,
         color: '#ef4444',
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_MEDIUM,
     },
     avatarContainer: {
         alignItems: 'center',
@@ -172,18 +178,29 @@ const RegisterShopStyle = StyleSheet.create({
     backButtonText: {
         color: '#33adff',
     },
-
     btnBackMe: {
         position: 'absolute',
-        top: '65%',
+        top: 16,
         left: 0,
+        padding: 10,
     },
     btnBackMeText: {
         fontSize: 15,
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : Fonts.ROBOTO_BOLD,
+        fontWeight: '600',
         color: '#33adff',
-        fontWeight: '600'
-    }
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : Fonts.ROBOTO_BOLD,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#1f2937',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_MEDIUM,
+    },
 });
 
 export default RegisterShopStyle;

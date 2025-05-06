@@ -1,3 +1,4 @@
+import { Roles } from "@/src/common/resource/roles";
 import { ActionState } from "../../action.state";
 import { UserActions } from "../../actions/user/user.action";
 
@@ -5,6 +6,7 @@ export interface UserStoreState {
     id: number;
     name: string;
     image_url: string;
+    roles: string;
     cart_id: number;
     favorites: number[],
     isLogged: boolean;
@@ -16,6 +18,7 @@ const initialState: UserStoreState = {
     name: '',
     image_url: '',
     cart_id: 0,
+    roles: Roles.CUSTOMER,
     favorites: [],
     isLogged: false,
     expires: false
