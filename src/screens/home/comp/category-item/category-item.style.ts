@@ -1,6 +1,5 @@
 import { CommonColors } from "@/src/common/resource/colors";
-import { Fonts } from "@/src/common/resource/fonts";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 const CategoryItemComponentStyle = StyleSheet.create({
     itemContainer: {
@@ -16,7 +15,7 @@ const CategoryItemComponentStyle = StyleSheet.create({
         backgroundColor: CommonColors.white
     },
     itemTxt: {
-        fontFamily: Fonts.POPPINS_REGULAR
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
     }
 })
 
