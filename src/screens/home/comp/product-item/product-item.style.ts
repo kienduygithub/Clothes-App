@@ -1,67 +1,80 @@
-import { CommonColors } from "@/src/common/resource/colors";
-import { Fonts } from "@/src/common/resource/fonts";
-import { Dimensions, StyleSheet } from "react-native";
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const width = Dimensions.get('window').width - 40;
 
 const ProductItemStyle = StyleSheet.create({
     container: {
         width: width / 2 - 10,
-        backgroundColor: '#F5F5F5',
-        borderRadius: 10,
+        backgroundColor: '#fff',
+        borderRadius: 12,
         overflow: 'hidden',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.15,
         shadowRadius: 6,
         elevation: 4,
-        marginBottom: 15
+        marginBottom: 15,
+    },
+    imageContainer: {
+        position: 'relative',
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
     },
     productImg: {
         width: '100%',
-        height: 220,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10
+        height: 240,
+        borderRadius: 10,
     },
     bookmarkBtn: {
         position: 'absolute',
-        right: 10,
-        top: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
-        padding: 6,
-        borderRadius: 20
-    },
-    title: {
-        fontSize: 16,
-        fontFamily: Fonts.POPPINS_BOLD,
-        color: CommonColors.black,
-        letterSpacing: 1,
-        paddingHorizontal: 10,
-        marginTop: 5
+        right: 12,
+        top: 12,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        padding: 8,
+        borderRadius: 20,
     },
     productInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-        paddingHorizontal: 10
+        padding: 10,
+    },
+    title: {
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#1f2937',
+        marginBottom: 6,
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
     },
     price: {
         fontSize: 16,
-        fontFamily: Fonts.POPPINS_BOLD,
-        color: CommonColors.primary
+        fontWeight: '700',
+        color: '#33adff',
+        marginBottom: 6,
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'Roboto-Bold',
+    },
+    ratingSoldWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     ratingWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6
+        gap: 4,
     },
     ratingTxt: {
-        fontSize: 14,
-        color: CommonColors.gray,
-        fontFamily: Fonts.POPPINS_REGULAR,
-        lineHeight: 19
-    }
+        fontSize: 13,
+        color: '#6b7280',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+    },
+    soldWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    soldTxt: {
+        fontSize: 13,
+        color: '#6b7280',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+    },
 });
 
 export default ProductItemStyle;

@@ -24,7 +24,7 @@ const ProductListComponent = ({ products, preImage, flatlist }: Props) => {
                         }
                     })
                 }}>
-                    <Text style={styles.titleBtn}>Tất cả</Text>
+                    <Text style={styles.titleBtn}>Xem tất cả</Text>
                 </TouchableOpacity>
             </View>
             {flatlist ? (
