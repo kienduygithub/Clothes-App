@@ -1,3 +1,4 @@
+import { Fonts } from '@/src/common/resource/fonts';
 import { StyleSheet, Platform } from 'react-native';
 
 const RegisterShopStyle = StyleSheet.create({
@@ -56,8 +57,7 @@ const RegisterShopStyle = StyleSheet.create({
         fontSize: 14,
         marginBottom: 6,
         color: '#374151',
-        fontWeight: '500',
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_MEDIUM,
     },
     inputContainer: {
         flexDirection: 'row',
@@ -119,7 +119,7 @@ const RegisterShopStyle = StyleSheet.create({
         color: '#a1a1aa',
         fontSize: 10,
         marginTop: 4,
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : Fonts.ROBOTO_MEDIUM,
     },
     backgroundContainer: {
         alignItems: 'center',
@@ -162,7 +162,7 @@ const RegisterShopStyle = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '700',
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'Roboto-Bold',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : Fonts.ROBOTO_BOLD,
     },
     backButton: {
         backgroundColor: '#fff',
@@ -180,7 +180,7 @@ const RegisterShopStyle = StyleSheet.create({
     },
     btnBackMeText: {
         fontSize: 15,
-        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'Roboto-Bold',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : Fonts.ROBOTO_BOLD,
         color: '#33adff',
         fontWeight: '600'
     }

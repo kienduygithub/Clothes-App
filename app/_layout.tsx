@@ -25,6 +25,18 @@ export default function RootLayout() {
     [Fonts.POPPINS_BOLD]: require("@/assets/fonts/Poppins-Bold.ttf"),
     [Fonts.POPPINS_LIGHT]: require("@/assets/fonts/Poppins-Light.ttf"),
     [Fonts.POPPINS_MEDIUM]: require("@/assets/fonts/Poppins-Medium.ttf"),
+    [Fonts.ROBOTO_BOLD]: require("@/assets/fonts/Roboto-Bold.ttf"),
+    [Fonts.ROBOTO_BOLD_ITALIC]: require("@/assets/fonts/Roboto-BoldItalic.ttf"),
+    [Fonts.ROBOTO_EXTRA_BOLD]: require("@/assets/fonts/Roboto-ExtraBold.ttf"),
+    [Fonts.ROBOTO_EXTRA_BOLD_ITALIC]: require("@/assets/fonts/Roboto-ExtraBoldItalic.ttf"),
+    [Fonts.ROBOTO_EXTRA_LIGHT]: require("@/assets/fonts/Roboto-ExtraLight.ttf"),
+    [Fonts.ROBOTO_ITALIC]: require("@/assets/fonts/Roboto-Italic.ttf"),
+    [Fonts.ROBOTO_LIGHT_ITALIC]: require("@/assets/fonts/Roboto-LightItalic.ttf"),
+    [Fonts.ROBOTO_MEDIUM]: require("@/assets/fonts/Roboto-Medium.ttf"),
+    [Fonts.ROBOTO_REGULAR]: require("@/assets/fonts/Roboto-Regular.ttf"),
+    [Fonts.ROBOTO_SEMI_BOLD]: require("@/assets/fonts/Roboto-SemiBold.ttf"),
+    [Fonts.ROBOTO_THIN]: require("@/assets/fonts/Roboto-Thin.ttf"),
+    [Fonts.ROBOTO_THIN_ITALIC]: require("@/assets/fonts/Roboto-ThinItalic.ttf"),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
