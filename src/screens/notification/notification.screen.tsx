@@ -65,6 +65,7 @@ const NotificationScreen = () => {
 
     const handleRefreshNotifications = useCallback(() => {
         setRefresh(true);
+        isEndReachedList.current = false;
         fetchNotifications(1);
     }, [])
 
