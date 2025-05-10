@@ -19,12 +19,12 @@ import { RootState } from '@/src/data/types/global';
 import * as UserManagement from '@/src/data/management/user.management';
 import * as UserActions from '@/src/data/store/actions/user/user.action';
 import * as CartActions from '@/src/data/store/actions/cart/cart.action';
+import * as NotificationActions from '@/src/data/store/actions/notification/notification.action';
 import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
 import { useToast } from '@/src/customize/toast.context';
 import { MessageError } from '@/src/common/resource/message-error';
 import * as ProductManagement from '@/src/data/management/product.management';
 import { ProductModel } from '@/src/data/model/product.model';
-import { formatPriceRender } from '@/src/common/utils/currency.helper';
 import ProductItemComponent from '../home/comp/product-item/product-item.comp';
 
 type Props = {};
@@ -92,6 +92,7 @@ const MeScreen = (props: Props) => {
             await new AppConfig().clear();
             dispatch(UserActions.ResetInfoLogged());
             dispatch(CartActions.ResetCart());
+            dispatch(NotificationActions.ResetState());
             router.dismissAll();
             router.navigate({
                 pathname: '/(routes)/sign-in',

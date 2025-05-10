@@ -1,0 +1,20 @@
+import * as NotificationService from "@/src/data/service/notification.service";
+import { NotificationModel } from "../model/notification.model";
+import { PaginateModel } from "@/src/common/model/paginate.model";
+
+export const fetchNotificationByUser = async (page: number, limit: number): Promise<Map<string, any>> => {
+    try {
+        const result = await NotificationService.fetchNotificationByUser(page, limit);
+        const response = new Map<string, any>([]);
+        const notifications: NotificationModel[] = result?.notifications?.map(
+            (notification: any) => new NotificationModel().convertObj(notification)
+        ) ?? [];
+        const pagination = new PaginateModel().convertObj(result?.pagination);
+        response.set('notifications', notifications);
+        response.set('pagination', pagination);
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

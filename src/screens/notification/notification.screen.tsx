@@ -1,54 +1,76 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { Stack } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, RefreshControl, Text, View } from "react-native";
 import NotificationStyle from "./notification.style";
 import { useHeaderHeight } from "@react-navigation/elements"
-import { NotificationType } from "@/src/data/types/global";
-import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
-import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { NotificationModel } from "@/src/data/model/notification.model";
+import { formatDate } from "@/src/common/utils/time.helper";
+import { useDispatch, useSelector } from "react-redux";
+import { NotificationStoreState } from "@/src/data/store/reducers/notification/notification.reducer";
+import { RootState } from "@/src/data/types/global";
+import { PaginateModel } from "@/src/common/model/paginate.model";
+import * as NotificationMana from "@/src/data/management/notification.management";
+import * as NotificationActions from "@/src/data/store/actions/notification/notification.action";
+import * as UserActions from "@/src/data/store/actions/user/user.action";
+import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+
 const NotificationScreen = () => {
-    const [notifications, setNotifications] = useState<NotificationType[]>([]);
+    const dispatch = useDispatch();
+    const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
+    const notificationSelector: NotificationStoreState = useSelector((state: RootState) => state.notification);
+    const [notifications, setNotifications] = useState<NotificationModel[]>([]);
+    const initPaginate = new PaginateModel().convertObj({
+        currentPage: 1,
+        limit: 2,
+        totalItems: 0,
+        totalPages: 1
+    })
+    const [pagination, setPagination] = useState<PaginateModel>(initPaginate);
     const [refresh, setRefresh] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const isEndReachedList = useRef(false);
+    const isFetching = useRef(false);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchNotifications();
-        }, [])
-    )
+    useEffect(() => {
+        if (!notificationSelector.isLoaded) {
+            fetchNotifications(1);
+        }
+    }, [])
 
-    const fetchNotifications = async () => {
+
+    const fetchNotifications = async (page: number) => {
         try {
-            setLoading(true);
-            const url = `http://192.168.1.30:8000/notifications`
-            const response = await axios.get(url);
-            setNotifications(response.data);
+            if (!userSelector.isLogged || isEndReachedList.current) {
+                return;
+            }
+
+            isFetching.current = true;
+            const response = await NotificationMana.fetchNotificationByUser(page, pagination.limit);
+            setNotifications(response.get('notifications'));
+            dispatch(NotificationActions.SaveNotifications(response.get('notifications')));
+
+            setPagination(response.get('pagination'));
+            if (page >= response.get('pagination')?.totalPages) {
+                isEndReachedList.current = true;
+            }
         } catch (error) {
             console.log(error);
+        } finally {
+            isFetching.current = false;
+            setRefresh(false);
         }
-        setRefresh(false);
-        setLoading(false);
     }
 
     const handleRefreshNotifications = useCallback(() => {
         setRefresh(true);
-        fetchNotifications();
+        fetchNotifications(1);
     }, [])
 
     const headerHeight = useHeaderHeight();
     return (
         <>
-            <Stack.Screen
-                options={{
-                    title: 'Thông báo',
-                    headerShown: true,
-                    headerTitleAlign: 'center',
-                    headerTransparent: true
-                }}
-            />
             <View style={[styles.container, { marginTop: headerHeight }]}>
                 <FlatList
                     data={notifications}
@@ -61,13 +83,13 @@ const NotificationScreen = () => {
                             <View style={styles.notificationInfo}>
                                 <View style={styles.notificationInfoContent}>
                                     <Text style={styles.notificationTitle}>
-                                        {item.title}
+                                        {item.type}
                                     </Text>
-                                    <Text style={styles.notificationTimeAgo}>{item.timestamp}</Text>
+                                    <Text style={styles.notificationTimeAgo}>{formatDate(item.created_at ?? new Date())}</Text>
 
                                 </View>
                                 <Text style={styles.notificationMessage}>
-                                    {item.message}
+                                    Không có
                                 </Text>
                             </View>
                         </Animated.View>
