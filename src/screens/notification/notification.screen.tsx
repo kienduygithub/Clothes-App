@@ -17,6 +17,7 @@ import * as NotificationActions from "@/src/data/store/actions/notification/noti
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { NotificationType } from "@/src/common/resource/notification";
+import { LinearGradient } from "expo-linear-gradient";
 
 const NotificationScreen = () => {
     const dispatch = useDispatch();
@@ -110,27 +111,31 @@ const NotificationScreen = () => {
         );
     };
 
-    const headerHeight = useHeaderHeight();
     const unreadCount = notifications.filter(n => !n.is_read).length;
     return (
-        <View style={[styles.container, { paddingTop: headerHeight }]}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Thông báo {unreadCount > 0 ? `(${unreadCount})` : ''}</Text>
+        <LinearGradient
+            colors={['rgba(240,248,255,0.95)', 'rgba(224,242,254,0.95)']}
+            style={{ flex: 1 }}
+        >
+            <View style={[styles.container]}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Thông báo {unreadCount > 0 ? `(${unreadCount})` : ''}</Text>
+                </View>
+                <FlatList
+                    data={notifications}
+                    renderItem={renderNotificationItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    refreshControl={
+                        <RefreshControl refreshing={refresh} onRefresh={handleRefreshNotifications} />
+                    }
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListEmptyComponent={
+                        <Text style={styles.emptyText}>Không có thông báo nào</Text>
+                    }
+                />
             </View>
-            <FlatList
-                data={notifications}
-                renderItem={renderNotificationItem}
-                keyExtractor={(item) => item.id.toString()}
-                refreshControl={
-                    <RefreshControl refreshing={refresh} onRefresh={handleRefreshNotifications} />
-                }
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.5}
-                ListEmptyComponent={
-                    <Text style={styles.emptyText}>Không có thông báo nào</Text>
-                }
-            />
-        </View>
+        </LinearGradient>
     );
 };
 

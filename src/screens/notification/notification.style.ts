@@ -5,23 +5,21 @@ import { StyleSheet } from "react-native";
 const NotificationStyle = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f5f5",
     },
     header: {
-        padding: 10,
+        position: 'relative',
+        height: 80,
         backgroundColor: "#fff",
         borderBottomWidth: 1,
         borderBottomColor: "#ddd",
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: "bold",
-        color: "#333",
-    },
-    realtimeStatus: {
-        fontSize: 12,
-        color: "green",
-        marginTop: 5,
+        fontFamily: Fonts.ROBOTO_BOLD,
+        color: "#000",
+        textAlign: 'center',
+        marginTop: 'auto',
+        marginBottom: 10
     },
     notificationItem: {
         flexDirection: "row",
