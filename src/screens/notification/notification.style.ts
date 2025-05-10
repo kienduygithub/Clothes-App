@@ -5,75 +5,73 @@ import { StyleSheet } from "react-native";
 const NotificationStyle = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 20
+        backgroundColor: "#f5f5f5",
     },
-    notificationWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    header: {
         padding: 10,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: CommonColors.lightGray,
-        backgroundColor: CommonColors.extraLightGray,
-        borderRadius: 5
+        backgroundColor: "#fff",
+        borderBottomWidth: 1,
+        borderBottomColor: "#ddd",
     },
-    notificationIcon: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center'
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#333",
     },
-    notificationInfo: {
-        flex: 1
+    realtimeStatus: {
+        fontSize: 12,
+        color: "green",
+        marginTop: 5,
     },
-    notificationInfoContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
+    notificationItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 10,
+        backgroundColor: "#fff",
+        marginVertical: 5,
+        marginHorizontal: 10,
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
-    notificationTitle: {
-        fontSize: 16,
-        fontWeight: '500',
-        fontFamily: Fonts.POPPINS_MEDIUM,
-        lineHeight: 24,
-        color: CommonColors.black
+    iconContainer: {
+        padding: 5,
     },
-    notificationTimeAgo: {
-        fontSize: 14,
-        color: CommonColors.gray,
-        fontFamily: Fonts.POPPINS_REGULAR,
-        lineHeight: 22,
-        letterSpacing: 0
-    },
-    notificationMessage: {
-        fontSize: 14,
-        color: CommonColors.gray,
-        fontFamily: Fonts.POPPINS_REGULAR,
-        lineHeight: 22,
-        letterSpacing: 0
-    },
-    emptyContainer: {
+    contentContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 50,
+        marginLeft: 10,
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#333",
+    },
+    message: {
+        fontSize: 14,
+        color: "#666",
+        marginTop: 2,
+    },
+    time: {
+        fontSize: 12,
+        color: "#999",
+        marginTop: 2,
+    },
+    unreadDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: CommonColors.primary,
+        position: "absolute",
+        right: 10,
     },
     emptyText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: CommonColors.gray,
+        textAlign: "center",
+        color: "#666",
+        padding: 20,
     },
-    loadingWrapper: {
-        height: 60,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10,
-    },
-    loadingText: {
-        marginLeft: 8,
-        fontSize: 16,
-        color: CommonColors.primary,
-    }
 });
 
 export default NotificationStyle;

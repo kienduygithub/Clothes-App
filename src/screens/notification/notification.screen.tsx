@@ -16,6 +16,7 @@ import * as NotificationMana from "@/src/data/management/notification.management
 import * as NotificationActions from "@/src/data/store/actions/notification/notification.action";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+import { NotificationType } from "@/src/common/resource/notification";
 
 const NotificationScreen = () => {
     const dispatch = useDispatch();
@@ -36,13 +37,15 @@ const NotificationScreen = () => {
     useEffect(() => {
         if (!notificationSelector.isLoaded) {
             fetchNotifications(1);
+        } else {
+            setNotifications(notificationSelector.notifications);
         }
-    }, [])
+    }, [notificationSelector.isLoaded]);
 
 
     const fetchNotifications = async (page: number) => {
         try {
-            if (!userSelector.isLogged || isEndReachedList.current) {
+            if (!userSelector.isLogged || isEndReachedList.current || isFetching.current) {
                 return;
             }
 
@@ -69,44 +72,65 @@ const NotificationScreen = () => {
         fetchNotifications(1);
     }, [])
 
-    const headerHeight = useHeaderHeight();
-    return (
-        <>
-            <View style={[styles.container, { marginTop: headerHeight }]}>
-                <FlatList
-                    data={notifications}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({ index, item }) => (
-                        <Animated.View style={styles.notificationWrapper} entering={FadeInDown.delay(200 + (index * 100)).duration(300)}>
-                            <View style={styles.notificationIcon}>
-                                <Ionicons name="notifications-outline" size={20} color={CommonColors.black} />
-                            </View>
-                            <View style={styles.notificationInfo}>
-                                <View style={styles.notificationInfoContent}>
-                                    <Text style={styles.notificationTitle}>
-                                        {item.type}
-                                    </Text>
-                                    <Text style={styles.notificationTimeAgo}>{formatDate(item.created_at ?? new Date())}</Text>
+    const handleLoadMore = () => {
+        if (!isEndReachedList.current && !isFetching.current && pagination.currentPage < pagination.totalPages) {
+            fetchNotifications(pagination.currentPage + 1);
+        }
+    };
 
-                                </View>
-                                <Text style={styles.notificationMessage}>
-                                    Không có
-                                </Text>
-                            </View>
-                        </Animated.View>
-                    )}
-                    refreshControl={
-                        <RefreshControl refreshing={refresh} onRefresh={() => handleRefreshNotifications()} />
-                    }
-                    ListEmptyComponent={() => (
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="notifications-off-outline" size={50} color={CommonColors.gray} />
-                            <Text style={styles.emptyText}>Không có thông báo nào</Text>
-                        </View>
-                    )}
-                />
+    const renderNotificationItem = ({ item, index }: { item: NotificationModel; index: number }) => {
+        const isUnread = !item.is_read;
+        const timeAgo = formatDate(item.created_at ?? new Date());
+
+        let iconName: "cart-outline" | "hourglass-outline" = "cart-outline";
+        let title = "";
+        let message = "";
+
+        if (item.type === NotificationType.ORDER_NEW) {
+            title = "Đơn hàng mới";
+            message = `Bạn đã mua ${item.data?.order_id ? `#${item.data.order_id}` : ''} thành công. Tổng: ${item.data?.order_total?.toLocaleString() || 'N/A'} VNĐ`;
+        } else if (item.type === NotificationType.ORDER_CANCELED) {
+            iconName = "hourglass-outline";
+            title = "Hủy đơn hàng";
+            message = `Đơn hàng ${item.data?.order_id ? `#${item.data.order_id}` : ''} đã bị hủy ${item.data?.reason ? `(${item.data.reason})` : ''}. Tổng: ${item.data?.order_total?.toLocaleString() || 'N/A'} VNĐ`;
+        }
+
+        return (
+            <Animated.View entering={FadeInDown.delay(index * 100).duration(300)} style={styles.notificationItem}>
+                <View style={styles.iconContainer}>
+                    <Ionicons name={iconName} size={24} color={CommonColors.primary} />
+                </View>
+                <View style={styles.contentContainer}>
+                    <Text style={styles.title}>{title}</Text>
+                    <Text style={styles.message}>{message}</Text>
+                    <Text style={styles.time}>{timeAgo}</Text>
+                </View>
+                {isUnread && <View style={styles.unreadDot} />}
+            </Animated.View>
+        );
+    };
+
+    const headerHeight = useHeaderHeight();
+    const unreadCount = notifications.filter(n => !n.is_read).length;
+    return (
+        <View style={[styles.container, { paddingTop: headerHeight }]}>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Thông báo {unreadCount > 0 ? `(${unreadCount})` : ''}</Text>
             </View>
-        </>
+            <FlatList
+                data={notifications}
+                renderItem={renderNotificationItem}
+                keyExtractor={(item) => item.id.toString()}
+                refreshControl={
+                    <RefreshControl refreshing={refresh} onRefresh={handleRefreshNotifications} />
+                }
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
+                ListEmptyComponent={
+                    <Text style={styles.emptyText}>Không có thông báo nào</Text>
+                }
+            />
+        </View>
     );
 };
 
