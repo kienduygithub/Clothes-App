@@ -34,7 +34,7 @@ const NotificationScreen = () => {
     const [notifications, setNotifications] = useState<NotificationModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
-        limit: 2,
+        limit: 10,
         totalItems: 0,
         totalPages: 1
     })
