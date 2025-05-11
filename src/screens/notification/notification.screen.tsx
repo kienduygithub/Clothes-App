@@ -48,7 +48,7 @@ const NotificationScreen = () => {
         if (!notificationSelector.isLoaded) {
             fetchNotifications(1);
         } else {
-            const loadedNotifications = notificationSelector.notifications;
+            const loadedNotifications = [...notificationSelector.notifications];
             setNotifications(loadedNotifications);
             const calculatedPage = Math.ceil(loadedNotifications.length / pagination.limit);
             const totalPages = Math.ceil(notificationSelector.pagination.totalItems / pagination.limit) || 1;
@@ -79,7 +79,7 @@ const NotificationScreen = () => {
                 isEndReachedList.current = true;
             }
             dispatch(NotificationActions.SaveNotifications(
-                [...notifications, response.get('notifications')],
+                [...notifications, ...response.get('notifications')],
                 response.get('pagination'),
                 response.get('unreadCount')
             ));
@@ -178,7 +178,6 @@ const NotificationScreen = () => {
             animationType="slide"
             onRequestClose={() => {
                 setSelectedOrder(null);
-                // setOpenCancelConfirmDialog(false)
             }}
         >
             <View style={styles.modalContainer}>
