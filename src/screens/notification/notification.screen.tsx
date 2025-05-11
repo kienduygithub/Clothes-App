@@ -38,7 +38,6 @@ const NotificationScreen = () => {
         totalItems: 0,
         totalPages: 1
     })
-    // const [pagination, setPagination] = useState<PaginateModel>(initPaginate);
     const [refresh, setRefresh] = useState(false);
     const isEndReachedList = useRef(false);
     const isFetching = useRef(false);
@@ -48,6 +47,7 @@ const NotificationScreen = () => {
         if (!notificationSelector.isLoaded) {
             fetchNotifications(1);
         } else {
+            console.log(notificationSelector.notifications.map(n => n.id));
             setNotifications(notificationSelector.notifications);
             let isEndList = notificationSelector.notifications.length >= notificationSelector.pagination.totalItems;
             isEndReachedList.current = isEndList;
