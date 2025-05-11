@@ -15,9 +15,9 @@ const initialState: NotificationStoreState = {
     isLoaded: false,
     pagination: {
         currentPage: 1,
-        totalPages: 10,
+        totalPages: 0,
         totalItems: 0,
-        limit: 1,
+        limit: 10,
     } as PaginateModel,
     unreadCount: 0
 }

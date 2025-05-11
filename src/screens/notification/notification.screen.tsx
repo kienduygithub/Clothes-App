@@ -34,11 +34,11 @@ const NotificationScreen = () => {
     const [notifications, setNotifications] = useState<NotificationModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
-        limit: 10,
+        limit: 3,
         totalItems: 0,
         totalPages: 1
     })
-    const [pagination, setPagination] = useState<PaginateModel>(initPaginate);
+    // const [pagination, setPagination] = useState<PaginateModel>(initPaginate);
     const [refresh, setRefresh] = useState(false);
     const isEndReachedList = useRef(false);
     const isFetching = useRef(false);
@@ -48,19 +48,9 @@ const NotificationScreen = () => {
         if (!notificationSelector.isLoaded) {
             fetchNotifications(1);
         } else {
-            const loadedNotifications = [...notificationSelector.notifications];
-            setNotifications(loadedNotifications);
-            const calculatedPage = Math.ceil(loadedNotifications.length / pagination.limit);
-            const totalPages = Math.ceil(notificationSelector.pagination.totalItems / pagination.limit) || 1;
-            setPagination((prev) => ({
-                ...prev,
-                currentPage: calculatedPage,
-                totalItems: notificationSelector.pagination.totalItems,
-                totalPages: totalPages
-            } as PaginateModel));
-            if (calculatedPage >= totalPages) {
-                isEndReachedList.current = true;
-            }
+            setNotifications(notificationSelector.notifications);
+            let isEndList = notificationSelector.notifications.length >= notificationSelector.pagination.totalItems;
+            isEndReachedList.current = isEndList;
         }
     }, []))
 
@@ -71,18 +61,24 @@ const NotificationScreen = () => {
             }
 
             isFetching.current = true;
-            const response = await NotificationMana.fetchNotificationByUser(page, pagination.limit);
-            setNotifications(prev => [...prev, ...response.get('notifications')]);
+            const response = await NotificationMana.fetchNotificationByUser(page, notificationSelector.pagination.limit);
+            const newNotifications = response.get('notifications');
 
-            setPagination(response.get('pagination'));
-            if (page >= response.get('pagination')?.totalPages) {
-                isEndReachedList.current = true;
-            }
+            // Loại bỏ trùng lặp dựa trên ID
+            const uniqueNotifications = page === 1
+                ? newNotifications
+                : [...notifications, ...newNotifications].filter((item, index, self) =>
+                    index === self.findIndex((t) => t.id === item.id)
+                );
+
+            setNotifications(uniqueNotifications);
             dispatch(NotificationActions.SaveNotifications(
-                [...notifications, ...response.get('notifications')],
+                uniqueNotifications,
                 response.get('pagination'),
                 response.get('unreadCount')
             ));
+
+            isEndReachedList.current = uniqueNotifications.length >= response.get('pagination').totalItems;
         } catch (error) {
             console.log(error);
         } finally {
@@ -129,8 +125,8 @@ const NotificationScreen = () => {
     }, [])
 
     const handleLoadMore = () => {
-        if (!isEndReachedList.current && !isFetching.current && pagination.currentPage < pagination.totalPages) {
-            fetchNotifications(pagination.currentPage + 1);
+        if (!isEndReachedList.current && !isFetching.current && notificationSelector.pagination.currentPage < notificationSelector.pagination.totalPages) {
+            fetchNotifications(notificationSelector.pagination.currentPage + 1);
         }
     };
 
