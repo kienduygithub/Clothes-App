@@ -1,6 +1,7 @@
 import * as NotificationService from "@/src/data/service/notification.service";
 import { NotificationModel } from "../model/notification.model";
 import { PaginateModel } from "@/src/common/model/paginate.model";
+import { OrderModel } from "../model/order.model";
 
 export const fetchNotificationByUser = async (page: number, limit: number): Promise<Map<string, any>> => {
     try {
@@ -13,6 +14,25 @@ export const fetchNotificationByUser = async (page: number, limit: number): Prom
         response.set('notifications', notifications);
         response.set('pagination', pagination);
 
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const markNotificationAsRead = async (notification_id: number) => {
+    try {
+        await NotificationService.markNotificationAsRead(notification_id);
+        return true;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const fetchOrderDetails = async (order_id: number) => {
+    try {
+        const result = await NotificationService.fetchOrderDetails(order_id);
+        const response: OrderModel = new OrderModel().convertObj(result?.orders[0]);
         return response;
     } catch (error) {
         throw error;

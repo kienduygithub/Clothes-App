@@ -13,3 +13,34 @@ export const fetchNotificationByUser = async (page: number, limit: number) => {
         throw error;
     }
 }
+
+export const markNotificationAsRead = async (notification_id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const userInfo = await new AppConfig().getUserInfo();
+        const response = await ServiceCore.PATCH(
+            `${domain}`,
+            `notification/user/${userInfo.id}/${notification_id}/read`,
+            {}
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const fetchOrderDetails = async (order_id: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const userInfo = await new AppConfig().getUserInfo();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `order/user/${userInfo.id}/${order_id}/read`,
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
