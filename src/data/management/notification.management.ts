@@ -13,7 +13,7 @@ export const fetchNotificationByUser = async (page: number, limit: number): Prom
         const pagination = new PaginateModel().convertObj(result?.pagination);
         response.set('notifications', notifications);
         response.set('pagination', pagination);
-
+        response.set('unreadCount', result?.unreadCount);
         return response;
     } catch (error) {
         throw error;

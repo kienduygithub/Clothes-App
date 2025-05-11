@@ -45,12 +45,23 @@ const NotificationScreen = () => {
     const [selectedOrder, setSelectedOrder] = useState<OrderModel | null>(null);
 
     useFocusEffect(useCallback(() => {
-        // if (!notificationSelector.isLoaded) {
-        fetchNotifications(1);
-        // } else {
-        //     console.log(notificationSelector.notifications.length);
-        //     setNotifications(notificationSelector.notifications);
-        // }
+        if (!notificationSelector.isLoaded) {
+            fetchNotifications(1);
+        } else {
+            const loadedNotifications = notificationSelector.notifications;
+            setNotifications(loadedNotifications);
+            const calculatedPage = Math.ceil(loadedNotifications.length / pagination.limit);
+            const totalPages = Math.ceil(notificationSelector.pagination.totalItems / pagination.limit) || 1;
+            setPagination((prev) => ({
+                ...prev,
+                currentPage: calculatedPage,
+                totalItems: notificationSelector.pagination.totalItems,
+                totalPages: totalPages
+            } as PaginateModel));
+            if (calculatedPage >= totalPages) {
+                isEndReachedList.current = true;
+            }
+        }
     }, []))
 
     const fetchNotifications = async (page: number) => {
@@ -62,12 +73,16 @@ const NotificationScreen = () => {
             isFetching.current = true;
             const response = await NotificationMana.fetchNotificationByUser(page, pagination.limit);
             setNotifications(prev => [...prev, ...response.get('notifications')]);
-            dispatch(NotificationActions.SaveNotifications([...notifications, response.get('notifications')]));
 
             setPagination(response.get('pagination'));
             if (page >= response.get('pagination')?.totalPages) {
                 isEndReachedList.current = true;
             }
+            dispatch(NotificationActions.SaveNotifications(
+                [...notifications, response.get('notifications')],
+                response.get('pagination'),
+                response.get('unreadCount')
+            ));
         } catch (error) {
             console.log(error);
         } finally {
@@ -89,12 +104,16 @@ const NotificationScreen = () => {
 
         try {
             await NotificationMana.markNotificationAsRead(notification.id);
-            dispatch(NotificationActions.MarkNotificationAsRead(notification.id));
             const currNotifications = notifications;
             const readNotification = currNotifications.find(n => n.id === notification.id);
             if (readNotification) {
                 readNotification.is_read = true;
             }
+            const currUnreadCount = notificationSelector.unreadCount - 1;
+            if (currUnreadCount < -1) {
+                dispatch(NotificationActions.SaveUnreadCount(currUnreadCount));
+            }
+            dispatch(NotificationActions.MarkNotificationAsRead(notification.id));
             setNotifications(currNotifications);
         } catch (error) {
             console.log(error);
@@ -233,7 +252,6 @@ const NotificationScreen = () => {
         </Modal>
     );
 
-    const unreadCount = notifications.filter(n => !n.is_read).length;
     return (
         <LinearGradient
             colors={['rgba(240,248,255,0.95)', 'rgba(224,242,254,0.95)']}
@@ -241,7 +259,7 @@ const NotificationScreen = () => {
         >
             <View style={[styles.container]}>
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Thông báo {unreadCount > 0 ? `(${unreadCount})` : ''}</Text>
+                    <Text style={styles.headerTitle}>Thông báo {notificationSelector.unreadCount > 0 ? `(${notificationSelector.unreadCount})` : ''}</Text>
                 </View>
                 <FlatList
                     data={notifications}
