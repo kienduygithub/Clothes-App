@@ -1,4 +1,5 @@
 import { Fonts } from '@/src/common/resource/fonts';
+import websocketService from '@/src/common/service/websocket.service';
 import { ToastProvider } from '@/src/customize/toast.context';
 import store from '@/src/data/store/store.config';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -39,7 +40,16 @@ export default function RootLayout() {
     [Fonts.ROBOTO_THIN_ITALIC]: require("@/assets/fonts/Roboto-ThinItalic.ttf"),
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  /** Khởi tạo WebSocket **/
+  useEffect(() => {
+    websocketService.initialize();
+
+    // Clear khi thoát ứng dụng
+    return () => {
+      websocketService.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);

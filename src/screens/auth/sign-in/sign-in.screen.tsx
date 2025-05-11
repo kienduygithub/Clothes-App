@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import websocketService from "@/src/common/service/websocket.service";
 
 interface FormData {
     email: string;
@@ -68,6 +69,10 @@ const SignInScreen = () => {
             await new AppConfig().setUserInfo(userInfo);
             dispatch(UserActions.UpdateExpiresLogged(true));
             dispatch(UserActions.UpdateLoggedStatus(true));
+
+            /** Khởi tạo kết nối WebSocket với người dùng có UserId **/
+            websocketService.updateUserId(userInfo.id);
+
             router.navigate("/(tabs)");
         } catch (error: any) {
             console.log(error);

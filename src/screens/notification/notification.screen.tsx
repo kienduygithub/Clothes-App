@@ -105,10 +105,6 @@ const NotificationScreen = () => {
             if (readNotification) {
                 readNotification.is_read = true;
             }
-            const currUnreadCount = notificationSelector.unreadCount - 1;
-            if (currUnreadCount > -1) {
-                dispatch(NotificationActions.SaveUnreadCount(currUnreadCount));
-            }
             dispatch(NotificationActions.MarkNotificationAsRead(notification.id));
             setNotifications(currNotifications);
         } catch (error) {

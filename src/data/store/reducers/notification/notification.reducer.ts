@@ -41,9 +41,17 @@ export const NotificationReducer = (state = initialState, action: ActionState) =
             const notification = action.data.notification;
             const currNotifications = [...state.notifications];
             currNotifications.unshift(notification);
+
+            const updatedPagination = {
+                ...state.pagination,
+                totalItems: state.pagination.totalItems + 1,
+                totalPages: Math.ceil((state.pagination.totalItems + 1) / state.pagination.limit)
+            };
+
             return {
                 ...state,
-                notifications: currNotifications
+                notifications: currNotifications,
+                pagination: updatedPagination
             } as NotificationStoreState;
         }
         case NotificationActions.SAVE_PAGINATION:
@@ -65,16 +73,13 @@ export const NotificationReducer = (state = initialState, action: ActionState) =
 
             return {
                 ...state,
-                notifications: currNotifications
+                notifications: currNotifications,
+                unreadCount: Math.max(0, state.unreadCount - 1)
             } as NotificationStoreState;
         }
         case NotificationActions.RESET_STATE:
             return {
-                ...state,
-                notifications: [],
-                pagination: initialState.pagination,
-                unreadCount: 0,
-                isLoaded: false,
+                ...initialState
             } as NotificationStoreState;
         default:
             return state;
