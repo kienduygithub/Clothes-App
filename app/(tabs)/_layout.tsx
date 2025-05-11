@@ -8,18 +8,21 @@ import { AppConfig } from '@/src/common/config/app.config';
 import * as UserManagement from "@/src/data/management/user.management";
 import * as CartManagement from "@/src/data/management/cart.management";
 import * as FavoriteManagement from "@/src/data/management/favorite.management";
+import * as NotificationMana from "@/src/data/management/notification.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import * as CartActions from "@/src/data/store/actions/cart/cart.action";
+import * as NotificationActions from "@/src/data/store/actions/notification/notification.action";
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/src/data/types/global';
 import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
 import { CartStoreState } from '@/src/data/store/reducers/cart/cart.reducer';
+import { NotificationStoreState } from '@/src/data/store/reducers/notification/notification.reducer';
 
 export default function TabLayout() {
-  const notificationCount = 0;
   const preImage = new AppConfig().getPreImage();
-  const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
-  const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
+  const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
+  const cartSelector: CartStoreState = useSelector((state: RootState) => state.cart);
+  const notificationSelector: NotificationStoreState = useSelector((state: RootState) => state.notification);
   const dispatch = useDispatch();
 
   useFocusEffect(useCallback(() => {
@@ -31,6 +34,7 @@ export default function TabLayout() {
     fetchUserInfo();
     fetchFavoriteUsers();
     fetchCart();
+    fetchUnreadNotificationCount();
   }, []));
 
   const fetchUserInfo = async () => {
@@ -43,7 +47,6 @@ export default function TabLayout() {
       if (error?.message === 'Session expired, please log in again') {
         const user = await new AppConfig().getUserInfo();
         if (user) {
-          console.log('>>> User___: ', user);
           user.expires = false;
           dispatch(UserActions.SaveInfoLogged(user));
         }
@@ -67,6 +70,24 @@ export default function TabLayout() {
       dispatch(CartActions.SaveCart(response));
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  const fetchUnreadNotificationCount = async () => {
+    try {
+      const unreadCount = await NotificationMana.fetchUnreadNotificationCount();
+      if (typeof unreadCount === 'number') {
+        dispatch(NotificationActions.SaveUnreadCount(unreadCount));
+      }
+    } catch (error: any) {
+      console.log(error);
+      if (error?.message === 'Session expired, please log in again') {
+        const user = await new AppConfig().getUserInfo();
+        if (user) {
+          user.expires = false;
+          dispatch(UserActions.SaveInfoLogged(user));
+        }
+      }
     }
   }
 
@@ -121,9 +142,9 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <View>
               <FontAwesome size={20} name={'bell'} color={color} />
-              {notificationCount > 0 && (
+              {notificationSelector.unreadCount > 0 && (
                 <View style={style.notifiWrapper}>
-                  <Text style={style.notifyText}>{notificationCount}</Text>
+                  <Text style={style.notifyText}>{notificationSelector.unreadCount}</Text>
                 </View>
               )}
             </View>

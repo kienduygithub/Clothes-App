@@ -14,6 +14,19 @@ export const fetchNotificationByUser = async (page: number, limit: number) => {
     }
 }
 
+export const fetchUnreadNotificationCount = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `notification/unread-count`
+        );
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const markNotificationAsRead = async (notification_id: number) => {
     try {
         const domain = new AppConfig().getDomain();

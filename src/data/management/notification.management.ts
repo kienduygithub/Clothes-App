@@ -20,6 +20,15 @@ export const fetchNotificationByUser = async (page: number, limit: number): Prom
     }
 }
 
+export const fetchUnreadNotificationCount = async (): Promise<number> => {
+    try {
+        const result = await NotificationService.fetchUnreadNotificationCount();
+        return result?.unreadCount ?? 0;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const markNotificationAsRead = async (notification_id: number) => {
     try {
         await NotificationService.markNotificationAsRead(notification_id);
