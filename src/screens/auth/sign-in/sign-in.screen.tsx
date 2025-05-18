@@ -79,7 +79,7 @@ const SignInScreen = () => {
             const status = error?.status;
             const message = error?.message;
             if (status === HttpCode.BAD_REQUEST) {
-                if (message?.includes('Thông tin đăng nhập không chính xác')) {
+                if (message?.includes('Thông tin đăng nhập không chính xác') || message?.includes('Người dùng không tồn tại')) {
                     setError('email', {
                         type: 'manual',
                         message: 'Thông tin đăng nhập không chính xác'
