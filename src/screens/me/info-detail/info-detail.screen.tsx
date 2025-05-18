@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as UserActions from '@/src/data/store/actions/user/user.action';
 import { useDispatch } from "react-redux"
 import { MessageError } from "@/src/common/resource/message-error"
+import { Fonts } from "@/src/common/resource/fonts"
 
 type FormData = {
     name: string;
@@ -337,6 +338,9 @@ const InfoDetailScreen = ({
                             />
                         </View>
                     </View>
+                    <TouchableOpacity onPress={() => router.navigate('/(routes)/change-password')} style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                        <Text style={{ fontFamily: Fonts.ROBOTO_REGULAR, color: CommonColors.primary }}>Đổi mật khẩu</Text>
+                    </TouchableOpacity>
                 </View>
                 <DialogNotification
                     visible={openWarningSave}

@@ -193,6 +193,15 @@ function RootLayoutNav() {
             }}
           />
 
+          <Stack.Screen
+            name="(routes)/change-password/index"
+            options={{
+              title: 'Đổi mật khẩu',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
           {/* Chatbot */}
           <Stack.Screen
             name="(routes)/chatbot/index"
