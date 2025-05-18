@@ -29,3 +29,12 @@ export const registerShop = async (user: UserModel, shop: ShopModel, logoFile: a
         throw error;
     }
 }
+
+export const changePassword = async (payload: any): Promise<any> => {
+    try {
+        await AuthService.changePassword(payload);
+        return true;
+    } catch (error) {
+        throw error;
+    }
+}

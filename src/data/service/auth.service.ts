@@ -70,3 +70,18 @@ export const registerShop = async (user: UserModel, shop: ShopModel, logoFile: a
         throw error;
     }
 }
+
+export const changePassword = async (payload: any): Promise<any> => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.POST(
+            `${domain}`,
+            'account/change-password',
+            payload
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

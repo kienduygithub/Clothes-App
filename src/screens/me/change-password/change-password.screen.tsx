@@ -1,17 +1,14 @@
-import { ActivityIndicator, Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
-import { AntDesign, Feather, FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons"
+import { ActivityIndicator, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { FontAwesome5, Ionicons } from "@expo/vector-icons"
 import { router } from "expo-router"
 import { useToast } from "@/src/customize/toast.context"
 import { Controller, useForm } from "react-hook-form"
-import { Gender } from "@/src/common/resource/gender"
 import { AppConfig } from "@/src/common/config/app.config"
-import * as UserManagement from "@/src/data/management/user.management"
-import { useEffect, useRef, useState } from "react"
-import { UserModel } from "@/src/data/model/user.model"
-import DialogNotification from "@/src/components/dialog-notification/dialog-notification.component"
+import { useState } from "react"
 import { CommonColors } from "@/src/common/resource/colors"
 import * as ImagePicker from 'expo-image-picker';
 import * as UserActions from '@/src/data/store/actions/user/user.action';
+import * as AuthMana from "@/src/data/management/auth.management";
 import { useDispatch } from "react-redux"
 import { MessageError } from "@/src/common/resource/message-error"
 import ChangePasswordStyle from "./change-password.style"
@@ -28,9 +25,6 @@ const ChangePasswordScreen = ({
 
 }: Props) => {
     const { showToast } = useToast();
-    const preImage = new AppConfig().getPreImage();
-    const [avatarImage, setAvatarImage] = useState('');
-    const [image, setImage] = useState<ImagePicker.ImagePickerResult | null>(null);
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
     const initValueForm = {
@@ -43,28 +37,39 @@ const ChangePasswordScreen = ({
         handleSubmit: OnSaveForm,
         formState: { errors },
         setValue,
-        watch
+        watch,
+        setError
     } = useForm<FormData>({
         defaultValues: initValueForm,
         mode: 'onChange',
         reValidateMode: 'onChange'
     });
+    const newPassword = watch('newPassword');
 
     const saveInfoUser = async (data: FormData) => {
         try {
             setLoading(true);
-            setTimeout(() => {
-                showToast("Đổi mật khẩu thành công", "success");
-            }, 500)
+            const payload = {
+                currentPassword: data.currentPassword.trim(),
+                newPassword: data.newPassword.trim(),
+                confirmPassword: data.confirmPassword.trim()
+            }
+            await AuthMana.changePassword(payload);
             setLoading(false);
+            router.back();
+            showToast("Đổi mật khẩu thành công", "success");
         } catch (error: any) {
             console.log(error);
             setLoading(false);
             if (error?.message === 'Session expired, please log in again') {
                 router.navigate('/(routes)/sign-in');
                 dispatch(UserActions.UpdateExpiresLogged(false));
-                await new AppConfig().clear();
                 showToast(MessageError.EXPIRES_SESSION, 'error');
+            } else if (error?.message === 'Mật khẩu không đúng') {
+                setError('currentPassword', {
+                    type: 'manual',
+                    message: 'Mật khẩu hiện tại không trùng khớp'
+                })
             } else {
                 showToast(MessageError.BUSY_SYSTEM, 'error');
             }
@@ -171,6 +176,8 @@ const ChangePasswordScreen = ({
                                         value: 8,
                                         message: 'Mật khẩu tối thiểu 8 ký tự',
                                     },
+                                    validate: (value) =>
+                                        !errors.newPassword && value === newPassword || 'Mật khẩu không trùng khớp'
                                 }}
                                 render={({ field: { onChange, onBlur, value } }) => (
                                     <TextInput
@@ -181,6 +188,7 @@ const ChangePasswordScreen = ({
                                         autoComplete="off"
                                         autoCorrect={false}
                                         spellCheck={false}
+                                        keyboardType="visible-password"
                                         autoFocus={Platform.OS === 'web'}
                                     />
                                 )}
@@ -196,7 +204,11 @@ const ChangePasswordScreen = ({
                         )}
                     </View>
                     <TouchableOpacity style={styles.submitButton} onPress={OnSaveForm(saveInfoUser)}>
-                        <Text style={styles.submitButtonText}>Xác nhận</Text>
+                        {loading ? (
+                            <ActivityIndicator color={CommonColors.white} size={'small'} />
+                        ) : (
+                            <Text style={styles.submitButtonText}>Xác nhận</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </ScrollView>
