@@ -22,6 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ChatListSessionComponent from './chat_list_session.component';
 
 interface Product {
     id: number;
@@ -56,223 +57,79 @@ interface ChatbotResponse {
 }
 
 const ChatbotScreen = () => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    const [sessions, setSessions] = useState<any[]>([]);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
     const [inputText, setInputText] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [userId, setUserId] = useState<number | null>(null);
-    const [guestSessionId, setGuestSessionId] = useState<string>('');
     const [preImage, setPreImage] = useState<string>('');
     const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
 
     useEffect(() => {
-        loadUserAndHistory();
         fetchPreImage();
+        const init = async () => {
+            const user = await new AppConfig().getUserInfo();
+            if (user && user.id) {
+                setIsUserLoggedIn(true);
+                setUserId(user.id);
+                // Tạo session mới cho user
+                const res = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, { userId: user.id });
+                setSessionId(res.data.data.sessionId);
+                // Lấy danh sách session
+                const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${user.id}`);
+                setSessions(listRes.data.data);
+            } else {
+                setIsUserLoggedIn(false);
+                setUserId(null);
+                // Tạo session mới cho guest
+                const res = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {});
+                setSessionId(res.data.data.sessionId);
+            }
+        };
+        init();
+        return () => {
+            setSessionId(null);
+        };
     }, []);
+
+    useEffect(() => {
+        if (!sessionId) return;
+        const fetchHistory = async () => {
+            const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${sessionId}`);
+            setMessages(res.data.data || []);
+        };
+        fetchHistory();
+    }, [sessionId]);
 
     const fetchPreImage = () => {
         const preImage = new AppConfig().getPreImage();
         setPreImage(preImage);
     };
 
-    const loadUserAndHistory = async () => {
-        try {
-            const storedUser = await new AppConfig().getUserInfo();
-            let currentUserId: number;
-
-            if (storedUser && Object.keys(storedUser).length > 0 && storedUser.id) {
-                // User is logged in
-                currentUserId = storedUser.id;
-                setUserId(currentUserId);
-                setIsUserLoggedIn(true);
-
-                // Fetch chat history for logged in user
-                fetchChatHistory(currentUserId);
-            } else {
-                // User is not logged in - check for existing session or create a new one
-                setIsUserLoggedIn(false);
-
-                try {
-                    // Try to get stored sessionId from AsyncStorage
-                    const storedSessionId = await AsyncStorage.getItem('guestChatSessionId');
-
-                    if (storedSessionId) {
-                        setGuestSessionId(storedSessionId);
-                        fetchGuestSession(storedSessionId);
-                    } else {
-                        // If no stored sessionId, just show initial greeting
-                        setMessages([
-                            {
-                                id: Math.random().toString(),
-                                text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                                isUser: false
-                            }
-                        ]);
-                    }
-                } catch (error) {
-                    console.error("Error loading guest session", error);
-                    // Fallback to initial greeting
-                    setMessages([
-                        {
-                            id: Math.random().toString(),
-                            text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                            isUser: false
-                        }
-                    ]);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to load user info:', error);
-            // Fallback to guest mode with initial greeting
-            setIsUserLoggedIn(false);
-            setMessages([
-                {
-                    id: Math.random().toString(),
-                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                    isUser: false
-                }
-            ]);
-        }
-    };
-
-    const fetchChatHistory = async (userId: number) => {
-        try {
-            const response = await axios.get<{ data: any, success: boolean }>(
-                `${new AppConfig().getDomain()}/chatbot/${userId}`
-            );
-
-            if (response.data?.data?.messages) {
-                const processedMessages = response.data.data.messages.map((msg: any) => ({
-                    id: Math.random().toString(),
-                    text: msg.content,
-                    isUser: msg.role === 'user',
-                    searchResults: msg.searchResults
-                }));
-                setMessages(processedMessages);
-            } else {
-                // If no history or empty, show initial greeting
-                setMessages([
-                    {
-                        id: Math.random().toString(),
-                        text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                        isUser: false
-                    }
-                ]);
-            }
-        } catch (error) {
-            console.error('Failed to load chat history:', error);
-            // Show initial greeting on error
-            setMessages([
-                {
-                    id: Math.random().toString(),
-                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                    isUser: false
-                }
-            ]);
-        }
-    };
-
-    const fetchGuestSession = async (sessionId: string) => {
-        try {
-            const response = await axios.get(
-                `${new AppConfig().getDomain()}/chatbot/guest-session/${sessionId}`
-            );
-
-            if (response.data?.success && response.data?.data?.messages) {
-                const processedMessages = response.data.data.messages.map((msg: any) => ({
-                    id: Math.random().toString(),
-                    text: msg.content,
-                    isUser: msg.role === 'user',
-                    searchResults: msg.searchResults
-                }));
-                setMessages(processedMessages);
-
-                // Update session ID in case a new one was created
-                if (response.data.data.sessionId) {
-                    setGuestSessionId(response.data.data.sessionId);
-                    await AsyncStorage.setItem('guestChatSessionId', response.data.data.sessionId);
-                }
-            } else {
-                // If no history or invalid session, show initial greeting
-                setMessages([
-                    {
-                        id: Math.random().toString(),
-                        text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                        isUser: false
-                    }
-                ]);
-            }
-        } catch (error) {
-            console.error('Failed to load guest session:', error);
-            // Show initial greeting on error
-            setMessages([
-                {
-                    id: Math.random().toString(),
-                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                    isUser: false
-                }
-            ]);
-        }
-    };
-
     const sendMessage = useCallback(async () => {
-        if (!inputText.trim()) return;
-
-        // Add user message to UI
-        const userMessage = {
-            id: Math.random().toString(),
-            text: inputText,
-            isUser: true,
-        };
-
-        setMessages((prevMessages) => [...prevMessages, userMessage]);
+        if (!inputText.trim() || !sessionId) return;
         setLoading(true);
         setInputText('');
-
         try {
-            // Different API usage for logged-in vs. guest users
-            if (isUserLoggedIn) {
-                // For logged-in users, we use the regular API with history
-                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
-                    userId: userId,
-                    message: inputText
-                });
-
-                if (response.data && response.data.success) {
-                    const botMessage: Message = {
-                        id: Math.random().toString(),
-                        text: response.data.data.message,
-                        isUser: false,
-                        searchResults: response.data.data.searchResults
-                    };
-                    setMessages((prevMessages) => [...prevMessages, botMessage]);
-                }
-            } else {
-                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/guest-message`, {
-                    message: inputText,
-                    sessionId: guestSessionId
-                });
-
-                if (response.data && response.data.success) {
-                    const botMessage: Message = {
-                        id: Math.random().toString(),
-                        text: response.data.data.message,
-                        isUser: false,
-                        searchResults: response.data.data.searchResults
-                    };
-                    setMessages((prevMessages) => [...prevMessages, botMessage]);
-
-                    // Save the session ID if it's new
-                    if (response.data.data.sessionId) {
-                        setGuestSessionId(response.data.data.sessionId);
-                        await AsyncStorage.setItem('guestChatSessionId', response.data.data.sessionId);
-                    }
-                }
+            const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
+                sessionId,
+                userId: isUserLoggedIn ? userId : null,
+                message: inputText
+            });
+            if (response.data && response.data.success) {
+                const mapped = (response.data.data.messages || []).map((msg: any, idx: number) => ({
+                    id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
+                    text: msg.content,
+                    isUser: msg.role === 'user',
+                    searchResults: msg.searchResults
+                }));
+                setMessages(mapped);
             }
         } catch (error) {
-            console.error('Failed to send message:', error);
-            // Add error message
             const errorMessage = {
-                id: Math.random().toString(),
+                id: `error-${Date.now()}`,
                 text: 'Xin lỗi, có vẻ đã xảy ra sự cố. Vui lòng thử lại sau.',
                 isUser: false,
             };
@@ -280,7 +137,7 @@ const ChatbotScreen = () => {
         } finally {
             setLoading(false);
         }
-    }, [inputText, userId, isUserLoggedIn, guestSessionId]);
+    }, [inputText, sessionId, userId, isUserLoggedIn]);
 
     const renderProductItem = (product: Product) => (
         <View style={styles.productCard} key={product.id}>
@@ -392,47 +249,23 @@ const ChatbotScreen = () => {
         });
     };
 
-    const startNewConversation = () => {
+    const startNewConversation = async () => {
         if (isUserLoggedIn) {
-            Alert.alert(
-                'Bắt đầu cuộc trò chuyện mới',
-                'Bạn có chắc chắn muốn bắt đầu cuộc trò chuyện mới? Lịch sử hội thoại cũ sẽ được lưu lại.',
-                [
-                    {
-                        text: 'Hủy',
-                        style: 'cancel',
-                    },
-                    {
-                        text: 'Đồng ý',
-                        onPress: async () => {
-                            try {
-                                // For logged-in users, call API to initialize new chat
-                                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/init`, {
-                                    userId: userId
-                                });
-
-                                if (response.data && response.data.success) {
-                                    // Set only the initial greeting message
-                                    setMessages([{
-                                        id: Math.random().toString(),
-                                        text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                                        isUser: false
-                                    }]);
-                                }
-                            } catch (error) {
-                                console.error('Failed to start new conversation:', error);
-                                Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
-                            }
-                        }
-                    }
-                ]
-            );
+            try {
+                // Tạo session mới cho user
+                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, { userId });
+                if (response.data && response.data.success) {
+                    setSessionId(response.data.data.sessionId);
+                    // Lấy lại danh sách session
+                    const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${userId}`);
+                    setSessions(listRes.data.data);
+                }
+            } catch (error) {
+                Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
+            }
         } else {
-            // For guest users, clear the sessionId and messages
-            setGuestSessionId('');
-            AsyncStorage.removeItem('guestChatSessionId');
-
-            // Reset to initial greeting
+            // Guest: tạo session mới, xóa sessionId cũ khỏi state
+            setSessionId(null);
             setMessages([{
                 id: Math.random().toString(),
                 text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
@@ -441,55 +274,73 @@ const ChatbotScreen = () => {
         }
     };
 
+    const handleSelectSession = async (selectedSessionId: string) => {
+        setSessionId(selectedSessionId);
+        const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${selectedSessionId}`);
+        setMessages(res.data.data || []);
+    };
+
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={20} color={CommonColors.white} />
-                </TouchableOpacity>
-                <Text style={styles.headerText}>Shopping Assistant</Text>
-                <TouchableOpacity onPress={startNewConversation}>
-                    <Ionicons name="refresh" size={20} color={CommonColors.white} />
-                </TouchableOpacity>
-            </View>
-
-            {!isUserLoggedIn && (
-                <TouchableOpacity
-                    style={styles.loginNotice}
-                    onPress={() => router.back()}
-                >
-                    <Text style={styles.loginNoticeText}>
-                        Đăng nhập để lưu lịch sử hội thoại
-                    </Text>
-                    <Ionicons name="log-in-outline" size={16} color="#2196f3" />
-                </TouchableOpacity>
-            )}
-
-            <FlatList
-                data={messages}
-                renderItem={renderMessageItem}
-                keyExtractor={item => item.id}
-                style={styles.messageList}
-                contentContainerStyle={styles.messageListContent}
-                ListFooterComponent={renderTypingIndicator}
+        <View style={{ flex: 1 }}>
+            {/* Drawer danh sách session */}
+            <ChatListSessionComponent
+                visible={drawerVisible}
+                onClose={() => setDrawerVisible(false)}
+                onSelectSession={handleSelectSession}
+                sessions={sessions}
+                currentSessionId={sessionId || ''}
             />
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    {isUserLoggedIn && (
+                        <TouchableOpacity onPress={() => setDrawerVisible(true)} style={styles.menuButton}>
+                            <Ionicons name="chatbubbles-outline" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    )}
+                    <Text style={styles.headerText}>Shopping Assistant</Text>
+                    <TouchableOpacity onPress={startNewConversation}>
+                        <Ionicons name="refresh" size={20} color={CommonColors.white} />
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder="Đặt câu hỏi..."
-                    placeholderTextColor="#999"
-                    onSubmitEditing={sendMessage}
+                {!isUserLoggedIn && (
+                    <TouchableOpacity
+                        style={styles.loginNotice}
+                        onPress={() => router.back()}
+                    >
+                        <Text style={styles.loginNoticeText}>
+                            Đăng nhập để lưu lịch sử hội thoại
+                        </Text>
+                        <Ionicons name="log-in-outline" size={16} color="#2196f3" />
+                    </TouchableOpacity>
+                )}
+
+                <FlatList
+                    data={messages}
+                    renderItem={renderMessageItem}
+                    keyExtractor={item => item.id}
+                    style={styles.messageList}
+                    contentContainerStyle={styles.messageListContent}
+                    ListFooterComponent={renderTypingIndicator}
                 />
-                <TouchableOpacity
-                    style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
-                    onPress={sendMessage}
-                    disabled={!inputText.trim() || loading}
-                >
-                    <Text style={styles.sendButtonText}>Gửi</Text>
-                </TouchableOpacity>
+
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder="Đặt câu hỏi..."
+                        placeholderTextColor="#999"
+                        onSubmitEditing={sendMessage}
+                    />
+                    <TouchableOpacity
+                        style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+                        onPress={sendMessage}
+                        disabled={!inputText.trim() || loading}
+                    >
+                        <Text style={styles.sendButtonText}>Gửi</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -497,6 +348,26 @@ const ChatbotScreen = () => {
 
 const styles = StyleSheet.create({
     ...ChatbotStyle,
+    menuButton: {
+        padding: 8,
+        marginRight: 8,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#2196f3',
+        paddingTop: 32,
+        paddingBottom: 12,
+        paddingHorizontal: 12,
+        justifyContent: 'flex-start',
+    },
+    headerText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 18,
+        flex: 1,
+        textAlign: 'center',
+    },
     productsContainer: {
         marginTop: 10,
         marginBottom: 5,
