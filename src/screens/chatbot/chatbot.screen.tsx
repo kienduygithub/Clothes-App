@@ -500,6 +500,7 @@ const styles = StyleSheet.create({
     productsContainer: {
         marginTop: 10,
         marginBottom: 5,
+        maxHeight: 350
     },
     productCard: {
         width: 250,
