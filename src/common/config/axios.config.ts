@@ -58,7 +58,7 @@ CustomAxios.interceptors.response.use(
                 const userInfo = await new AppConfig().getUserInfo();
                 if (userInfo) {
                     userInfo.expires = false;
-                    new AppConfig().setUserInfo(userInfo);
+                    await new AppConfig().setUserInfo(userInfo);
                 }
                 return Promise.reject({
                     message: 'Session expired, please log in again',
