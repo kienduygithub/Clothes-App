@@ -7,7 +7,10 @@ import {
     FlatList,
     ActivityIndicator,
     ListRenderItem,
-    Image
+    Image,
+    ScrollView,
+    Alert,
+    StyleSheet
 } from 'react-native';
 import axios from 'axios';
 import { AppConfig } from '@/src/common/config/app.config';
@@ -18,20 +21,38 @@ import { CommonColors } from '@/src/common/resource/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface Product {
+    id: number;
+    name: string;
+    price: string;
+    gender?: string;
+    category?: string;
+    sizes: string[];
+    colors: string[];
+    image_url: string;
+}
+
+interface SearchResults {
+    type: 'products' | 'shops';
+    data: Product[] | any[];
+}
 
 interface Message {
     id: string;
     text: string;
     isUser: boolean;
+    searchResults?: SearchResults;
 }
 
 interface ChatbotResponse {
-    body: {
-        message?: string;
-        length?: number;
-        content?: string;
-        role?: string;
-    };
+    message: string;
+    chatHistory: {
+        role: string;
+        content: string;
+    }[];
+    searchResults?: SearchResults;
 }
 
 const ChatbotScreen = () => {
@@ -39,52 +60,162 @@ const ChatbotScreen = () => {
     const [inputText, setInputText] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [userId, setUserId] = useState<number | null>(null);
+    const [guestSessionId, setGuestSessionId] = useState<string>('');
     const [preImage, setPreImage] = useState<string>('');
+    const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
 
     useEffect(() => {
         loadUserAndHistory();
         fetchPreImage();
-    }, [])
+    }, []);
 
     const fetchPreImage = () => {
         const preImage = new AppConfig().getPreImage();
         setPreImage(preImage);
-    }
+    };
 
     const loadUserAndHistory = async () => {
         try {
             const storedUser = await new AppConfig().getUserInfo();
             let currentUserId: number;
-            if (storedUser && Object.keys(storedUser).length > 0) {
+
+            if (storedUser && Object.keys(storedUser).length > 0 && storedUser.id) {
+                // User is logged in
                 currentUserId = storedUser.id;
                 setUserId(currentUserId);
+                setIsUserLoggedIn(true);
+
+                // Fetch chat history for logged in user
+                fetchChatHistory(currentUserId);
             } else {
-                /** Không có ID người dùng -> Dùng Guest ID **/
-                currentUserId = Math.floor(Math.random() * 1000000);
-                setUserId(currentUserId);
-                let user = new UserModel(currentUserId);
-                await new AppConfig().setUserInfo(user);
+                // User is not logged in - check for existing session or create a new one
+                setIsUserLoggedIn(false);
+
+                try {
+                    // Try to get stored sessionId from AsyncStorage
+                    const storedSessionId = await AsyncStorage.getItem('guestChatSessionId');
+
+                    if (storedSessionId) {
+                        setGuestSessionId(storedSessionId);
+                        fetchGuestSession(storedSessionId);
+                    } else {
+                        // If no stored sessionId, just show initial greeting
+                        setMessages([
+                            {
+                                id: Math.random().toString(),
+                                text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                                isUser: false
+                            }
+                        ]);
+                    }
+                } catch (error) {
+                    console.error("Error loading guest session", error);
+                    // Fallback to initial greeting
+                    setMessages([
+                        {
+                            id: Math.random().toString(),
+                            text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                            isUser: false
+                        }
+                    ]);
+                }
             }
+        } catch (error) {
+            console.error('Failed to load user info:', error);
+            // Fallback to guest mode with initial greeting
+            setIsUserLoggedIn(false);
+            setMessages([
+                {
+                    id: Math.random().toString(),
+                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                    isUser: false
+                }
+            ]);
+        }
+    };
 
-            /** Fetch chat history **/
-            const response = await axios.get<ChatbotResponse>(`${new AppConfig().getDomain()}/chatbot/history?userId=${currentUserId}`)
+    const fetchChatHistory = async (userId: number) => {
+        try {
+            const response = await axios.get<{ data: any, success: boolean }>(
+                `${new AppConfig().getDomain()}/chatbot/${userId}`
+            );
 
-            if (Array.isArray(response.data?.body)) {
-                setMessages(
-                    response.data.body.map((msg: any) => ({
+            if (response.data?.data?.messages) {
+                const processedMessages = response.data.data.messages.map((msg: any) => ({
+                    id: Math.random().toString(),
+                    text: msg.content,
+                    isUser: msg.role === 'user',
+                    searchResults: msg.searchResults
+                }));
+                setMessages(processedMessages);
+            } else {
+                // If no history or empty, show initial greeting
+                setMessages([
+                    {
                         id: Math.random().toString(),
-                        text: msg.content,
-                        isUser: msg.role === 'user'
-                    }))
-                );
+                        text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                        isUser: false
+                    }
+                ]);
             }
         } catch (error) {
             console.error('Failed to load chat history:', error);
+            // Show initial greeting on error
+            setMessages([
+                {
+                    id: Math.random().toString(),
+                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                    isUser: false
+                }
+            ]);
         }
-    }
+    };
+
+    const fetchGuestSession = async (sessionId: string) => {
+        try {
+            const response = await axios.get(
+                `${new AppConfig().getDomain()}/chatbot/guest-session/${sessionId}`
+            );
+
+            if (response.data?.success && response.data?.data?.messages) {
+                const processedMessages = response.data.data.messages.map((msg: any) => ({
+                    id: Math.random().toString(),
+                    text: msg.content,
+                    isUser: msg.role === 'user',
+                    searchResults: msg.searchResults
+                }));
+                setMessages(processedMessages);
+
+                // Update session ID in case a new one was created
+                if (response.data.data.sessionId) {
+                    setGuestSessionId(response.data.data.sessionId);
+                    await AsyncStorage.setItem('guestChatSessionId', response.data.data.sessionId);
+                }
+            } else {
+                // If no history or invalid session, show initial greeting
+                setMessages([
+                    {
+                        id: Math.random().toString(),
+                        text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                        isUser: false
+                    }
+                ]);
+            }
+        } catch (error) {
+            console.error('Failed to load guest session:', error);
+            // Show initial greeting on error
+            setMessages([
+                {
+                    id: Math.random().toString(),
+                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                    isUser: false
+                }
+            ]);
+        }
+    };
 
     const sendMessage = useCallback(async () => {
-        if (!inputText.trim() || !userId) return;
+        if (!inputText.trim()) return;
 
         // Add user message to UI
         const userMessage = {
@@ -93,37 +224,98 @@ const ChatbotScreen = () => {
             isUser: true,
         };
 
-        setMessages((prevMessages: any) => [...prevMessages, userMessage]);
+        setMessages((prevMessages) => [...prevMessages, userMessage]);
         setLoading(true);
         setInputText('');
 
         try {
-            const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
-                message: userMessage.text,
-                user_id: userId
-            });
+            // Different API usage for logged-in vs. guest users
+            if (isUserLoggedIn) {
+                // For logged-in users, we use the regular API with history
+                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
+                    userId: userId,
+                    message: inputText
+                });
 
-            if (response.data && response.data.body && response.data.body.message) {
-                const botMessage = {
-                    id: Math.random().toString(),
-                    text: response.data.body.message,
-                    isUser: false,
-                };
-                setMessages((prevMessages: any) => [...prevMessages, botMessage]);
+                if (response.data && response.data.success) {
+                    const botMessage: Message = {
+                        id: Math.random().toString(),
+                        text: response.data.data.message,
+                        isUser: false,
+                        searchResults: response.data.data.searchResults
+                    };
+                    setMessages((prevMessages) => [...prevMessages, botMessage]);
+                }
+            } else {
+                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/guest-message`, {
+                    message: inputText,
+                    sessionId: guestSessionId
+                });
+
+                if (response.data && response.data.success) {
+                    const botMessage: Message = {
+                        id: Math.random().toString(),
+                        text: response.data.data.message,
+                        isUser: false,
+                        searchResults: response.data.data.searchResults
+                    };
+                    setMessages((prevMessages) => [...prevMessages, botMessage]);
+
+                    // Save the session ID if it's new
+                    if (response.data.data.sessionId) {
+                        setGuestSessionId(response.data.data.sessionId);
+                        await AsyncStorage.setItem('guestChatSessionId', response.data.data.sessionId);
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to send message:', error);
             // Add error message
             const errorMessage = {
                 id: Math.random().toString(),
-                text: 'Xin lỗi, Có vẻ xảy ra sự cố. Vui lòng quay lại sau',
+                text: 'Xin lỗi, có vẻ đã xảy ra sự cố. Vui lòng thử lại sau.',
                 isUser: false,
             };
-            setMessages((prevMessages: any) => [...prevMessages, errorMessage]);
+            setMessages((prevMessages) => [...prevMessages, errorMessage]);
         } finally {
             setLoading(false);
         }
-    }, [inputText, userId]);
+    }, [inputText, userId, isUserLoggedIn, guestSessionId]);
+
+    const renderProductItem = (product: Product) => (
+        <View style={styles.productCard} key={product.id}>
+            {product.image_url && (
+                <View style={styles.productImageContainer}>
+                    <Image
+                        source={{ uri: `${preImage}/${product.image_url}` }}
+                        style={styles.productImage}
+                        resizeMode="cover"
+                    />
+                </View>
+            )}
+            <Text style={styles.productName}>{product.name}</Text>
+            <Text style={styles.productPrice}>{formatPrice(product.price)} VND</Text>
+
+            {product.sizes && product.sizes.length > 0 && (
+                <Text style={styles.productDetail}>Size: {product.sizes.join(', ')}</Text>
+            )}
+
+            {product.colors && product.colors.length > 0 && (
+                <Text style={styles.productDetail}>Màu: {product.colors.join(', ')}</Text>
+            )}
+
+            <TouchableOpacity
+                style={styles.viewDetailButton}
+                onPress={() => handleProductPress(product.id)}
+            >
+                <Text style={styles.viewDetailText}>Xem chi tiết</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const formatPrice = (price: string): string => {
+        return parseInt(price).toLocaleString('vi-VN');
+    };
 
     const renderMessageItem: ListRenderItem<Message> = ({ item }) => {
         if (item.isUser) {
@@ -133,149 +325,50 @@ const ChatbotScreen = () => {
                         {item.text}
                     </Text>
                 </View>
-            )
+            );
         } else {
-            /** Đối với bot thì kiểm tra product IDs và đường dần ảnh **/
-            const productIdRegex = /Sản phẩm #(\d+)/g;
-            const imageUrlRegex = /\[IMAGE:products\/([\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif))\]/g;
-            const viewDetailRegex = /\[Xem chi tiết sản phẩm #(\d+)\]/g;
-
-            let message = item.text;
-            let productMatches = [...message.matchAll(productIdRegex)];
-            let imageMatches = [...message.matchAll(imageUrlRegex)];
-            let viewDetailMatches = [...message.matchAll(viewDetailRegex)];
-
-            // Remove image and view detail markers from the text
-            let cleanMessage = message;
-            cleanMessage = cleanMessage.replace(/\s*\[IMAGE:products\/[\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif)\]\s*/g, '');
-            cleanMessage = cleanMessage.replace(/\s*\[Xem chi tiết sản phẩm #\d+\]\s*/g, '');
-
-            // Nếu không có product IDs hoặc ảnh, render message bình thường
-            if (productMatches.length === 0 && imageMatches.length === 0 && viewDetailMatches.length === 0) {
-                return (
-                    <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
-                        <Text style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                            {cleanMessage}
-                        </Text>
-                    </View>
-                );
-            }
-
-            // Extract product sections from the message
-            interface ProductSection {
-                text: string;
-                images: string[];
-                productId: string;
-            }
-
-            const productSections: ProductSection[] = [];
-            let currentProductId: string | null = null;
-
-            // Split the message by product entries
-            const lines = message.split('\n');
-            let currentSection = [];
-            let currentImages = [];
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const productMatch = line.match(/Sản phẩm #(\d+)/);
-
-                // If this is a new product line and we already had a section, save it
-                if (productMatch && currentSection.length > 0) {
-                    if (currentProductId) {
-                        productSections.push({
-                            text: currentSection.join('\n'),
-                            images: [...currentImages],
-                            productId: currentProductId
-                        });
-                    }
-                    currentSection = [];
-                    currentImages = [];
-                }
-
-                // If this is a product line, update current product ID
-                if (productMatch) {
-                    currentProductId = productMatch[1];
-                    currentSection.push(line);
-                }
-                // If this is an image line for the current product
-                else if (line.includes('[IMAGE:products/') && currentProductId) {
-                    const imageMatch = line.match(/\[IMAGE:products\/([\w.-]+(?:\/[\w.-]+)*\.(?:png|jpg|jpeg|gif))\]/);
-                    if (imageMatch) {
-                        currentImages.push(imageMatch[1]);
-                    }
-                }
-                // If this is a view detail line, skip it for now - we'll add buttons separately
-                else if (line.includes('[Xem chi tiết sản phẩm #')) {
-                    // Skip
-                }
-                // Otherwise, add to current section if we have a product
-                else if (currentProductId) {
-                    currentSection.push(line);
-                }
-            }
-
-            // Add the last section if there is one
-            if (currentSection.length > 0 && currentProductId) {
-                productSections.push({
-                    text: currentSection.join('\n'),
-                    images: [...currentImages],
-                    productId: currentProductId
-                });
-            }
-
-            // General text outside of product sections
-            const generalText = lines.filter(line =>
-                !line.match(/Sản phẩm #\d+/) &&
-                !line.includes('[IMAGE:products/') &&
-                !line.includes('[Xem chi tiết sản phẩm #')).join('\n');
-
-            // Build the components for the message
-            const messageComponents: any = [];
-
-            // Add general text if it exists
-            if (generalText.trim()) {
-                messageComponents.push(
-                    <Text key="general-text" style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                        {generalText.trim()}
-                    </Text>
-                );
-            }
-
-            // Add each product section with its image and button
-            productSections.forEach((section, index) => {
-                messageComponents.push(
-                    <View key={`product-section-${index}`} style={{ marginTop: 10 }}>
-                        <Text style={[ChatbotStyle.messageText, ChatbotStyle.botText]}>
-                            {section.text}
-                        </Text>
-
-                        {section.images.length > 0 && (
-                            <Image
-                                key={`image-${section.images[0]}`}
-                                source={{ uri: `${preImage}/${section.images[0]}` }}
-                                style={styles.messageImage}
-                                resizeMode="cover"
-                            />
-                        )}
-
-                        {section.productId && (
-                            <TouchableOpacity
-                                style={styles.productButton}
-                                onPress={() => handleProductPress(parseInt(section.productId))}
-                            >
-                                <Text style={styles.productButtonText}>Xem chi tiết sản phẩm</Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
-                );
-            });
-
             return (
-                <View style={[ChatbotStyle.messageBubble, ChatbotStyle.botBubble]}>
-                    {messageComponents}
+                <View style={[styles.messageBubble, styles.botBubble]}>
+                    <Text style={[styles.messageText, styles.botText]}>
+                        {item.text}
+                    </Text>
+
+                    {item.searchResults?.type === 'products' && item.searchResults.data.length > 0 && (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.productsContainer}
+                        >
+                            {item.searchResults.data.map((product: Product) =>
+                                renderProductItem(product)
+                            )}
+                        </ScrollView>
+                    )}
+
+                    {item.searchResults?.type === 'shops' && item.searchResults.data.length > 0 && (
+                        <View style={styles.shopsContainer}>
+                            {item.searchResults.data.map((shop: any) => (
+                                <View style={styles.shopCard} key={shop.id}>
+                                    {shop.logo_url && (
+                                        <Image
+                                            source={{ uri: `${preImage}/${shop.logo_url}` }}
+                                            style={styles.shopLogo}
+                                            resizeMode="cover"
+                                        />
+                                    )}
+                                    <Text style={styles.shopName}>{shop.name}</Text>
+                                    {shop.address && (
+                                        <Text style={styles.shopDetail}>Địa chỉ: {shop.address}</Text>
+                                    )}
+                                    {shop.email && (
+                                        <Text style={styles.shopDetail}>Email: {shop.email}</Text>
+                                    )}
+                                </View>
+                            ))}
+                        </View>
+                    )}
                 </View>
-            )
+            );
         }
     };
 
@@ -296,8 +389,57 @@ const ChatbotScreen = () => {
             params: {
                 id: productId
             }
-        })
-    }
+        });
+    };
+
+    const startNewConversation = () => {
+        if (isUserLoggedIn) {
+            Alert.alert(
+                'Bắt đầu cuộc trò chuyện mới',
+                'Bạn có chắc chắn muốn bắt đầu cuộc trò chuyện mới? Lịch sử hội thoại cũ sẽ được lưu lại.',
+                [
+                    {
+                        text: 'Hủy',
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'Đồng ý',
+                        onPress: async () => {
+                            try {
+                                // For logged-in users, call API to initialize new chat
+                                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/init`, {
+                                    userId: userId
+                                });
+
+                                if (response.data && response.data.success) {
+                                    // Set only the initial greeting message
+                                    setMessages([{
+                                        id: Math.random().toString(),
+                                        text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                                        isUser: false
+                                    }]);
+                                }
+                            } catch (error) {
+                                console.error('Failed to start new conversation:', error);
+                                Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
+                            }
+                        }
+                    }
+                ]
+            );
+        } else {
+            // For guest users, clear the sessionId and messages
+            setGuestSessionId('');
+            AsyncStorage.removeItem('guestChatSessionId');
+
+            // Reset to initial greeting
+            setMessages([{
+                id: Math.random().toString(),
+                text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
+                isUser: false
+            }]);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -306,8 +448,22 @@ const ChatbotScreen = () => {
                     <Ionicons name="arrow-back" size={20} color={CommonColors.white} />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>Shopping Assistant</Text>
-                <ChatbotIcon />
+                <TouchableOpacity onPress={startNewConversation}>
+                    <Ionicons name="refresh" size={20} color={CommonColors.white} />
+                </TouchableOpacity>
             </View>
+
+            {!isUserLoggedIn && (
+                <TouchableOpacity
+                    style={styles.loginNotice}
+                    onPress={() => router.back()}
+                >
+                    <Text style={styles.loginNoticeText}>
+                        Đăng nhập để lưu lịch sử hội thoại
+                    </Text>
+                    <Ionicons name="log-in-outline" size={16} color="#2196f3" />
+                </TouchableOpacity>
+            )}
 
             <FlatList
                 data={messages}
@@ -337,8 +493,107 @@ const ChatbotScreen = () => {
             </View>
         </View>
     );
-}
+};
 
-const styles = ChatbotStyle;
+const styles = StyleSheet.create({
+    ...ChatbotStyle,
+    productsContainer: {
+        marginTop: 10,
+        marginBottom: 5,
+    },
+    productCard: {
+        width: 250,
+        height: 350,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 10,
+        marginRight: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    productImageContainer: {
+        width: '100%',
+        height: 200
+    },
+    productImage: {
+        width: '100%',
+        height: '100%',
+        marginBottom: 8,
+    },
+    productName: {
+        fontWeight: 'bold' as 'bold',
+        fontSize: 14,
+        marginBottom: 4,
+    },
+    productPrice: {
+        fontSize: 14,
+        color: '#e53935',
+        fontWeight: '600' as '600',
+        marginBottom: 4,
+    },
+    productDetail: {
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 2,
+    },
+    viewDetailButton: {
+        backgroundColor: '#2196f3',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 4,
+        alignItems: 'center' as 'center',
+        marginTop: 8,
+    },
+    viewDetailText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600' as '600',
+    },
+    shopsContainer: {
+        marginTop: 10,
+    },
+    shopCard: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 10,
+        marginVertical: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    shopLogo: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginBottom: 8,
+    },
+    shopName: {
+        fontWeight: 'bold' as 'bold',
+        fontSize: 16,
+        marginBottom: 4,
+    },
+    shopDetail: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 2,
+    },
+    loginNotice: {
+        flexDirection: 'row' as 'row',
+        justifyContent: 'center' as 'center',
+        alignItems: 'center' as 'center',
+        backgroundColor: '#e3f2fd',
+        paddingVertical: 8,
+        gap: 8
+    },
+    loginNoticeText: {
+        color: '#2196f3',
+        fontSize: 14,
+    },
+})
 
 export default ChatbotScreen;
