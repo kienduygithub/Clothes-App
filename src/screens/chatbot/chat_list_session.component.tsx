@@ -33,7 +33,6 @@ export default function ChatListSession({
                 useNativeDriver: true,
             }).start();
         }
-        console.log(sessions);
     }, [visible]);
 
     if (!visible) return null;
