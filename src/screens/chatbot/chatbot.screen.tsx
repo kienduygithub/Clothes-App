@@ -66,7 +66,38 @@ const ChatbotScreen = () => {
     const [userId, setUserId] = useState<number | null>(null);
     const [preImage, setPreImage] = useState<string>('');
     const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
-    const [isFirstMessage, setIsFirstMessage] = useState<boolean>(true);
+    const [showWelcome, setShowWelcome] = useState<boolean>(true);
+
+    // Welcome message component
+    const WelcomeMessage = () => (
+        <View style={styles.welcomeContainer}>
+            <ChatbotIcon width={80} height={80} style={styles.welcomeIcon} />
+            <Text style={styles.welcomeTitle}>ClothesShop Assistant</Text>
+            <Text style={styles.welcomeText}>
+                Xin chào! Tôi có thể giúp bạn:
+            </Text>
+            <View style={styles.suggestionContainer}>
+                <TouchableOpacity
+                    style={styles.suggestionButton}
+                    onPress={() => handleSuggestionPress("Tìm áo phông nam")}
+                >
+                    <Text style={styles.suggestionText}>🔍 Tìm áo phông nam</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.suggestionButton}
+                    onPress={() => handleSuggestionPress("Tìm váy đầm dự tiệc")}
+                >
+                    <Text style={styles.suggestionText}>👗 Tìm váy đầm dự tiệc</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.suggestionButton}
+                    onPress={() => handleSuggestionPress("Tìm giày thể thao nam dưới 1 triệu")}
+                >
+                    <Text style={styles.suggestionText}>👟 Tìm giày thể thao nam dưới 1 triệu</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
 
     useEffect(() => {
         fetchPreImage();
@@ -82,7 +113,7 @@ const ChatbotScreen = () => {
                 const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${user.id}`);
                 const mappedSessions = (listRes.data.data || []).map((s: any) => ({
                     ...s,
-                    sessionId: s.sessionId || s.session_id // Ưu tiên dùng sessionId từ BE, nếu không có thì dùng session_id
+                    sessionId: s.sessionId || s.session_id
                 }));
                 setSessions(mappedSessions);
             } else {
@@ -103,36 +134,44 @@ const ChatbotScreen = () => {
         if (!sessionId) return;
         const fetchHistory = async () => {
             const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${sessionId}`);
+
             const mapped = (res.data.data || []).map((msg: any, idx: number) => ({
                 id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
                 text: msg.text || msg.content,
                 isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
                 searchResults: msg.searchResults
-            }));
+            })) ?? [];
+            mapped.forEach((m: any) => {
+                console.log(m?.searchResults.data)
+            })
             setMessages(mapped);
+            setShowWelcome(mapped.length === 0);
         };
         fetchHistory();
     }, [sessionId]);
 
-    const fetchPreImage = () => {
-        const preImage = new AppConfig().getPreImage();
-        setPreImage(preImage);
+    const handleSuggestionPress = async (suggestion: string) => {
+        setInputText(suggestion);
+        await sendMessage(suggestion);
     };
 
-    const sendMessage = useCallback(async () => {
-        if (!inputText.trim()) return;
+    const sendMessage = useCallback(async (text?: string) => {
+        const messageText = text || inputText;
+        if (!messageText.trim()) return;
+
         setLoading(true);
+        setShowWelcome(false);
+
         const userMsg = {
             id: `user-${Date.now()}`,
-            text: inputText,
+            text: messageText,
             isUser: true
         };
         setMessages((prev) => [...prev, userMsg]);
         setInputText('');
+
         try {
-            // Nếu chưa có sessionId, tạo session mới khi gửi tin nhắn đầu tiên
             let currentSessionId = sessionId;
-            let isNewSession = false;
             if (!currentSessionId) {
                 let res;
                 if (isUserLoggedIn) {
@@ -142,34 +181,26 @@ const ChatbotScreen = () => {
                 }
                 currentSessionId = res.data.data.sessionId || res.data.data.session_id;
                 setSessionId(currentSessionId);
-                // Thêm session mới vào đầu mảng sessions
-                setSessions((prev) => [{ ...res.data.data, sessionId: res.data.data.sessionId || res.data.data.session_id }, ...prev]);
-                setIsFirstMessage(false);
-                isNewSession = true;
+                setSessions((prev) => [{ ...res.data.data, sessionId: currentSessionId }, ...prev]);
             }
-            // Gửi tin nhắn
+
             const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
                 sessionId: currentSessionId,
                 userId: isUserLoggedIn ? userId : null,
-                message: inputText
+                message: messageText
             });
+
             if (response.data && response.data.success) {
-                // Map lại messages, giữ lại tin nhắn user vừa gửi ở đầu nếu là session mới
                 const mapped = (response.data.data.messages || []).map((msg: any, idx: number) => ({
                     id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
                     text: msg.content,
                     isUser: msg.role === 'user',
                     searchResults: msg.searchResults
                 }));
-                if (isNewSession) {
-                    setMessages([userMsg, ...mapped.filter((m: any) => !m.isUser)]);
-                } else {
-                    setMessages((prev) => {
-                        // Xóa userMsg cuối cùng (vừa push ở trên), rồi nối với mapped
-                        const prevWithoutLastUser = prev.slice(0, -1);
-                        return [...prevWithoutLastUser, ...mapped];
-                    });
-                }
+                setMessages((prev) => {
+                    const prevWithoutLastUser = prev.slice(0, -1);
+                    return [...prevWithoutLastUser, ...mapped];
+                });
             }
         } catch (error) {
             const errorMessage = {
@@ -182,6 +213,11 @@ const ChatbotScreen = () => {
             setLoading(false);
         }
     }, [inputText, sessionId, userId, isUserLoggedIn]);
+
+    const fetchPreImage = () => {
+        const preImage = new AppConfig().getPreImage();
+        setPreImage(preImage);
+    };
 
     const renderProductItem = (product: Product) => (
         <View style={styles.productCard} key={product.id}>
@@ -401,14 +437,18 @@ const ChatbotScreen = () => {
                     </TouchableOpacity>
                 )}
 
-                <FlatList
-                    data={messages}
-                    renderItem={renderMessageItem}
-                    keyExtractor={item => item.id}
-                    style={styles.messageList}
-                    contentContainerStyle={styles.messageListContent}
-                    ListFooterComponent={renderTypingIndicator}
-                />
+                {showWelcome ? (
+                    <WelcomeMessage />
+                ) : (
+                    <FlatList
+                        data={messages}
+                        renderItem={renderMessageItem}
+                        keyExtractor={item => item.id}
+                        style={styles.messageList}
+                        contentContainerStyle={styles.messageListContent}
+                        ListFooterComponent={renderTypingIndicator}
+                    />
+                )}
 
                 <View style={styles.inputContainer}>
                     <TextInput
@@ -417,11 +457,11 @@ const ChatbotScreen = () => {
                         onChangeText={setInputText}
                         placeholder="Đặt câu hỏi..."
                         placeholderTextColor="#999"
-                        onSubmitEditing={sendMessage}
+                        onSubmitEditing={() => sendMessage()}
                     />
                     <TouchableOpacity
                         style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
-                        onPress={sendMessage}
+                        onPress={() => sendMessage()}
                         disabled={!inputText.trim() || loading}
                     >
                         <Text style={styles.sendButtonText}>Gửi</Text>
@@ -551,6 +591,41 @@ const styles = StyleSheet.create({
     loginNoticeText: {
         color: '#2196f3',
         fontSize: 14,
+    },
+    welcomeContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    welcomeIcon: {
+        marginBottom: 20,
+    },
+    welcomeTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#2196f3',
+    },
+    welcomeText: {
+        fontSize: 16,
+        marginBottom: 20,
+        textAlign: 'center',
+        color: '#666',
+    },
+    suggestionContainer: {
+        width: '100%',
+        gap: 10,
+    },
+    suggestionButton: {
+        backgroundColor: '#f5f5f5',
+        padding: 15,
+        borderRadius: 8,
+        width: '100%',
+    },
+    suggestionText: {
+        fontSize: 14,
+        color: '#2196f3',
     },
 })
 
