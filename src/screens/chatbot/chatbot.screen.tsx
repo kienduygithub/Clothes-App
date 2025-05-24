@@ -60,7 +60,7 @@ const ChatbotScreen = () => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [sessions, setSessions] = useState<any[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [userId, setUserId] = useState<number | null>(null);
@@ -106,10 +106,7 @@ const ChatbotScreen = () => {
             if (user && user.id) {
                 setIsUserLoggedIn(true);
                 setUserId(user.id);
-                setSessions([]);
-                setSessionId(null);
-                setMessages([]);
-                // Lấy danh sách session cho user
+                // Lấy danh sách session cho user đã đăng nhập
                 const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${user.id}`);
                 const mappedSessions = (listRes.data.data || []).map((s: any) => ({
                     ...s,
@@ -120,9 +117,10 @@ const ChatbotScreen = () => {
                 setIsUserLoggedIn(false);
                 setUserId(null);
                 setSessions([]);
-                setSessionId(null);
-                setMessages([]);
             }
+            setSessionId(null);
+            setMessages([]);
+            setShowWelcome(true);
         };
         init();
         return () => {
@@ -133,19 +131,20 @@ const ChatbotScreen = () => {
     useEffect(() => {
         if (!sessionId) return;
         const fetchHistory = async () => {
-            const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${sessionId}`);
-
-            const mapped = (res.data.data || []).map((msg: any, idx: number) => ({
-                id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
-                text: msg.text || msg.content,
-                isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
-                searchResults: msg.searchResults
-            })) ?? [];
-            mapped.forEach((m: any) => {
-                console.log(m?.searchResults.data)
-            })
-            setMessages(mapped);
-            setShowWelcome(mapped.length === 0);
+            try {
+                const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${sessionId}`);
+                const mapped = (res.data.data || []).map((msg: any, idx: number) => ({
+                    id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
+                    text: msg.text || msg.content,
+                    isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
+                    searchResults: msg.searchResults
+                }));
+                setMessages(mapped);
+                setShowWelcome(mapped.length === 0);
+            } catch (error) {
+                console.error('Error fetching history:', error);
+                Alert.alert('Lỗi', 'Không thể lấy lịch sử chat. Vui lòng thử lại sau.');
+            }
         };
         fetchHistory();
     }, [sessionId]);
@@ -162,53 +161,50 @@ const ChatbotScreen = () => {
         setLoading(true);
         setShowWelcome(false);
 
-        const userMsg = {
-            id: `user-${Date.now()}`,
-            text: messageText,
-            isUser: true
-        };
-        setMessages((prev) => [...prev, userMsg]);
-        setInputText('');
-
         try {
-            let currentSessionId = sessionId;
-            if (!currentSessionId) {
-                let res;
-                if (isUserLoggedIn) {
-                    res = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, { userId });
-                } else {
-                    res = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {});
+            // Nếu chưa có sessionId, tạo session mới
+            if (!sessionId) {
+                const createSessionRes = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
+                    userId: isUserLoggedIn ? userId : null
+                });
+                if (!createSessionRes.data.success) {
+                    throw new Error('Failed to create session');
                 }
-                currentSessionId = res.data.data.sessionId || res.data.data.session_id;
-                setSessionId(currentSessionId);
-                setSessions((prev) => [{ ...res.data.data, sessionId: currentSessionId }, ...prev]);
+                const newSessionId = createSessionRes.data.data.sessionId;
+                setSessionId(newSessionId);
+
+                if (isUserLoggedIn) {
+                    // Cập nhật danh sách session cho user đã đăng nhập
+                    const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${userId}`);
+                    setSessions(listRes.data.data || []);
+                }
             }
 
+            // Gửi tin nhắn vào session
             const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
-                sessionId: currentSessionId,
+                sessionId: sessionId,
                 userId: isUserLoggedIn ? userId : null,
                 message: messageText
             });
 
             if (response.data && response.data.success) {
-                const mapped = (response.data.data.messages || []).map((msg: any, idx: number) => ({
+                const newMessages = response.data.data.messages.map((msg: any, idx: number) => ({
                     id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
                     text: msg.content,
                     isUser: msg.role === 'user',
                     searchResults: msg.searchResults
                 }));
-                setMessages((prev) => {
-                    const prevWithoutLastUser = prev.slice(0, -1);
-                    return [...prevWithoutLastUser, ...mapped];
-                });
+
+                setMessages(prev => [...prev, ...newMessages]);
             }
+
+            setInputText('');
         } catch (error) {
-            const errorMessage = {
-                id: `error-${Date.now()}`,
-                text: 'Xin lỗi, có vẻ đã xảy ra sự cố. Vui lòng thử lại sau.',
-                isUser: false,
-            };
-            setMessages((prevMessages) => [...prevMessages, errorMessage]);
+            console.error('Error sending message:', error);
+            Alert.alert(
+                'Lỗi',
+                'Không thể gửi tin nhắn. Vui lòng thử lại sau.'
+            );
         } finally {
             setLoading(false);
         }
@@ -330,76 +326,48 @@ const ChatbotScreen = () => {
     };
 
     const startNewConversation = async () => {
-        if (isUserLoggedIn) {
-            try {
-                // Tạo session mới cho user
-                const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, { userId });
-                if (response.data && response.data.success) {
-                    const newSessionId = response.data.data.sessionId || response.data.data.session_id;
-                    setSessionId(newSessionId);
+        try {
+            // Tạo session mới
+            const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
+                userId: isUserLoggedIn ? userId : null
+            });
 
-                    // Lấy lịch sử chat của session mới (có tin nhắn chào)
-                    const historyRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${newSessionId}`);
-                    const mapped = (historyRes.data.data || []).map((msg: any, idx: number) => ({
-                        id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
-                        text: msg.text || msg.content,
-                        isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
-                        searchResults: msg.searchResults
-                    }));
-                    setMessages(mapped);
+            if (response.data && response.data.success) {
+                const newSessionId = response.data.data.sessionId;
+                setSessionId(newSessionId);
+                setMessages([]);
+                setShowWelcome(true);
 
-                    // Lấy lại danh sách session
+                if (isUserLoggedIn) {
+                    // Cập nhật danh sách session cho user đã đăng nhập
                     const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${userId}`);
-                    const mappedSessions = (listRes.data.data || []).map((s: any) => ({
-                        ...s,
-                        sessionId: s.sessionId || s.session_id // Ưu tiên dùng sessionId từ BE, nếu không có thì dùng session_id
-                    }));
-                    setSessions(mappedSessions);
+                    setSessions(listRes.data.data || []);
                 }
-            } catch (error) {
-                Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
             }
-        } else {
-            // Guest: tạo session mới, xóa sessionId cũ khỏi state
-            try {
-                const res = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {});
-                if (res.data && res.data.success) {
-                    const newSessionId = res.data.data.sessionId || res.data.data.session_id;
-                    setSessionId(newSessionId);
-
-                    // Lấy lịch sử chat của session mới
-                    const historyRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${newSessionId}`);
-                    const mapped = (historyRes.data.data || []).map((msg: any, idx: number) => ({
-                        id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
-                        text: msg.text || msg.content,
-                        isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
-                        searchResults: msg.searchResults
-                    }));
-                    setMessages(mapped);
-                }
-            } catch (error) {
-                // Fallback nếu có lỗi
-                setSessionId(null);
-                setMessages([{
-                    id: Math.random().toString(),
-                    text: 'Xin chào! Tôi là ClothesShop Assistant. Tôi có thể giúp bạn tìm kiếm quần áo, phụ kiện và trả lời các câu hỏi về sản phẩm của chúng tôi. Bạn muốn tìm kiếm sản phẩm gì hôm nay?',
-                    isUser: false
-                }]);
-            }
+        } catch (error) {
+            console.error('Error starting new conversation:', error);
+            Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
         }
     };
 
     const handleSelectSession = async (selectedSessionId: string) => {
         if (!selectedSessionId) return;
         setSessionId(selectedSessionId);
-        const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${selectedSessionId}`);
-        const mapped = (res.data.data || []).map((msg: any, idx: number) => ({
-            id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
-            text: msg.text || msg.content,
-            isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
-            searchResults: msg.searchResults
-        }));
-        setMessages(mapped);
+        try {
+            const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${selectedSessionId}`);
+            const mapped = (res.data.data || []).map((msg: any, idx: number) => ({
+                id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
+                text: msg.text || msg.content,
+                isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
+                searchResults: msg.searchResults
+            }));
+            setMessages(mapped);
+            setShowWelcome(mapped.length === 0);
+            setDrawerVisible(false);
+        } catch (error) {
+            console.error('Error fetching session history:', error);
+            Alert.alert('Lỗi', 'Không thể lấy lịch sử chat. Vui lòng thử lại sau.');
+        }
     };
 
     return (
@@ -627,6 +595,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#2196f3',
     },
-})
+});
 
 export default ChatbotScreen;
