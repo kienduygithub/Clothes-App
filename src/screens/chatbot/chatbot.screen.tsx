@@ -113,12 +113,23 @@ const ChatbotScreen = () => {
                     sessionId: s.sessionId || s.session_id
                 }));
                 setSessions(mappedSessions);
+
+                // Nếu user đã đăng nhập, tạo session mới ngay
+                try {
+                    const createSessionRes = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
+                        userId: user.id
+                    });
+                    if (createSessionRes.data.success) {
+                        setSessionId(createSessionRes.data.data.sessionId);
+                    }
+                } catch (error) {
+                    console.error('Error creating initial session:', error);
+                }
             } else {
                 setIsUserLoggedIn(false);
                 setUserId(null);
                 setSessions([]);
             }
-            setSessionId(null);
             setMessages([]);
             setShowWelcome(true);
         };
@@ -160,6 +171,7 @@ const ChatbotScreen = () => {
 
         setInputText('');
         setShowWelcome(false);
+
         const userMessage = {
             id: `user-${Date.now()}`,
             text: messageText,
@@ -170,27 +182,27 @@ const ChatbotScreen = () => {
         setLoading(true);
 
         try {
-            // Nếu chưa có sessionId, tạo session mới
-            if (!sessionId) {
+            // Nếu chưa có sessionId (trường hợp tạo session ban đầu thất bại), thử tạo lại
+            let currentSessionId = sessionId;
+            if (!currentSessionId) {
                 const createSessionRes = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
                     userId: isUserLoggedIn ? userId : null
                 });
                 if (!createSessionRes.data.success) {
                     throw new Error('Failed to create session');
                 }
-                const newSessionId = createSessionRes.data.data.sessionId;
-                setSessionId(newSessionId);
+                currentSessionId = createSessionRes.data.data.sessionId;
+                setSessionId(currentSessionId);
 
                 if (isUserLoggedIn) {
-                    // Cập nhật danh sách session cho user đã đăng nhập
                     const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${userId}`);
                     setSessions(listRes.data.data || []);
                 }
             }
 
-            // Gửi tin nhắn vào session
+            // Gửi tin nhắn vào session với sessionId đã có
             const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/message`, {
-                sessionId: sessionId,
+                sessionId: currentSessionId,
                 userId: isUserLoggedIn ? userId : null,
                 message: messageText
             });
