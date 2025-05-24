@@ -158,8 +158,16 @@ const ChatbotScreen = () => {
         const messageText = text || inputText;
         if (!messageText.trim()) return;
 
-        setLoading(true);
+        setInputText('');
         setShowWelcome(false);
+        const userMessage = {
+            id: `user-${Date.now()}`,
+            text: messageText,
+            isUser: true
+        };
+        setMessages(prev => [...prev, userMessage]);
+
+        setLoading(true);
 
         try {
             // Nếu chưa có sessionId, tạo session mới
@@ -188,17 +196,18 @@ const ChatbotScreen = () => {
             });
 
             if (response.data && response.data.success) {
-                const newMessages = response.data.data.messages.map((msg: any, idx: number) => ({
-                    id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
-                    text: msg.content,
-                    isUser: msg.role === 'user',
-                    searchResults: msg.searchResults
-                }));
+                const botMessages = response.data.data.messages
+                    .filter((msg: any) => msg.role === 'assistant')
+                    .map((msg: any, idx: number) => ({
+                        id: msg.id || `bot-${idx}-${Date.now()}`,
+                        text: msg.content,
+                        isUser: false,
+                        searchResults: msg.searchResults
+                    }));
 
-                setMessages(prev => [...prev, ...newMessages]);
+                setMessages(prev => [...prev, ...botMessages]);
             }
 
-            setInputText('');
         } catch (error) {
             console.error('Error sending message:', error);
             Alert.alert(
