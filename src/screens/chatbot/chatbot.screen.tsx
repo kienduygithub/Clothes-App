@@ -317,7 +317,6 @@ const ChatbotScreen = () => {
 
     const startNewConversation = async () => {
         try {
-            // Tạo session mới
             const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
                 userId: isUserLoggedIn ? userId : null
             });
@@ -329,7 +328,6 @@ const ChatbotScreen = () => {
                 setShowWelcome(true);
 
                 if (isUserLoggedIn) {
-                    // Cập nhật danh sách session cho user đã đăng nhập
                     const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${userId}`);
                     setSessions(listRes.data.data || []);
                 }
