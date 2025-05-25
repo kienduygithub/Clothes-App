@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View,
     Text,
@@ -20,6 +20,10 @@ import { CommonColors } from '@/src/common/resource/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import ChatListSessionComponent from './chat_list_session.component';
+import * as UserActions from "@/src/data/store/actions/user/user.action";
+import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/data/types/global';
 
 interface Product {
     id: number;
@@ -55,6 +59,7 @@ const ChatbotScreen = () => {
     const [preImage, setPreImage] = useState<string>('');
     const [isUserLoggedIn, setIsUserLoggedIn] = useState<boolean>(false);
     const [showWelcome, setShowWelcome] = useState<boolean>(true);
+    const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
 
     // Welcome message component
     const WelcomeMessage = () => (
@@ -74,30 +79,19 @@ const ChatbotScreen = () => {
             if (user && user.id) {
                 setIsUserLoggedIn(true);
                 setUserId(user.id);
-                // Lấy danh sách session cho user đã đăng nhập
                 const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${user.id}`);
                 const mappedSessions = (listRes.data.data || []).map((s: any) => ({
                     ...s,
                     sessionId: s.sessionId || s.session_id
                 }));
                 setSessions(mappedSessions);
+                setSessionId(null);
 
-                // Nếu user đã đăng nhập, tạo session mới ngay
-                try {
-                    const createSessionRes = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
-                        userId: user.id
-                    });
-                    if (createSessionRes.data.success) {
-                        setSessionId(createSessionRes.data.data.sessionId);
-                    }
-                } catch (error) {
-                    console.error('Error creating initial session:', error);
-                }
             } else {
                 setIsUserLoggedIn(false);
                 setUserId(null);
                 setSessions([]);
-                setSessionId(null); // Không tạo session cho khách ngay từ đầu
+                setSessionId(null);
             }
             setMessages([]);
             setShowWelcome(true);
@@ -107,28 +101,6 @@ const ChatbotScreen = () => {
             setSessionId(null);
         };
     }, []);
-
-    useEffect(() => {
-        if (!sessionId) return;
-        const fetchHistory = async () => {
-            try {
-                const res = await axios.get(`${new AppConfig().getDomain()}/chatbot/history?sessionId=${sessionId}`);
-                const mapped = (res.data.data || []).map((msg: any, idx: number) => ({
-                    id: msg.id || `${msg.role}-${idx}-${Date.now()}`,
-                    text: msg.text || msg.content,
-                    isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
-                    searchResults: msg.searchResults
-                }));
-                console.log(mapped);
-                setMessages(mapped);
-                setShowWelcome(mapped.length === 0);
-            } catch (error) {
-                console.error('Error fetching history:', error);
-                Alert.alert('Lỗi', 'Không thể lấy lịch sử chat. Vui lòng thử lại sau.');
-            }
-        };
-        fetchHistory();
-    }, [sessionId]);
 
     const sendMessage = useCallback(async (text?: string) => {
         const messageText = text || inputText;
@@ -147,7 +119,6 @@ const ChatbotScreen = () => {
         setLoading(true);
 
         try {
-            // Nếu chưa có sessionId (trường hợp tạo session ban đầu thất bại), thử tạo lại
             let currentSessionId = sessionId;
             if (!currentSessionId) {
                 const createSessionRes = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
@@ -312,26 +283,9 @@ const ChatbotScreen = () => {
     };
 
     const startNewConversation = async () => {
-        try {
-            const response = await axios.post(`${new AppConfig().getDomain()}/chatbot/session`, {
-                userId: isUserLoggedIn ? userId : null
-            });
-
-            if (response.data && response.data.success) {
-                const newSessionId = response.data.data.sessionId;
-                setSessionId(newSessionId);
-                setMessages([]);
-                setShowWelcome(true);
-
-                if (isUserLoggedIn) {
-                    const listRes = await axios.get(`${new AppConfig().getDomain()}/chatbot/sessions?userId=${userId}`);
-                    setSessions(listRes.data.data || []);
-                }
-            }
-        } catch (error) {
-            console.error('Error starting new conversation:', error);
-            Alert.alert('Lỗi', 'Không thể tạo cuộc trò chuyện mới. Vui lòng thử lại sau.');
-        }
+        setMessages([]);
+        setSessionId(null);
+        setShowWelcome(true);
     };
 
     const handleSelectSession = async (selectedSessionId: string) => {
