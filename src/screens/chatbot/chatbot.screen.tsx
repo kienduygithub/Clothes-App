@@ -15,13 +15,10 @@ import {
 import axios from 'axios';
 import { AppConfig } from '@/src/common/config/app.config';
 import ChatbotStyle from './chatbot.style';
-import { UserModel } from '@/src/data/model/user.model';
 import ChatbotIcon from "@/assets/images/chatbot.svg";
 import { CommonColors } from '@/src/common/resource/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import ChatListSessionComponent from './chat_list_session.component';
 
 interface Product {
@@ -47,15 +44,6 @@ interface Message {
     searchResults?: SearchResults;
 }
 
-interface ChatbotResponse {
-    message: string;
-    chatHistory: {
-        role: string;
-        content: string;
-    }[];
-    searchResults?: SearchResults;
-}
-
 const ChatbotScreen = () => {
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [sessions, setSessions] = useState<any[]>([]);
@@ -74,28 +62,8 @@ const ChatbotScreen = () => {
             <ChatbotIcon width={80} height={80} style={styles.welcomeIcon} />
             <Text style={styles.welcomeTitle}>ClothesShop Assistant</Text>
             <Text style={styles.welcomeText}>
-                Xin chào! Tôi có thể giúp bạn:
+                Xin chào! Tôi có thể giúp gì cho bạn?
             </Text>
-            <View style={styles.suggestionContainer}>
-                <TouchableOpacity
-                    style={styles.suggestionButton}
-                    onPress={() => handleSuggestionPress("Tìm áo phông nam")}
-                >
-                    <Text style={styles.suggestionText}>🔍 Tìm áo phông nam</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.suggestionButton}
-                    onPress={() => handleSuggestionPress("Tìm váy đầm dự tiệc")}
-                >
-                    <Text style={styles.suggestionText}>👗 Tìm váy đầm dự tiệc</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.suggestionButton}
-                    onPress={() => handleSuggestionPress("Tìm giày thể thao nam dưới 1 triệu")}
-                >
-                    <Text style={styles.suggestionText}>👟 Tìm giày thể thao nam dưới 1 triệu</Text>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 
@@ -129,6 +97,7 @@ const ChatbotScreen = () => {
                 setIsUserLoggedIn(false);
                 setUserId(null);
                 setSessions([]);
+                setSessionId(null); // Không tạo session cho khách ngay từ đầu
             }
             setMessages([]);
             setShowWelcome(true);
@@ -151,7 +120,6 @@ const ChatbotScreen = () => {
                     searchResults: msg.searchResults
                 }));
                 setMessages(mapped);
-                setShowWelcome(mapped.length === 0);
             } catch (error) {
                 console.error('Error fetching history:', error);
                 Alert.alert('Lỗi', 'Không thể lấy lịch sử chat. Vui lòng thử lại sau.');
@@ -160,10 +128,11 @@ const ChatbotScreen = () => {
         fetchHistory();
     }, [sessionId]);
 
-    const handleSuggestionPress = async (suggestion: string) => {
-        setInputText(suggestion);
-        await sendMessage(suggestion);
-    };
+    useEffect(() => {
+        if (messages.length > 0) {
+            setShowWelcome(false);
+        }
+    }, [messages]);
 
     const sendMessage = useCallback(async (text?: string) => {
         const messageText = text || inputText;
@@ -601,20 +570,6 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
         color: '#666',
-    },
-    suggestionContainer: {
-        width: '100%',
-        gap: 10,
-    },
-    suggestionButton: {
-        backgroundColor: '#f5f5f5',
-        padding: 15,
-        borderRadius: 8,
-        width: '100%',
-    },
-    suggestionText: {
-        fontSize: 14,
-        color: '#2196f3',
     },
 });
 
