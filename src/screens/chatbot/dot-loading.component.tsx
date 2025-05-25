@@ -1,99 +1,112 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { CommonColors } from '@/src/common/resource/colors';
+import React, { useEffect, useRef } from 'react';
+import { View, Animated, StyleSheet } from 'react-native';
 
-type Props = {
-    dotColor?: string;
-    dotSize?: number;
-    animationDuration?: number;
-};
-
-const DotBouncingComponent: React.FC<Props> = ({
-    dotColor = "#6200EE",
-    dotSize = 8,
-    animationDuration = 300,
-}) => {
-    const dotCount = 3;
-
-    const animations = useRef(
-        [...Array(dotCount)].map(() => ({
-            translateY: new Animated.Value(0),
-            opacity: new Animated.Value(0.3),
-        }))
-    ).current;
+const DotPulse: React.FC = () => {
+    const scale1 = useRef(new Animated.Value(1)).current;
+    const scale2 = useRef(new Animated.Value(1)).current;
+    const scale3 = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
-        const loop = () => {
-            const sequences = animations.map((anim, i) =>
-                Animated.sequence([
-                    Animated.delay(i * animationDuration),
-                    Animated.parallel([
-                        Animated.timing(anim.translateY, {
-                            toValue: -4, /** Nhảy lên nhẹ **/
-                            duration: animationDuration,
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(anim.opacity, {
-                            toValue: 1,
-                            duration: animationDuration,
-                            useNativeDriver: true,
-                        }),
-                    ]),
-                    Animated.parallel([
-                        Animated.timing(anim.translateY, {
-                            toValue: 0,
-                            duration: animationDuration,
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(anim.opacity, {
-                            toValue: 0.3,
-                            duration: animationDuration,
-                            useNativeDriver: true,
-                        }),
-                    ]),
-                ])
-            );
-
-            Animated.sequence([
-                Animated.parallel(sequences),
-                Animated.delay(animationDuration * 2), // delay sau khi hoàn tất một vòng
-            ]).start(() => loop());
+        const createAnimation = (scale: Animated.Value): Animated.CompositeAnimation => {
+            return Animated.sequence([
+                // Shrink
+                Animated.timing(scale, {
+                    toValue: 0.3,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                // Expand
+                Animated.timing(scale, {
+                    toValue: 1.2,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                // Return to normal
+                Animated.timing(scale, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                // Pause before next cycle
+                Animated.delay(100),
+            ]);
         };
 
-        loop();
-    }, [animations]);
+        const startAnimation = () => {
+            Animated.loop(
+                Animated.stagger(200, [
+                    createAnimation(scale1),
+                    createAnimation(scale2),
+                    createAnimation(scale3),
+                ])
+            ).start();
+        };
+
+        startAnimation();
+
+        return () => {
+            scale1.stopAnimation();
+            scale2.stopAnimation();
+            scale3.stopAnimation();
+        };
+    }, [scale1, scale2, scale3]);
 
     return (
         <View style={styles.container}>
-            {animations.map((anim, index) => (
-                <Animated.View
-                    key={index}
-                    style={[
-                        styles.dot,
-                        {
-                            width: dotSize,
-                            height: dotSize,
-                            backgroundColor: dotColor,
-                            marginHorizontal: dotSize / 2,
-                            borderRadius: dotSize / 2,
-                            opacity: anim.opacity,
-                            transform: [{ translateY: anim.translateY }],
-                        },
-                    ]}
-                />
-            ))}
+            <Animated.View
+                style={[
+                    styles.dot,
+                    {
+                        transform: [{ scale: scale1 }],
+                        opacity: scale1.interpolate({
+                            inputRange: [0.3, 1],
+                            outputRange: [0.3, 1],
+                        }),
+                    },
+                ]}
+            />
+            <Animated.View
+                style={[
+                    styles.dot,
+                    {
+                        transform: [{ scale: scale2 }],
+                        opacity: scale2.interpolate({
+                            inputRange: [0.3, 1],
+                            outputRange: [0.3, 1],
+                        }),
+                    },
+                ]}
+            />
+            <Animated.View
+                style={[
+                    styles.dot,
+                    {
+                        transform: [{ scale: scale3 }],
+                        opacity: scale3.interpolate({
+                            inputRange: [0.3, 1],
+                            outputRange: [0.3, 1],
+                        }),
+                    },
+                ]}
+            />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: "row",
-        alignItems: "flex-end",
-        justifyContent: "center",
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
     },
     dot: {
-
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: CommonColors.primary,
     },
 });
 
-export default DotBouncingComponent;
+export default DotPulse;

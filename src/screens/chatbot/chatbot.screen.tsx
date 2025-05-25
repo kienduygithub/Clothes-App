@@ -269,9 +269,9 @@ const ChatbotScreen = () => {
         return (
             <View style={[styles.messageBubble, styles.botBubble, { flexDirection: 'row', gap: 5 }]}>
                 <DotLoadingComponent
-                    animationDuration={200}
-                    dotColor='#444'
-                    dotSize={8}
+                // animationDuration={200}
+                // dotColor='#444'
+                // dotSize={8}
                 />
             </View>
         );
