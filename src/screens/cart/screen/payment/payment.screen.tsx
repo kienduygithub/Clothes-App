@@ -104,13 +104,13 @@ const PaymentScreen = (props: Props) => {
 
         try {
             const orderSuccess = await CartManagement.paymentCart(
-                selectedAddress.id, /** Bổ sung sau */
+                selectedAddress.id,
                 parsedCartShops,
                 subtotal,
                 discount,
                 final_total
             );
-            console.log(orderSuccess);
+
             router.dismissAll();
             router.navigate({
                 pathname: '/(routes)/payment-success',

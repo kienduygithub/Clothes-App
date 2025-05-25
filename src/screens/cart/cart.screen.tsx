@@ -257,12 +257,12 @@ const CartScreen = (props: Props) => {
 
     const handleCheckout = async () => {
         if (isCartEmpty()) {
-            console.log('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
+            showToast('Vui lòng chọn ít nhất một sản phẩm để thanh toán', 'error');
             return;
         }
 
         if (isAnySelectedOutOfStock()) {
-            console.log('Một số sản phẩm không đủ số lượng để thanh toán');
+            showToast('Một số sản phẩm không đủ số lượng để thanh toán', 'error');
             return;
         }
 
@@ -271,25 +271,34 @@ const CartScreen = (props: Props) => {
         );
 
         if (invalidCoupons) {
-            showToast(`Một số Voucher không thể sử dụng, cân nhắc bỏ Voucher hoặc tăng giá trị đơn hàng`, "error");
+            showToast(`Một số Voucher không thể sử dụng, cân nhắc bỏ Voucher hoặc tăng giá trị đơn hàng`, 'error');
             return;
         }
 
         let subTotal = 0;
         let discount = 0;
-        const listCartShopFinal: CartShopFinalType[] = cart?.cart_shops.map(
-            (cart_shop) => {
+        // Filter cart shops to only include those with at least one selected item
+        const listCartShopFinal: CartShopFinalType[] = cart?.cart_shops
+            .filter(cart_shop =>
+                cart_shop.cart_items.some(cart_item => selectedItems[`${cart_shop.id}-${cart_item.id}`])
+            )
+            .map(cart_shop => {
                 const listCartItemFinal = cart_shop.cart_items.filter(
                     cart_item => selectedItems[`${cart_shop.id}-${cart_item.id}`]
-                )
+                );
 
-                /** Tính ShopTotal cho CartShop */
+                // Skip if no selected items (though this should not happen due to the filter above)
+                if (listCartItemFinal.length === 0) {
+                    return null;
+                }
+
+                // Calculate shopTotal for CartShop
                 const shopTotalFinal = listCartItemFinal.reduce((sum, item) => {
                     const price = (item.product_variant?.product?.unit_price ?? 0) * item.quantity;
                     return sum + price;
                 }, 0);
 
-                /** Tính tiền khấu trừ từ Coupon (nếu có và hợp lệ) */
+                // Calculate discount from Coupon (if applicable and valid)
                 let shopDiscount = 0;
                 if (cart_shop.selectedCoupon && shopTotalFinal >= cart_shop.selectedCoupon.min_order_value) {
                     const selectedCouponByCartShop = cart_shop.selectedCoupon;
@@ -303,7 +312,7 @@ const CartScreen = (props: Props) => {
                     }
                 }
 
-                /** Cộng vào subtotal và discount */
+                // Add to subtotal and discount
                 subTotal += shopTotalFinal;
                 discount += shopDiscount;
 
@@ -315,16 +324,16 @@ const CartScreen = (props: Props) => {
                     shop_total: shopTotalFinal,
                     shop_discount: shopDiscount,
                     shop_final_total: shopTotalFinal - shopDiscount
-                } as CartShopFinalType
-            }
-        ) ?? [];
+                } as CartShopFinalType;
+            })
+            .filter((item): item is CartShopFinalType => item !== null) ?? [];
 
         if (!listCartShopFinal || listCartShopFinal.length === 0) {
-            showToast('Không có sản phẩm nào được chọn để thanh toán', "error");
+            showToast('Không có sản phẩm nào được chọn để thanh toán', 'error');
             return;
         }
 
-        /** Tính tổng Final */
+        // Calculate final total
         const final_total = subTotal - discount;
 
         try {
@@ -339,9 +348,9 @@ const CartScreen = (props: Props) => {
             });
         } catch (error) {
             console.log(error);
-            showToast("Oops! Hệ thống đang bận, quay lại sau", "error");
+            showToast('Oops! Hệ thống đang bận, quay lại sau', 'error');
         }
-    }
+    };
 
     const handleRemoveCartItem = async (cart_shop_id: number, cart_item_id: number) => {
         try {
