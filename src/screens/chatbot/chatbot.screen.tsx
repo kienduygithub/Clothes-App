@@ -24,6 +24,7 @@ import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/src/data/types/global';
+import DotLoadingComponent from './dot-loading.component';
 
 interface Product {
     id: number;
@@ -267,8 +268,11 @@ const ChatbotScreen = () => {
 
         return (
             <View style={[styles.messageBubble, styles.botBubble, { flexDirection: 'row', gap: 5 }]}>
-                <ActivityIndicator size="small" color="#444" />
-                <Text style={[styles.typingText, { fontSize: 16 }]}>...</Text>
+                <DotLoadingComponent
+                    animationDuration={200}
+                    dotColor='#444'
+                    dotSize={8}
+                />
             </View>
         );
     };
