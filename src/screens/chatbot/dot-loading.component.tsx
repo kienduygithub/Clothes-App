@@ -7,8 +7,8 @@ type Props = {
     animationDuration?: number;
 };
 
-const DotLoadingComponent: React.FC<Props> = ({
-    dotColor = "#444",
+const DotBouncingComponent: React.FC<Props> = ({
+    dotColor = "#6200EE",
     dotSize = 8,
     animationDuration = 300,
 }) => {
@@ -16,51 +16,51 @@ const DotLoadingComponent: React.FC<Props> = ({
 
     const animations = useRef(
         [...Array(dotCount)].map(() => ({
-            opacity: new Animated.Value(0.3),
             translateY: new Animated.Value(0),
+            opacity: new Animated.Value(0.3),
         }))
     ).current;
 
     useEffect(() => {
-        const dotAnimations = animations.map((anim, index) =>
+        const loop = () => {
+            const sequences = animations.map((anim, i) =>
+                Animated.sequence([
+                    Animated.delay(i * animationDuration),
+                    Animated.parallel([
+                        Animated.timing(anim.translateY, {
+                            toValue: -4, /** Nhảy lên nhẹ **/
+                            duration: animationDuration,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(anim.opacity, {
+                            toValue: 1,
+                            duration: animationDuration,
+                            useNativeDriver: true,
+                        }),
+                    ]),
+                    Animated.parallel([
+                        Animated.timing(anim.translateY, {
+                            toValue: 0,
+                            duration: animationDuration,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(anim.opacity, {
+                            toValue: 0.3,
+                            duration: animationDuration,
+                            useNativeDriver: true,
+                        }),
+                    ]),
+                ])
+            );
+
             Animated.sequence([
-                Animated.delay(index * animationDuration),
-                Animated.parallel([
-                    Animated.timing(anim.opacity, {
-                        toValue: 1,
-                        duration: animationDuration,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(anim.translateY, {
-                        toValue: -4,
-                        duration: animationDuration,
-                        useNativeDriver: true,
-                    }),
-                ]),
-                Animated.parallel([
-                    Animated.timing(anim.opacity, {
-                        toValue: 0.3,
-                        duration: 100,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(anim.translateY, {
-                        toValue: 0,
-                        duration: 100,
-                        useNativeDriver: true,
-                    }),
-                ]),
-            ])
-        );
+                Animated.parallel(sequences),
+                Animated.delay(animationDuration * 2), // delay sau khi hoàn tất một vòng
+            ]).start(() => loop());
+        };
 
-        const loop = Animated.loop(Animated.sequence([
-            Animated.stagger(animationDuration, dotAnimations),
-            Animated.delay(300), // Delay giữa các chu kỳ
-        ]));
-
-        loop.start();
-
-        return () => loop.stop(); // cleanup on unmount
-    }, [animationDuration]);
+        loop();
+    }, [animations]);
 
     return (
         <View style={styles.container}>
@@ -73,9 +73,10 @@ const DotLoadingComponent: React.FC<Props> = ({
                             width: dotSize,
                             height: dotSize,
                             backgroundColor: dotColor,
+                            marginHorizontal: dotSize / 2,
+                            borderRadius: dotSize / 2,
                             opacity: anim.opacity,
                             transform: [{ translateY: anim.translateY }],
-                            borderRadius: dotSize / 2,
                         },
                     ]}
                 />
@@ -89,11 +90,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "flex-end",
         justifyContent: "center",
-        gap: 5
     },
     dot: {
-        backgroundColor: "#444",
+
     },
 });
 
-export default DotLoadingComponent;
+export default DotBouncingComponent;
