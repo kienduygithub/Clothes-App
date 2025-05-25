@@ -17,7 +17,7 @@ import { AppConfig } from '@/src/common/config/app.config';
 import ChatbotStyle from './chatbot.style';
 import ChatbotIcon from "@/assets/images/chatbot.svg";
 import { CommonColors } from '@/src/common/resource/colors';
-import { Ionicons } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import ChatListSessionComponent from './chat_list_session.component';
 import * as UserActions from "@/src/data/store/actions/user/user.action";
@@ -329,9 +329,9 @@ const ChatbotScreen = () => {
                             <Ionicons name="chatbubbles-outline" size={24} color="#fff" />
                         </TouchableOpacity>
                     )}
-                    <Text style={styles.headerText}>Shopping Assistant</Text>
+                    <Text style={styles.headerText}>ClothesShop Assisant</Text>
                     <TouchableOpacity onPress={startNewConversation}>
-                        <Ionicons name="refresh" size={20} color={CommonColors.white} />
+                        <AntDesign name="plus" size={20} color={CommonColors.white} />
                     </TouchableOpacity>
                 </View>
 
@@ -365,7 +365,7 @@ const ChatbotScreen = () => {
                         style={styles.input}
                         value={inputText}
                         onChangeText={setInputText}
-                        placeholder="Đặt câu hỏi..."
+                        placeholder="Đặt câu hỏi"
                         placeholderTextColor="#999"
                         onSubmitEditing={() => sendMessage()}
                     />
