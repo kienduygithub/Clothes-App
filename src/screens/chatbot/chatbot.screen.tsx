@@ -119,7 +119,9 @@ const ChatbotScreen = () => {
                     isUser: typeof msg.isUser === 'boolean' ? msg.isUser : msg.role === 'user',
                     searchResults: msg.searchResults
                 }));
+                console.log(mapped);
                 setMessages(mapped);
+                setShowWelcome(mapped.length === 0);
             } catch (error) {
                 console.error('Error fetching history:', error);
                 Alert.alert('Lỗi', 'Không thể lấy lịch sử chat. Vui lòng thử lại sau.');
@@ -127,12 +129,6 @@ const ChatbotScreen = () => {
         };
         fetchHistory();
     }, [sessionId]);
-
-    useEffect(() => {
-        if (messages.length > 0) {
-            setShowWelcome(false);
-        }
-    }, [messages]);
 
     const sendMessage = useCallback(async (text?: string) => {
         const messageText = text || inputText;
