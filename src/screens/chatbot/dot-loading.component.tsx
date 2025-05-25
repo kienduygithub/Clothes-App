@@ -1,83 +1,99 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 
 type Props = {
     dotColor?: string;
     dotSize?: number;
     animationDuration?: number;
-}
+};
 
 const DotLoadingComponent: React.FC<Props> = ({
-    dotColor = '#444',
+    dotColor = "#444",
     dotSize = 8,
-    animationDuration = 300
+    animationDuration = 300,
 }) => {
     const dotCount = 3;
-    const opacities = useRef(
-        [...Array(dotCount)].map(() => new Animated.Value(0.3))
+
+    const animations = useRef(
+        [...Array(dotCount)].map(() => ({
+            opacity: new Animated.Value(0.3),
+            translateY: new Animated.Value(0),
+        }))
     ).current;
 
     useEffect(() => {
-        const animations = opacities.map((opacity, index) =>
+        const dotAnimations = animations.map((anim, index) =>
             Animated.sequence([
-                Animated.delay(animationDuration * index),
-                Animated.timing(opacity, {
-                    toValue: 1,
-                    duration: animationDuration,
-                    useNativeDriver: true,
-                }),
+                Animated.delay(index * animationDuration),
+                Animated.parallel([
+                    Animated.timing(anim.opacity, {
+                        toValue: 1,
+                        duration: animationDuration,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(anim.translateY, {
+                        toValue: -4,
+                        duration: animationDuration,
+                        useNativeDriver: true,
+                    }),
+                ]),
+                Animated.parallel([
+                    Animated.timing(anim.opacity, {
+                        toValue: 0.3,
+                        duration: 100,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(anim.translateY, {
+                        toValue: 0,
+                        duration: 100,
+                        useNativeDriver: true,
+                    }),
+                ]),
             ])
         );
 
-        const reset = Animated.parallel(
-            opacities.map((opacity) =>
-                Animated.timing(opacity, {
-                    toValue: 0.3,
-                    duration: animationDuration / 2,
-                    useNativeDriver: true,
-                })
-            )
-        );
+        const loop = Animated.loop(Animated.sequence([
+            Animated.stagger(animationDuration, dotAnimations),
+            Animated.delay(300), // Delay giữa các chu kỳ
+        ]));
 
-        const fullSequence = Animated.sequence([
-            Animated.parallel(animations),
-            Animated.delay(animationDuration),
-            reset,
-            Animated.delay(animationDuration),
-        ]);
+        loop.start();
 
-        Animated.loop(fullSequence).start();
-    }, [animationDuration, opacities]);
+        return () => loop.stop(); // cleanup on unmount
+    }, [animationDuration]);
+
     return (
         <View style={styles.container}>
-            {opacities.map((opacity, index) => (
+            {animations.map((anim, index) => (
                 <Animated.View
                     key={index}
                     style={[
                         styles.dot,
                         {
-                            backgroundColor: dotColor,
                             width: dotSize,
                             height: dotSize,
+                            backgroundColor: dotColor,
+                            opacity: anim.opacity,
+                            transform: [{ translateY: anim.translateY }],
                             borderRadius: dotSize / 2,
-                            opacity,
                         },
                     ]}
                 />
             ))}
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
+        flexDirection: "row",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        gap: 5
     },
     dot: {
-        // Base styles are overridden by props
+        backgroundColor: "#444",
     },
-})
+});
 
 export default DotLoadingComponent;
