@@ -1,7 +1,7 @@
 import { Dimensions, FlatList, Text, TouchableOpacity, View } from "react-native"
 import SelectAddressStyle from "./select-address.style";
 import { CommonColors } from "@/src/common/resource/colors";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useToast } from "@/src/customize/toast.context";
 import { useCallback, useEffect, useState } from "react";
@@ -206,43 +206,49 @@ const SelectAddressSreen = (props: Props) => {
 
     return (
         <View style={styles.container}>
+            <View style={styles.headerContainer}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+                    <Ionicons name="arrow-back-sharp" size={24} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.paymentHeaderText}>
+                    Chọn địa chỉ
+                </Text>
+            </View>
             <Text style={{ paddingHorizontal: 20, paddingVertical: 10, fontSize: 16, fontWeight: '500' }}>
                 Chọn địa chỉ
             </Text>
-            <View style={{ flex: 1, maxHeight: HEIGHT_SCREEN }}>
-                <FlatList
-                    data={addresses}
-                    renderItem={({ item, index }) => renderAddressItem({ item, index })}
-                    keyExtractor={(item) => `${item.id}`}
-                    ItemSeparatorComponent={() => <View style={styles.separator} />}
-                    showsVerticalScrollIndicator={false}
-                    ListFooterComponent={() => (
-                        <TouchableOpacity style={styles.addButtonContainer} onPress={navigateToCreateAddress}>
-                            <AntDesign name="pluscircleo" size={18} color={CommonColors.primary} />
-                            <Text style={styles.addButtonText}>Thêm Địa Chỉ Mới</Text>
-                        </TouchableOpacity>
-                    )}
-                />
-                <TouchableOpacity
-                    disabled={disabled}
-                    onPress={() => onConfirm()}
-                    style={{
-                        position: 'absolute',
-                        bottom: 80,
-                        left: 0,
-                        right: 0,
-                        backgroundColor: CommonColors.primary,
-                        height: 50,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        opacity: disabled ? 0.8 : 1
-                    }}
-                >
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: CommonColors.white }}>
-                        Xác nhận
-                    </Text>
-                </TouchableOpacity>
-            </View>
+            <FlatList
+                data={addresses}
+                renderItem={({ item, index }) => renderAddressItem({ item, index })}
+                keyExtractor={(item) => `${item.id}`}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+                showsVerticalScrollIndicator={false}
+                ListFooterComponent={() => (
+                    <TouchableOpacity style={styles.addButtonContainer} onPress={navigateToCreateAddress}>
+                        <AntDesign name="pluscircleo" size={18} color={CommonColors.primary} />
+                        <Text style={styles.addButtonText}>Thêm Địa Chỉ Mới</Text>
+                    </TouchableOpacity>
+                )}
+            />
+            <TouchableOpacity
+                disabled={disabled}
+                onPress={() => onConfirm()}
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    backgroundColor: CommonColors.primary,
+                    height: 50,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    opacity: disabled ? 0.8 : 1
+                }}
+            >
+                <Text style={{ fontSize: 16, fontWeight: '700', color: CommonColors.white }}>
+                    Xác nhận
+                </Text>
+            </TouchableOpacity>
             <DialogNotification
                 visible={deleteDialogVisible}
                 message="Thao tác sẽ làm dữ liệu biến mất hoàn toàn và không thể hoàn tác"

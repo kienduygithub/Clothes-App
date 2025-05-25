@@ -152,6 +152,7 @@ function RootLayoutNav() {
             options={{
               title: 'Chọn địa chỉ',
               headerTitleAlign: 'center',
+              headerShown: false
             }}
           />
 
