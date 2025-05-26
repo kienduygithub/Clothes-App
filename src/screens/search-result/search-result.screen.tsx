@@ -19,6 +19,7 @@ import FilterComponent from "./comp/filter/filter.component";
 import { FilterParams } from "@/src/data/types/global";
 import { Sort } from "@/src/common/resource/sort";
 import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
+import LoadingDots from "@apolloeagle/loading-dots";
 
 type Props = {};
 
@@ -32,7 +33,7 @@ const SearchResultScreen = (props: Props) => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
-        limit: 2,
+        limit: 10,
         totalItems: 0,
         totalPages: 1,
     });
@@ -124,21 +125,17 @@ const SearchResultScreen = (props: Props) => {
         }
     };
 
-    const onRefresh = async () => {
-        setRefreshing(true);
-        setRefreshing(false);
-    };
-
     const onSearchMore = async () => {
         const page = paginate.currentPage + 1;
         await searchAndFilterProducts(page, filterParams);
     };
 
     const handleApplyFilter = async (newFilterParams: FilterParams) => {
-        setFilterParams(newFilterParams); // Cập nhật state
+        setFilterParams(newFilterParams);
         isEndReached.current = false;
         setProducts([]);
-        await searchAndFilterProducts(1, newFilterParams); // Truyền newFilterParams trực tiếp
+        isFetching.current = true;
+        await searchAndFilterProducts(1, newFilterParams);
         setIsOpenFilterSheet(false);
     };
 
@@ -180,7 +177,7 @@ const SearchResultScreen = (props: Props) => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={{ flex: 1 }}>
+            <View>
                 <FlatList
                     data={products}
                     showsVerticalScrollIndicator={false}
@@ -202,25 +199,25 @@ const SearchResultScreen = (props: Props) => {
                         )
                     }
                 />
-                {isEndReached.current && !isFetching.current && (
-                    <View style={{ backgroundColor: CommonColors.extraLightGray }}>
-                        <Animated.View
-                            entering={FadeInDown.delay(1000).duration(300)}
-                            style={{
-                                flexDirection: 'row',
-                                gap: 10,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: CommonColors.extraLightGray,
-                                height: 50,
-                            }}
-                        >
-                            <Text style={{ fontSize: 18, fontWeight: '500', color: CommonColors.primary }}>
-                                Không tìm thấy sản phẩm nữa
-                            </Text>
-                            <FontAwesome6 name="sad-cry" size={22} color={CommonColors.primary} />
-                        </Animated.View>
+                {isFetching.current && (
+                    <View>
+                        <LoadingDots size={16} color={CommonColors.primary} />
                     </View>
+                )}
+                {isEndReached.current && !isFetching.current && (
+                    <Animated.View
+                        entering={FadeInDown.delay(1000).duration(300)}
+                        style={{
+                            flexDirection: 'row',
+                            gap: 10,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: 50,
+                            backgroundColor: 'transparent'
+                        }}
+                    >
+                        <Text style={styles.emptyText}>Không có có sản phẩm</Text>
+                    </Animated.View>
                 )}
             </View>
             <CustomBottomSheet

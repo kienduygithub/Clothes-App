@@ -54,7 +54,12 @@ const SearchResultStyle = StyleSheet.create({
     btnSearchMoreText: {
         fontSize: 18,
         color: CommonColors.primary
-    }
+    },
+    emptyText: {
+        textAlign: "center",
+        color: "#666",
+        fontSize: 15
+    },
 });
 
 export default SearchResultStyle;
