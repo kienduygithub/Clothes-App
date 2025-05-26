@@ -35,8 +35,9 @@ const SelectVariantComponent = ({
     const [stockQuantity, setStockQuantity] = useState<number>(0);
     const [quantity, setQuantity] = useState(1);
     const [resetQuantity, setResetQuantity] = useState(false);
+    const firstInit = useRef(true);
 
-    useEffect(() => {
+    const initColorAndSize = () => {
         const colors: ColorType[] = Array.from(new Set(variants.map(variant => variant.color?.id)))
             .map(colorId => {
                 const variant = variants.find(v => v.color?.id === colorId);
@@ -58,9 +59,13 @@ const SelectVariantComponent = ({
             .filter(size => size.id !== 0);
         setColors(colors);
         setSizes(sizes);
-    }, [])
+    }
 
     useEffect(() => {
+        if (firstInit.current) {
+            initColorAndSize();
+            firstInit.current = false;
+        }
         if (!selectedColor && !selectedSize || !selectedColor && selectedSize) {
             const total = variants.reduce(
                 (stock: number, variant: ProductVariantModel) => {

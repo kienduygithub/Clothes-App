@@ -66,8 +66,8 @@ const ProductDetailScreen = (props: Props) => {
 
     useEffect(() => {
         fetchPreImage();
-        fetchProductVariants();
         fetchProductDetails();
+        fetchProductVariants();
     }, []);
 
     useEffect(() => {
@@ -384,7 +384,7 @@ const ProductDetailScreen = (props: Props) => {
                         <Text style={styles.buttonTxt}>Mua ngay</Text>
                     </TouchableOpacity>
                 </Animated.View>
-                {product && (
+                {product && variants.length > 0 && (
                     <BottomSheet
                         ref={sheetRef}
                         snapPoints={snapPoints}
