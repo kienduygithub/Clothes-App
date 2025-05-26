@@ -122,7 +122,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="search/index"
         options={{
-          title: "Khám phá",
+          title: "Danh mục",
           tabBarLabelStyle: {
             fontSize: 13
           },
@@ -156,7 +156,7 @@ export default function TabLayout() {
         name="cart/index"
         options={{
           title: "Giỏ hàng",
-          headerShown: true,
+          headerShown: false,
           tabBarLabelStyle: {
             fontSize: 13
           },

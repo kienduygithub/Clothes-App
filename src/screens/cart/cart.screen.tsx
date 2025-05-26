@@ -31,6 +31,7 @@ import * as CartActions from "@/src/data/store/actions/cart/cart.action";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { MessageError } from "@/src/common/resource/message-error";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
+import LoadingDots from "@apolloeagle/loading-dots";
 
 type Props = {}
 
@@ -38,7 +39,7 @@ const CartScreen = (props: Props) => {
     const { showToast } = useToast();
     const [preImage, setPreImage] = useState('');
     const [refreshing, setRefreshing] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [cart, setCart] = useState<CartModel>();
     const [selectedCartShop, setSelectedCartShop] = useState<CartShopModel | null>(null);
     const [selectedCartShopId, setSelectedCartShopId] = useState<number>(0);
@@ -48,7 +49,7 @@ const CartScreen = (props: Props) => {
     const [selectedCartShops, setSelectedCartShops] = useState<Record<string, boolean>>({});
     const sheetVarientSelectRef = useRef<BottomSheet>(null);
     const sheetCouponSelectRef = useRef<BottomSheet>(null);
-    const snapPoints = ["50%"];
+    const snapPoints = ["60%"];
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
     const dispatch = useDispatch();
@@ -90,7 +91,9 @@ const CartScreen = (props: Props) => {
         }
 
         setRefreshing(false);
-        setLoading(false);
+        setTimeout(() => {
+            setLoading(false);
+        }, 500);
     }
 
     const handleRefreshCart = useCallback(() => {
@@ -548,16 +551,31 @@ const CartScreen = (props: Props) => {
     const headerHeight = useHeaderHeight();
     const shouldDisableCheckout = isCartEmpty() || isAnySelectedOutOfStock();
 
+    if (loading) {
+        return (
+            <View
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                    backgroundColor: CommonColors.extraLightGray
+                }}
+            >
+                <LoadingDots size={16} color={CommonColors.primary} />
+            </View>
+        )
+    }
+
     return (
         <>
-            <Stack.Screen
-                options={{
-                    title: 'Giỏ hàng',
-                    headerTitleAlign: "center",
-                    headerTransparent: true,
-                }}
-            />
             <GestureHandlerRootView>
+                <View style={styles.headerContainer}>
+                    <Text style={styles.paymentHeaderText}>
+                        Giỏ hàng
+                    </Text>
+                </View>
                 <View style={[styles.container, { marginTop: headerHeight }]}>
                     {cart && cart.cart_shops.length > 0 && (
                         <FlatList

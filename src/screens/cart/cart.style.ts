@@ -9,6 +9,20 @@ const CartStyle = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 20
     },
+    headerContainer: {
+        height: 100,
+        backgroundColor: 'transparent',
+        marginBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 20,
+        position: 'relative',
+    },
+    paymentHeaderText: {
+        fontSize: 21,
+        fontWeight: '500',
+    },
     loadingWrapper: {
         width: 100,
         flexDirection: 'row',
