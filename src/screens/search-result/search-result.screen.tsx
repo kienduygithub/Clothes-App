@@ -200,9 +200,7 @@ const SearchResultScreen = (props: Props) => {
                     }
                 />
                 {isFetching.current && (
-                    <View>
-                        <LoadingDots size={16} color={CommonColors.primary} />
-                    </View>
+                    <LoadingDots size={16} color={CommonColors.primary} />
                 )}
                 {isEndReached.current && !isFetching.current && (
                     <Animated.View

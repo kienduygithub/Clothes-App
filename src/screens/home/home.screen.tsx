@@ -14,6 +14,7 @@ import { ProductModel } from "@/src/data/model/product.model";
 import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
 import { FontAwesome } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
+import LoadingDots from "@apolloeagle/loading-dots";
 
 const HomeScreen = () => {
     const [preImage, setPreImage] = useState('');
@@ -30,7 +31,6 @@ const HomeScreen = () => {
         fetchPreImage();
         fetchCategories();
         fetchProducts();
-        setIsLoading(false)
         firstFetching.current = false;
     }, [])
 
@@ -67,6 +67,7 @@ const HomeScreen = () => {
             console.log(error);
         } finally {
             setRefreshing(false);
+            setIsLoading(false)
         }
     }
 
@@ -109,7 +110,7 @@ const HomeScreen = () => {
             {
                 isLoading ? (
                     <View style={{ marginTop: 30 }}>
-                        <ActivityIndicator size={'large'} />
+                        <LoadingDots size={22} color={CommonColors.primary} />
                     </View>
                 ) : (
                     <>

@@ -17,6 +17,7 @@ import { RootState } from "@/src/data/types/global";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { MessageError } from "@/src/common/resource/message-error";
 import * as  UserActions from "@/src/data/store/actions/user/user.action";
+import LoadingDots from "@apolloeagle/loading-dots";
 
 type Props = {
     shop: ShopModel | null;
@@ -51,8 +52,8 @@ const TabShopComponent = ({
             totalPages: 1
         })
     )
-    const isFetchingPopular = useRef(false);
-    const isFetchingLatest = useRef(false);
+    const isFetchingPopular = useRef(true);
+    const isFetchingLatest = useRef(true);
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const dispatch = useDispatch();
 
@@ -133,7 +134,6 @@ const TabShopComponent = ({
                 totalPages: paginate.totalPages,
                 currentPage: page
             } as PaginateModel));
-
             isFetchingPopular.current = false;
         } catch (error: any) {
             console.log('119:', error);
@@ -160,11 +160,11 @@ const TabShopComponent = ({
                 currentPage: page
             } as PaginateModel));
 
-            isFetchingPopular.current = false;
+            isFetchingLatest.current = false;
         } catch (error) {
             console.log('145:', error);
             showToast(MessageError.BUSY_SYSTEM, 'error');
-            isFetchingPopular.current = false;
+            isFetchingLatest.current = false;
         }
     }
 
@@ -234,22 +234,28 @@ const TabShopComponent = ({
                         Sản phẩm bán chạy
                     </Text>
                 </View>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator
-                    style={{ paddingLeft: 16 }}
-                    scrollEventThrottle={16}
-                >
-                    {popularProducts.map((product, index) => (
-                        <View key={`${index}-${product.id}`} style={{ marginRight: 15 }}>
-                            <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
-                        </View>
-                    ))}
-                    <TouchableOpacity onPress={() => navigateToSearchShopScreen("BestSellers")} style={styles.btnSearchMore} >
-                        <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
-                        <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
-                    </TouchableOpacity>
-                </ScrollView>
+                {isFetchingPopular.current ? (
+                    <View style={{ height: 250, alignItems: 'center', justifyContent: 'center' }}>
+                        <LoadingDots />
+                    </View>
+                ) : (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator
+                        style={{ paddingLeft: 16 }}
+                        scrollEventThrottle={16}
+                    >
+                        {popularProducts.map((product, index) => (
+                            <View key={`${index}-${product.id}`} style={{ marginRight: 15 }}>
+                                <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
+                            </View>
+                        ))}
+                        <TouchableOpacity onPress={() => navigateToSearchShopScreen("BestSellers")} style={styles.btnSearchMore} >
+                            <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
+                            <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                )}
             </View>
             {/* Sản phẩm mới ra */}
             <View style={[styles.section, { paddingHorizontal: 0 }]}>
@@ -259,21 +265,27 @@ const TabShopComponent = ({
                         Sản phẩm gần đây
                     </Text>
                 </View>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator
-                    style={{ paddingLeft: 16 }}
-                >
-                    {latestProducts.map((product, index) => (
-                        <View key={`${index}-${index}-${product.id}`} style={{ marginRight: 15 }}>
-                            <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
-                        </View>
-                    ))}
-                    <TouchableOpacity onPress={() => navigateToSearchShopScreen("Latest")} style={styles.btnSearchMore}>
-                        <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
-                        <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
-                    </TouchableOpacity>
-                </ScrollView>
+                {isFetchingLatest.current ? (
+                    <View style={{ height: 250, alignItems: 'center', justifyContent: 'center' }}>
+                        <LoadingDots />
+                    </View>
+                ) : (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator
+                        style={{ paddingLeft: 16 }}
+                    >
+                        {latestProducts.map((product, index) => (
+                            <View key={`${index}-${index}-${product.id}`} style={{ marginRight: 15 }}>
+                                <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
+                            </View>
+                        ))}
+                        <TouchableOpacity onPress={() => navigateToSearchShopScreen("Latest")} style={styles.btnSearchMore}>
+                            <AntDesign name="rightcircleo" size={32} color={CommonColors.primary} />
+                            <Text style={styles.btnSearchMoreText}>Tìm hiểu thêm</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                )}
             </View>
         </ScrollView>
     )

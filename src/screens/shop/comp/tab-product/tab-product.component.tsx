@@ -11,6 +11,7 @@ import { PaginateModel } from "@/src/common/model/paginate.model";
 import Animated, { Easing, FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sort } from "@/src/common/resource/sort";
+import LoadingDots from "@apolloeagle/loading-dots";
 type Props = {
     shop_id: number;
     preImage: string;
@@ -30,14 +31,13 @@ const TabProductComponent = ({
     const [productByPrices, setProductByPrices] = useState<ProductModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
-        limit: 2,
+        limit: 10,
         totalItems: 0,
         totalPages: 1
     })
     const [paginate, setPaginate] = useState<PaginateModel>(initPaginate)
     const [isEndReachedList, setIsEndReachedList] = useState(false);
     const isFetching = useRef(false);
-
 
     const changeActiveTab = (value: number) => {
         setIsEndReachedList(false);
@@ -222,45 +222,54 @@ const TabProductComponent = ({
                     )}
                 </TouchableOpacity>
             </View>
-            <ScrollView
-                style={[styles.container]}
-                contentContainerStyle={styles.itemsWrapper}
-                showsVerticalScrollIndicator={false}
-            >
-                {activeTab === 0 && popularProducts.map((product, index) => (
-                    <View key={`${index}-${product.id}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
-                        <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
-                    </View>
-                ))}
-                {activeTab === 1 && latestProducts.map((product, index) => (
-                    <View key={`${index}-${product.id}-${index}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
-                        <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
-                    </View>
-                ))}
-                {activeTab === 2 && productByPrices.map((product, index) => (
-                    <View key={`${index}-${product.id}-${index}-${index}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
-                        <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
-                    </View>
-                ))}
-                {popularProducts.length > 0 && activeTab === 0 && !isFetching.current && !isEndReachedList && (
-                    <ButtonSearchMore onSearchMore={onSearchMore} />
-                )}
-                {latestProducts.length > 0 && activeTab === 1 && !isFetching.current && !isEndReachedList && (
-                    <ButtonSearchMore onSearchMore={onSearchMore} />
-                )}
-                {productByPrices.length > 0 && activeTab === 2 && !isFetching.current && !isEndReachedList && (
-                    <ButtonSearchMore onSearchMore={onSearchMore} />
-                )}
-            </ScrollView>
+            {isFetching.current ? (
+                <LoadingDots size={16} color={CommonColors.primary} />
+            ) : (
+                <ScrollView
+                    style={[styles.container]}
+                    contentContainerStyle={styles.itemsWrapper}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {activeTab === 0 && popularProducts.map((product, index) => (
+                        <View key={`${index}-${product.id}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
+                            <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
+                        </View>
+                    ))}
+                    {activeTab === 1 && latestProducts.map((product, index) => (
+                        <View key={`${index}-${product.id}-${index}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
+                            <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
+                        </View>
+                    ))}
+                    {activeTab === 2 && productByPrices.map((product, index) => (
+                        <View key={`${index}-${product.id}-${index}-${index}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
+                            <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
+                        </View>
+                    ))}
+                    {popularProducts.length > 0 && activeTab === 0 && !isFetching.current && !isEndReachedList && (
+                        <ButtonSearchMore onSearchMore={onSearchMore} />
+                    )}
+                    {latestProducts.length > 0 && activeTab === 1 && !isFetching.current && !isEndReachedList && (
+                        <ButtonSearchMore onSearchMore={onSearchMore} />
+                    )}
+                    {productByPrices.length > 0 && activeTab === 2 && !isFetching.current && !isEndReachedList && (
+                        <ButtonSearchMore onSearchMore={onSearchMore} />
+                    )}
+                </ScrollView>
+            )}
             {isEndReachedList && !isFetching.current && (
-                <View style={{ backgroundColor: CommonColors.extraLightGray }}>
-                    <Animated.View entering={FadeInDown.delay(1000).duration(300)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: CommonColors.extraLightGray, height: 50 }}>
-                        <Text style={{ fontSize: 18, fontWeight: '500', color: CommonColors.primary }}>
-                            Không tìm thấy sản phẩm nữa
-                        </Text>
-                        <FontAwesome6 name="sad-cry" size={22} color={CommonColors.primary} />
-                    </Animated.View>
-                </View>
+                <Animated.View
+                    entering={FadeInDown.delay(1000).duration(300)}
+                    style={{
+                        flexDirection: 'row',
+                        gap: 10,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: 50,
+                        backgroundColor: CommonColors.extraLightGray
+                    }}
+                >
+                    <Text style={styles.emptyText}>Không có có sản phẩm</Text>
+                </Animated.View>
             )}
         </>
     )
@@ -343,7 +352,12 @@ const styles = StyleSheet.create({
     btnSearchMoreText: {
         fontSize: 18,
         color: CommonColors.primary
-    }
+    },
+    emptyText: {
+        textAlign: "center",
+        color: "#666",
+        fontSize: 15
+    },
 })
 
 export default TabProductComponent;

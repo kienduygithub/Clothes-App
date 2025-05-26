@@ -13,6 +13,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import ProductItemComponent from "../../home/comp/product-item/product-item.comp";
 import { AppConfig } from "@/src/common/config/app.config";
+import LoadingDots from "@apolloeagle/loading-dots";
 
 type Props = {}
 
@@ -181,30 +182,39 @@ const ShopSearchScreen = (props: Props) => {
                     <Text style={styles.textTitle}>{TEXT_TITLE}</Text>
                 )}
             </View>
-            <View style={{ flex: 1, marginTop: 100 }}>
-                <ScrollView
-                    style={[styles.container]}
-                    contentContainerStyle={styles.itemsWrapper}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {products.map((product, index) => (
-                        <View key={`${index}-${product.id}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
-                            <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
-                        </View>
-                    ))}
-                    {products.length > 0 && !isFetching.current && !isEndReached && (
-                        <ButtonSearchMore onSearchMore={onSearchMore} />
-                    )}
-                </ScrollView>
+            <View style={{ marginTop: 100 }}>
+                {isFetching.current ? (
+                    <LoadingDots size={16} color={CommonColors.primary} />
+                ) : (
+                    <ScrollView
+                        style={[styles.container]}
+                        contentContainerStyle={styles.itemsWrapper}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {products.map((product, index) => (
+                            <View key={`${index}-${product.id}-${index}`} style={[styles.productWrapper, { marginLeft: 16 }]}>
+                                <ProductItemComponent item={product} index={index} preImage={preImage} productType="regular" />
+                            </View>
+                        ))}
+                        {products.length > 0 && !isFetching.current && !isEndReached && (
+                            <ButtonSearchMore onSearchMore={onSearchMore} />
+                        )}
+                    </ScrollView>
+                )}
                 {isEndReached && !isFetching.current && (
-                    <View style={{ backgroundColor: CommonColors.extraLightGray }}>
-                        <Animated.View entering={FadeInDown.delay(1000).duration(300)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: CommonColors.extraLightGray, height: 50 }}>
-                            <Text style={{ fontSize: 18, fontWeight: '500', color: CommonColors.primary }}>
-                                Không tìm thấy sản phẩm nữa
-                            </Text>
-                            <FontAwesome6 name="sad-cry" size={22} color={CommonColors.primary} />
-                        </Animated.View>
-                    </View>
+                    <Animated.View
+                        entering={FadeInDown.delay(1000).duration(300)}
+                        style={{
+                            flexDirection: 'row',
+                            gap: 10,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: 50,
+                            backgroundColor: 'transparent'
+                        }}
+                    >
+                        <Text style={styles.emptyText}>Không có có sản phẩm</Text>
+                    </Animated.View>
                 )}
             </View>
         </>
