@@ -109,58 +109,6 @@ const SelectVariantComponent = ({
         return product?.product_images[0].image_url;
     }
 
-    /** Functions thực hiện thêm vào giỏ hàng */
-    // Ref cho hiệu ứng animation
-    const flyingImageAnimation = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-    const flyingImageScale = useRef(new Animated.Value(1)).current;
-    const flyingImageOpacity = useRef(new Animated.Value(0)).current;
-    // State kiểm soát hiển thị hình ảnh bay
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [flyingImage, setFlyingImage] = useState('');
-    const animateToCart = () => {
-        // Lưu hình ảnh hiện tại để hiển thị animation
-        setFlyingImage(`${preImage}/${getDisplayVariantImage()}`);
-
-        // Reset vị trí ban đầu về giữa hình ảnh sản phẩm
-        flyingImageAnimation.setValue({ x: 0, y: 0 });
-        flyingImageScale.setValue(1);
-
-        // Hiển thị hình ảnh bay
-        setIsAnimating(true);
-        flyingImageOpacity.setValue(1);
-
-        // Tọa độ của giỏ hàng - ở góc trên bên phải
-        // const cartX = width + 180; // Vị trí X của icon giỏ hàng
-        // const cartY = -height + 30 + 100; // Vị trí Y của icon giỏ hàng
-        const { x: cartX, y: cartY } = cartPosition;
-        // Bắt đầu animation
-        Animated.parallel([
-            // Di chuyển đến giỏ hàng
-            Animated.timing(flyingImageAnimation, {
-                toValue: { x: width + 180, y: -height + cartY + 80 },
-                duration: 3000,
-                useNativeDriver: false,
-                easing: Easing.bezier(0.2, 1, 0.2, 1)
-            }),
-            // Thu nhỏ hình ảnh khi đến gần giỏ hàng
-            Animated.timing(flyingImageScale, {
-                toValue: 0.1,
-                duration: 3000,
-                useNativeDriver: false,
-                easing: Easing.bezier(0.2, 1, 0.2, 1)
-            }),
-            // Làm mờ dần khi đến giỏ hàng
-            Animated.timing(flyingImageOpacity, {
-                toValue: 0,
-                duration: 3000,
-                delay: 500,
-                useNativeDriver: false
-            })
-        ]).start(() => {
-            // Kết thúc animation
-            setIsAnimating(false);
-        })
-    }
 
     const addToCart = () => {
         // animateToCart();
@@ -264,28 +212,6 @@ const SelectVariantComponent = ({
                     </TouchableOpacity>
                 </View>
             </View>
-            {/* Hình ảnh bay vào giỏ hàng */}
-            {isAnimating && (
-                <Animated.View
-                    style={[
-                        styles.flyingImageContainer,
-                        {
-                            transform: [
-                                { translateX: flyingImageAnimation.x },
-                                { translateY: flyingImageAnimation.y },
-                                { scale: flyingImageScale }
-                            ],
-                            opacity: flyingImageOpacity
-                        }
-                    ]}
-                >
-                    <Image
-                        source={{ uri: `${preImage}/${getDisplayVariantImage()}` }}
-                        style={styles.flyingImage}
-                        resizeMode="stretch"
-                    />
-                </Animated.View>
-            )}
         </>
     )
 }
