@@ -15,7 +15,7 @@ import AvailableVariantImagesComponent from "./comp/available-variant-images/ava
 import ShopProductListComponent from "./comp/shop-product-list/shop-product-list.component"
 import SelectVariantComponent from "@/src/components/select-variant/select-variant.component"
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet"
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView, SCREEN_WIDTH } from "@gorhom/bottom-sheet"
 import { useToast } from "@/src/customize/toast.context"
 import * as CartManagement from "../../data/management/cart.management";
 import { formatPriceRender } from "@/src/common/utils/currency.helper"
@@ -33,6 +33,7 @@ import { formatDate } from "@/src/common/utils/time.helper"
 import ReviewListComponent from "./comp/review-list/review-list.component"
 import { ProductReviewModel } from "@/src/data/model/review.model"
 import { PaginateModel } from "@/src/common/model/paginate.model"
+import LoadingDots from "@apolloeagle/loading-dots";
 
 type Props = {};
 
@@ -58,6 +59,8 @@ const ProductDetailScreen = (props: Props) => {
     const userSelector = useSelector((state: RootState) => state.userLogged) as UserStoreState;
     const cartSelector = useSelector((state: RootState) => state.cart) as CartStoreState;
     const isFavorite = userSelector.favorites.includes(product?.id ?? 0);
+    const [firstLoading, setFirstLoading] = useState(true);
+
     const dispatch = useDispatch();
 
     const sheetRef = useRef<BottomSheet>(null);
@@ -65,6 +68,7 @@ const ProductDetailScreen = (props: Props) => {
     const snapPoints = ["50%"];
 
     useEffect(() => {
+        setFirstLoading(true);
         fetchPreImage();
         fetchProductDetails();
         fetchProductVariants();
@@ -94,6 +98,10 @@ const ProductDetailScreen = (props: Props) => {
             setVariants(response);
         } catch (error) {
             console.log(error);
+        } finally {
+            setTimeout(() => {
+                setFirstLoading(false);
+            }, 1000);
         }
     }
 
@@ -223,30 +231,36 @@ const ProductDetailScreen = (props: Props) => {
         }
     }
 
+    if (firstLoading) {
+        return (
+            <View
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                    backgroundColor: CommonColors.extraLightGray
+                }}
+            >
+                <LoadingDots size={16} color={CommonColors.primary} />
+            </View>
+        )
+    }
+
     return (
         <>
-            <Stack.Screen options={{
-                title: "",
-                headerShown: true,
-                headerTransparent: true,
-                headerLeft: () => (
-                    <TouchableOpacity style={styles.buttonHeader} onPress={() => router.back()}>
-                        <AntDesign name="arrowleft" size={28} color={CommonColors.white} />
-                    </TouchableOpacity>
-                ),
-                headerRight: () => (
-                    <TouchableOpacity
-                        style={styles.buttonHeader}
-                        onPress={() => navigateToCart()}
-                        onLayout={(event) => {
-                            const { x, y } = event.nativeEvent.layout;
-                            setCartPosition({ x, y });
-                        }}
-                    >
-                        <Ionicons name="cart-outline" size={28} color={CommonColors.white} />
-                    </TouchableOpacity>
-                )
-            }} />
+            <View style={{ position: 'relative', width: SCREEN_WIDTH, backgroundColor: CommonColors.yellow }}>
+                <TouchableOpacity style={styles.btnBack} onPress={() => router.back()}>
+                    <AntDesign name="arrowleft" size={28} color={CommonColors.white} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.btnCart}
+                    onPress={() => navigateToCart()}
+                >
+                    <Ionicons name="cart-outline" size={28} color={CommonColors.white} />
+                </TouchableOpacity>
+            </View>
             <GestureHandlerRootView >
                 <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 90, flex: 1 }}>
                     {/* Product Slider */}

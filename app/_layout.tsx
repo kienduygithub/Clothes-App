@@ -106,7 +106,8 @@ function RootLayoutNav() {
           <Stack.Screen
             name="(routes)/product-details/index"
             options={{
-              title: 'Chi tiết sản phẩm'
+              title: 'Chi tiết sản phẩm',
+              headerShown: false
             }}
           />
 

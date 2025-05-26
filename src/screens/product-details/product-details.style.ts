@@ -3,15 +3,45 @@ import { Fonts } from "@/src/common/resource/fonts";
 import { StyleSheet } from "react-native";
 
 const ProductDetailStyle = StyleSheet.create({
+    headerContainer: {
+        height: 100,
+        backgroundColor: 'transparent',
+        marginBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 20,
+        position: 'absolute',
+        zIndex: 9999
+    },
     container: {
         paddingVertical: 10,
         backgroundColor: CommonColors.white,
         gap: 5
     },
-    buttonHeader: {
+    btnBack: {
         backgroundColor: 'rgba(0, 0, 0, 0.16)',
         borderRadius: 30,
-        padding: 3
+        position: 'absolute',
+        left: 20,
+        width: 35,
+        height: 35,
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: 50,
+        zIndex: 100
+    },
+    btnCart: {
+        backgroundColor: 'rgba(0, 0, 0, 0.16)',
+        borderRadius: 30,
+        position: 'absolute',
+        right: 20,
+        width: 35,
+        height: 35,
+        justifyContent: 'center',
+        alignItems: 'center',
+        top: 50,
+        zIndex: 100
     },
     metaInfoWrapper: {
         flexDirection: 'row',
