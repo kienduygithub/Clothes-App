@@ -15,6 +15,8 @@ import ChatImagePicker from "../image-picker/image-picker.component";
 import { Ionicons } from "@expo/vector-icons";
 import { AppConfig } from "@/src/common/config/app.config";
 import { WebSocketNotificationType } from "@/src/common/resource/websocket";
+import { UserModel } from "@/src/data/model/user.model";
+import moment from "moment";
 
 type Props = {}
 
@@ -26,6 +28,7 @@ const ChatDetailScreen = (props: Props) => {
     const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<ChatMessageModel[]>([]);
+    const [otherUser, setOtherUser] = useState<UserModel | null>(null);
     const inputRef = useRef<TextInput>(null);
     const flatListRef = useRef<FlatList>(null);
     const wsRef = useRef<WebSocket | null>(null);
@@ -95,6 +98,12 @@ const ChatDetailScreen = (props: Props) => {
         try {
             const response = await ChatMessageMana.fetchChatHistory(+receiverId);
             setMessages(response);
+            if (response.length > 0) {
+                const user = response[0].senderId === parseInt(receiverId)
+                    ? response[0].sender
+                    : response[0].receiver;
+                setOtherUser(user);
+            }
         } catch (error: any) {
             console.log(error);
             if (error?.message === 'Unauthorized to view these messages') {
@@ -180,6 +189,12 @@ const ChatDetailScreen = (props: Props) => {
                 styles.messageContainer,
                 isOwnMessage ? styles.ownMessage : styles.otherMessage
             ]}>
+                {!isOwnMessage && item.sender && (
+                    <Image
+                        source={{ uri: `${new AppConfig().getPreImage()}/${item.sender.image_url}` }}
+                        style={styles.avatar}
+                    />
+                )}
                 <View style={[
                     styles.messageBubble,
                     isOwnMessage ? styles.ownBubble : styles.otherBubble
@@ -201,15 +216,26 @@ const ChatDetailScreen = (props: Props) => {
                         </Text>
                     )}
                 </View>
-                {isOwnMessage && item.status && (
-                    <View style={styles.statusContainer}>
-                        {item.status === 'sending' ? (
-                            <ActivityIndicator size="small" color="#0084ff" />
-                        ) : (
-                            <Text style={styles.statusText}>Đã gửi</Text>
-                        )}
-                    </View>
-                )}
+                <View style={styles.messageFooter}>
+                    <Text style={styles.timeText}>
+                        {moment(item.createdAt).format('HH:mm')}
+                    </Text>
+                    {isOwnMessage && item.status && (
+                        <View style={styles.statusContainer}>
+                            {item.status === StatusMessage.SENDING && (
+                                <ActivityIndicator size="small" color="#0084ff" />
+                            )}
+                            {item.status === StatusMessage.SENT && !item.isRead && (
+                                <Text style={styles.statusText}>Đã gửi</Text>
+                            )}
+                            {item.status === 'failed' && (
+                                <Text style={[styles.statusText, styles.errorText]}>
+                                    lỗi gửi tin nhắn
+                                </Text>
+                            )}
+                        </View>
+                    )}
+                </View>
             </View>
         )
     }
@@ -219,6 +245,24 @@ const ChatDetailScreen = (props: Props) => {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={styles.container}
         >
+            <View style={styles.header}>
+                <Image
+                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.image_url}` }}
+                    style={styles.headerAvatar}
+                />
+                <View style={styles.headerInfo}>
+                    <Text style={styles.headerName}>{otherUser?.name}</Text>
+                    {/* <View style={styles.onlineStatusContainer}>
+                        <View style={[
+                            styles.onlineIndicator,
+                            isOtherUserOnline ? styles.onlineIndicatorActive : styles.onlineIndicatorInactive
+                        ]} />
+                        <Text style={styles.headerStatus}>
+                            {isOtherUserOnline ? 'Đang hoạt động' : 'Không hoạt động'}
+                        </Text>
+                    </View> */}
+                </View>
+            </View>
             <FlatList
                 ref={flatListRef}
                 data={messages}
