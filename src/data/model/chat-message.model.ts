@@ -29,6 +29,7 @@ export class ChatMessageModel {
     status?: string;
     sender: UserModel;
     receiver: UserModel;
+    isRead: boolean;
 
     constructor(
         id?: number,
@@ -41,6 +42,7 @@ export class ChatMessageModel {
         status?: string,
         sender?: UserModel,
         receiver?: UserModel,
+        isRead?: boolean,
     ) {
         this.id = id ?? 0;
         this.senderId = senderId ?? 0;
@@ -52,6 +54,7 @@ export class ChatMessageModel {
         this.status = status;
         this.sender = sender ?? new UserModel();
         this.receiver = receiver ?? new UserModel();
+        this.isRead = isRead ?? false;
     }
 
     fromJson(data: any, preImage: string) {
@@ -69,6 +72,7 @@ export class ChatMessageModel {
         obj.status = data?.status ?? '';
         obj.sender = data?.sender ?? new UserModel();
         obj.receiver = data?.receiver ?? new UserModel();
+        obj.isRead = data?.isRead ?? false;
 
         return obj;
     }

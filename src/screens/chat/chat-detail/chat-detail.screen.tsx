@@ -13,6 +13,8 @@ import { MessageError } from "@/src/common/resource/message-error";
 import { ImageInfo } from "expo-image-picker";
 import ChatImagePicker from "../image-picker/image-picker.component";
 import { Ionicons } from "@expo/vector-icons";
+import { AppConfig } from "@/src/common/config/app.config";
+import { WebSocketNotificationType } from "@/src/common/resource/websocket";
 
 type Props = {}
 
@@ -26,10 +28,68 @@ const ChatDetailScreen = (props: Props) => {
     const [messages, setMessages] = useState<ChatMessageModel[]>([]);
     const inputRef = useRef<TextInput>(null);
     const flatListRef = useRef<FlatList>(null);
+    const wsRef = useRef<WebSocket | null>(null);
 
     useEffect(() => {
+        connectWebSocket();
         fetchMessages();
+        return () => {
+            if (wsRef.current) {
+                wsRef.current.close();
+            }
+        }
     }, [])
+
+    const connectWebSocket = () => {
+        const domain = new AppConfig().getDomain();
+        const hostMatch = domain.match(/https?:\/\/([^:/]+)/);
+        const host = hostMatch ? hostMatch[1] : 'localhost';
+        const wsUrl = `ws://${host}:3001`;
+
+        wsRef.current = new WebSocket(wsUrl);
+        wsRef.current.onopen = () => {
+            /** Đăng ký user với WebSocket khi kết nối thành công **/
+            if (wsRef.current?.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({
+                    type: WebSocketNotificationType.REGISTER,
+                    userId: userSelector.id
+                }));
+            }
+        }
+        wsRef.current.onmessage = (event: WebSocketMessageEvent) => {
+            try {
+                const data = JSON.parse(event.data);
+
+                switch (data.type) {
+                    case WebSocketNotificationType.NEW_MESSAGE:
+                        const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
+                        setMessages(prev => [...prev, newMessage]);
+                        flatListRef.current?.scrollToEnd();
+                        break;
+                    case WebSocketNotificationType.MESSAGE_READ:
+                        setMessages(prev => prev.map(
+                            msg => {
+                                if (msg.id === data.messageId) {
+                                    let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage());
+                                    chat.isRead = true;
+
+                                    return chat;
+                                }
+
+                                return msg;
+                            }
+                        ));
+                        break;
+                }
+            } catch (error) {
+                console.log('>>> Error parsing Websocket message: ', error);
+            }
+        }
+
+        wsRef.current.onerror = () => {
+            console.error('WebSocket connection error');
+        }
+    }
 
     const fetchMessages = async () => {
         try {
