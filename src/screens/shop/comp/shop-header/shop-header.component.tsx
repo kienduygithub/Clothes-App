@@ -1,6 +1,6 @@
 import { CommonColors } from "@/src/common/resource/colors";
 import { ShopModel } from "@/src/data/model/shop.model"
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 type Props = {
@@ -35,8 +35,9 @@ const ShopHeaderComponent = ({
                     </View>
                 </View>
                 <TouchableOpacity style={styles.btn}>
-                    <AntDesign name="plus" size={15} color={CommonColors.white} />
-                    <Text style={styles.btnText}>Theo dõi</Text>
+                    {/* <AntDesign name="plus" size={15} color={CommonColors.white} /> */}
+                    <MaterialCommunityIcons name="message-reply-text-outline" size={15} color="white" />
+                    <Text style={styles.btnText}>Chat</Text>
                 </TouchableOpacity>
             </View>
         </View>

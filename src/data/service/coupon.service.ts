@@ -13,6 +13,7 @@ export const fetchCouponShopMobile = async (shop_id: number) => {
         throw error;
     }
 }
+
 export const fetchCouponShopOnlyMobile = async (shop_id: number) => {
     try {
         const domain = new AppConfig().getDomain();

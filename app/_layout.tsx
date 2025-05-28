@@ -280,6 +280,24 @@ function RootLayoutNav() {
           />
 
           <Stack.Screen
+            name="(routes)/list-chat/index"
+            options={{
+              title: 'Danh sách trò chuyện',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
+            name="(routes)/chat-detail/index"
+            options={{
+              title: 'Chi tiết trò chuyện',
+              headerTitleAlign: 'center',
+              headerShown: false
+            }}
+          />
+
+          <Stack.Screen
             name="(tabs)"
             options={{
               headerShown: false
