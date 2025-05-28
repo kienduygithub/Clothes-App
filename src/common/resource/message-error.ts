@@ -6,4 +6,5 @@ export enum MessageError {
     INVALID_COUPON = 'Oops! Mã không tồn tại, đã hết hạn, hết lượt dùng',
     ALREADY_REVIEWED_PRODUCT = 'Sản phẩm này đã được đánh giá',
     NOT_LOGGED_TO_EXECUTE = 'Đăng nhập để thao tác có hiệu lực',
+    UNAUTHORIZED_VIEW_MESSAGES = 'Không có quyền truy cập cuộc trò chuyện'
 }

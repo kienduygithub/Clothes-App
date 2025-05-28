@@ -2,6 +2,8 @@ import { CommonColors } from "@/src/common/resource/colors";
 import { ShopModel } from "@/src/data/model/shop.model"
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import * as ChatMessageMana from "@/src/data/management/chat-message.management";
+import { router } from "expo-router";
 
 type Props = {
     shop: ShopModel | null;
@@ -15,6 +17,20 @@ const ShopHeaderComponent = ({
     preImage = ''
 }: Props) => {
 
+    const onCreateConversation = async () => {
+        try {
+            await ChatMessageMana.createConversation(shop?.ownerId ?? 0);
+            router.push({
+                pathname: '/(routes)/chat-detail',
+                params: {
+                    id: shop?.ownerId ?? 0
+                }
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     if (!shop) {
 
         return (
@@ -23,6 +39,7 @@ const ShopHeaderComponent = ({
             </View>
         )
     }
+
     return (
         <View style={styles.container}>
             <Image style={styles.imageBackground} source={{ uri: `${preImage}/${shop.background_url}` }} />
@@ -34,7 +51,7 @@ const ShopHeaderComponent = ({
                         <Text style={styles.address}>{shop.contact_address}</Text>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.btn}>
+                <TouchableOpacity style={styles.btn} onPress={onCreateConversation}>
                     {/* <AntDesign name="plus" size={15} color={CommonColors.white} /> */}
                     <MaterialCommunityIcons name="message-reply-text-outline" size={15} color="white" />
                     <Text style={styles.btnText}>Chat</Text>

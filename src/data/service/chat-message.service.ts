@@ -6,6 +6,7 @@ export const createMessage = async (chatMessage: ChatMessageModel) => {
     try {
         const domain = new AppConfig().getDomain();
 
+        console.log('aaaa');
         const formData = new FormData();
         formData.append('receiverId', chatMessage.receiverId + '');
         if (chatMessage.attachments.length === 0) {
@@ -30,6 +31,22 @@ export const createMessage = async (chatMessage: ChatMessageModel) => {
                     'Content-Type': 'multipart/form-data',
                 }
             }
+        );
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const createConversation = async (shopOwnerId: number) => {
+    try {
+        const domain = new AppConfig().getDomain();
+
+        const response = await ServiceCore.POST(
+            `${domain}`,
+            `chat/conversation`,
+            { shopOwnerId }
         );
 
         return response;

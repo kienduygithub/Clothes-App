@@ -12,6 +12,16 @@ export const createMessage = async (chatMessage: ChatMessageModel) => {
     }
 }
 
+export const createConversation = async (shopOwnerId: number) => {
+    try {
+        const result = await ChatMessageService.createConversation(shopOwnerId);
+        return new ChatMessageModel().fromJson(result?.chatInfo, new AppConfig().getPreImage());
+    } catch (error) {
+        throw error;
+    }
+}
+
+
 export const fetchConversations = async () => {
     try {
         const result = await ChatMessageService.fetchConversations();

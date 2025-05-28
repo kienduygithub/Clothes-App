@@ -6,6 +6,7 @@ export class ShopModel {
     contact_address: string;
     contact_email: string;
     description: string;
+    ownerId: number;
 
     constructor(
         id?: number,
@@ -15,6 +16,7 @@ export class ShopModel {
         contact_address?: string,
         contact_email?: string,
         description?: string,
+        ownerId?: number,
     ) {
         this.id = id ?? 0;
         this.shop_name = shop_name ?? '';
@@ -23,6 +25,7 @@ export class ShopModel {
         this.contact_address = contact_address ?? '';
         this.contact_email = contact_email ?? '';
         this.description = description ?? '';
+        this.ownerId = ownerId ?? 0;
     }
 
     convertObj(data: any) {
@@ -34,6 +37,8 @@ export class ShopModel {
         obj.contact_address = data?.contact_address ?? '';
         obj.contact_email = data?.contact_email ?? '';
         obj.description = data?.description ?? '';
+        obj.ownerId = data?.user?.id ?? 0;
+
         return obj;
     }
 }

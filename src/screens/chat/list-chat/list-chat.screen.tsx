@@ -79,11 +79,7 @@ const ListChatScreen = (props: Props) => {
                 onPress={() => handleConversationPress(otherUser.id)}
             >
                 <Image
-                    source={
-                        otherUser.image_url
-                            ? { uri: `${preImage}/${otherUser.image_url}` }
-                            : require('../../../assets/default-avatar.png')
-                    }
+                    source={{ uri: `${preImage}/${otherUser.image_url}` }}
                     style={styles.avatar}
                 />
                 <View style={styles.conversationContent}>

@@ -35,8 +35,12 @@ const ChatDetailScreen = (props: Props) => {
         try {
             const response = await ChatMessageMana.fetchChatHistory(+receiverId);
             setMessages(response);
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
+            if (error?.message === 'Unauthorized to view these messages') {
+                showToast(MessageError.UNAUTHORIZED_VIEW_MESSAGES, 'error');
+                return;
+            }
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
