@@ -6,7 +6,6 @@ export const createMessage = async (chatMessage: ChatMessageModel) => {
     try {
         const domain = new AppConfig().getDomain();
 
-        console.log('aaaa');
         const formData = new FormData();
         formData.append('receiverId', chatMessage.receiverId + '');
         if (chatMessage.attachments.length === 0) {

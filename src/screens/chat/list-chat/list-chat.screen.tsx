@@ -3,12 +3,12 @@ import ListChatStyle from "./list-chat.style";
 import * as ChatMessageMana from "@/src/data/management/chat-message.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { RootState } from "@/src/data/types/global";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { useToast } from "@/src/customize/toast.context";
 import { MessageError } from "@/src/common/resource/message-error";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Animated, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { AppConfig } from "@/src/common/config/app.config";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -26,6 +26,16 @@ const ListChatScreen = (props: Props) => {
     const dispatch = useDispatch();
     const headerHeight = useHeaderHeight();
     const [fadeAnim] = useState(new Animated.Value(0));
+
+    // useFocusEffect(useCallback(() => {
+    //     fetchPreImage();
+    //     fetchConversations();
+    //     Animated.timing(fadeAnim, {
+    //         toValue: 1,
+    //         duration: 800,
+    //         useNativeDriver: true,
+    //     }).start();
+    // }, []))
 
     useEffect(() => {
         fetchPreImage();

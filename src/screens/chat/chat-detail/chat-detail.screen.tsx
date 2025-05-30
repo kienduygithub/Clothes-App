@@ -293,7 +293,6 @@ const ChatDetailScreen = (props: Props) => {
                 </View>
                 {item.messages.map((msg, index) => {
                     const isOwnMessage = msg.senderId === userSelector.id;
-                    const showAvatar = !isOwnMessage && (index === item.messages.length - 1);
 
                     return (
                         <View
@@ -303,13 +302,12 @@ const ChatDetailScreen = (props: Props) => {
                                 isOwnMessage ? styles.ownMessage : styles.otherMessage,
                             ]}
                         >
-                            {!isOwnMessage && showAvatar && msg.sender && (
+                            {!isOwnMessage && msg.sender && (
                                 <Image
                                     source={{ uri: `${new AppConfig().getPreImage()}/${msg.sender.image_url}` }}
                                     style={styles.avatar}
                                 />
                             )}
-                            {!isOwnMessage && !showAvatar && <View style={styles.avatarSpacer} />}
                             <View
                                 style={[
                                     styles.messageBubble,
