@@ -8,7 +8,10 @@ const ChatDetailStyle = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
+        gap: 10,
+        paddingHorizontal: 16,
+        paddingTop: 24,
+        paddingBottom: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
@@ -16,7 +19,7 @@ const ChatDetailStyle = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        marginRight: 12,
+        marginRight: 5,
     },
     headerInfo: {
         flex: 1,

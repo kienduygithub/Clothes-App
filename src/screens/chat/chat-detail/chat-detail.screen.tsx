@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import ChatDetailStyle from "./chat-detail.style";
 import * as ChatMessageMana from "@/src/data/management/chat-message.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
@@ -367,6 +367,9 @@ const ChatDetailScreen = (props: Props) => {
             style={styles.container}
         >
             <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="arrow-back-outline" size={24} color="black" />
+                </TouchableOpacity>
                 <Image
                     source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.image_url}` }}
                     style={styles.headerAvatar}
