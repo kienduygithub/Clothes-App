@@ -54,7 +54,6 @@ const ChatDetailScreen = (props: Props) => {
 
         wsRef.current = new WebSocket(wsUrl);
         wsRef.current.onopen = () => {
-            /** Đăng ký user với WebSocket khi kết nối thành công **/
             if (wsRef.current?.readyState === WebSocket.OPEN) {
                 wsRef.current.send(JSON.stringify({
                     type: WebSocketNotificationType.REGISTER,
@@ -79,10 +78,8 @@ const ChatDetailScreen = (props: Props) => {
                                 if (msg.id === data.messageId) {
                                     let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage());
                                     chat.isRead = true;
-
                                     return chat;
                                 }
-
                                 return msg;
                             }
                         ));
@@ -109,7 +106,6 @@ const ChatDetailScreen = (props: Props) => {
 
         wsRef.current.onclose = () => {
             console.log('WebSocket connection closed');
-            /** Đóng kết nối thì kiểm tra lại trạng thái reconnect nếu cần **/
             setTimeout(() => {
                 connectWebSocket();
                 const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
@@ -155,7 +151,6 @@ const ChatDetailScreen = (props: Props) => {
                     setIsOtherUserOnline(false);
                 }
             } else {
-                // Nếu không có tin nhắn, kiểm tra shopId từ params
                 if (shopId && wsRef.current?.readyState === WebSocket.OPEN) {
                     wsRef.current.send(JSON.stringify({
                         type: WebSocketNotificationType.CHECK_SHOP_STATUS,
@@ -248,64 +243,116 @@ const ChatDetailScreen = (props: Props) => {
         }
     }
 
-    const renderMessage = ({ item }: { item: ChatMessageModel }) => {
-        const isOwnMessage = item.senderId === userSelector.id;
+    const groupMessages = () => {
+        const grouped: { timestamp: string; messages: ChatMessageModel[] }[] = [];
+        let currentGroup: ChatMessageModel[] = [];
+        let lastTimestamp: moment.Moment | null = null;
+        const timeThreshold = 15; // 15 minutes
 
+        messages.forEach((msg, index) => {
+            const currentTime = moment(msg.createdAt);
+
+            if (lastTimestamp === null) {
+                currentGroup.push(msg);
+                lastTimestamp = currentTime;
+            } else if (currentTime.diff(lastTimestamp, 'minutes') >= timeThreshold) {
+                if (currentGroup.length > 0) {
+                    grouped.push({
+                        timestamp: lastTimestamp.format('HH:mm'),
+                        messages: currentGroup,
+                    });
+                }
+                currentGroup = [msg];
+                lastTimestamp = currentTime;
+            } else {
+                currentGroup.push(msg);
+            }
+
+            // Push the last group
+            if (index === messages.length - 1 && currentGroup.length > 0) {
+                grouped.push({
+                    timestamp: lastTimestamp.format('HH:mm'),
+                    messages: currentGroup,
+                });
+            }
+        });
+
+        return grouped;
+    }
+
+    const renderMessageGroup = ({ item }: { item: { timestamp: string; messages: ChatMessageModel[] } }) => {
         return (
-            <View style={[
-                styles.messageContainer,
-                isOwnMessage ? styles.ownMessage : styles.otherMessage
-            ]}>
-                {!isOwnMessage && item.sender && (
-                    <Image
-                        source={{ uri: `${new AppConfig().getPreImage()}/${item.sender.image_url}` }}
-                        style={styles.avatar}
-                    />
-                )}
-                <View style={[
-                    styles.messageBubble,
-                    isOwnMessage ? styles.ownBubble : styles.otherBubble
-                ]}>
-                    {item.messageType === 'image' && item.attachments?.map((att, index) => (
-                        <Image
-                            key={index}
-                            source={{ uri: att.url }}
-                            style={styles.imageMessage}
-                            resizeMode="cover"
-                        />
-                    ))}
-                    {item.message && (
-                        <Text style={[
-                            styles.messageText,
-                            isOwnMessage ? styles.ownMessageText : styles.otherMessageText
-                        ]}>
-                            {item.message}
-                        </Text>
-                    )}
+            <View style={styles.messageGroup}>
+                <View style={styles.timestampContainer}>
+                    <Text style={styles.timestampText}>{item.timestamp}</Text>
                 </View>
-                <View style={styles.messageFooter}>
-                    <Text style={styles.timeText}>
-                        {moment(item.createdAt).format('HH:mm')}
-                    </Text>
-                    {isOwnMessage && item.status && (
-                        <View style={styles.statusContainer}>
-                            {item.status === StatusMessage.SENDING && (
-                                <ActivityIndicator size="small" color="#0084ff" />
+                {item.messages.map((msg, index) => {
+                    const isOwnMessage = msg.senderId === userSelector.id;
+
+                    return (
+                        <View
+                            key={msg.id}
+                            style={[
+                                styles.messageContainer,
+                                isOwnMessage ? styles.ownMessage : styles.otherMessage,
+                            ]}
+                        >
+                            {!isOwnMessage && msg.sender && (
+                                <Image
+                                    source={{ uri: `${new AppConfig().getPreImage()}/${msg.sender.image_url}` }}
+                                    style={styles.avatar}
+                                />
                             )}
-                            {item.status === StatusMessage.SENT && !item.isRead && (
-                                <Text style={styles.statusText}>Đã gửi</Text>
-                            )}
-                            {item.status === 'failed' && (
-                                <Text style={[styles.statusText, styles.errorText]}>
-                                    lỗi gửi tin nhắn
-                                </Text>
+                            <View
+                                style={[
+                                    styles.messageBubble,
+                                    isOwnMessage ? styles.ownBubble : styles.otherBubble,
+                                    index === 0 && styles.firstBubble,
+                                    index === item.messages.length - 1 && styles.lastBubble,
+                                ]}
+                            >
+                                {msg.messageType === 'image' && msg.attachments?.map((att, attIndex) => (
+                                    <Image
+                                        key={attIndex}
+                                        source={{ uri: att.url }}
+                                        style={styles.imageMessage}
+                                        resizeMode="cover"
+                                    />
+                                ))}
+                                {msg.message && (
+                                    <Text
+                                        style={[
+                                            styles.messageText,
+                                            isOwnMessage ? styles.ownMessageText : styles.otherMessageText,
+                                        ]}
+                                    >
+                                        {msg.message}
+                                    </Text>
+                                )}
+                            </View>
+                            {isOwnMessage && index === item.messages.length - 1 && msg.status && (
+                                <View style={styles.statusContainer}>
+                                    {msg.status === StatusMessage.SENDING && (
+                                        <ActivityIndicator size="small" color="#0084ff" />
+                                    )}
+                                    {msg.status === StatusMessage.SENT && !msg.isRead && (
+                                        <Text style={styles.statusText}>Đã gửi</Text>
+                                    )}
+                                    {msg.status === 'failed' && (
+                                        <Text style={[styles.statusText, styles.errorText]}>
+                                            lỗi gửi tin nhắn
+                                        </Text>
+                                    )}
+                                </View>
                             )}
                         </View>
-                    )}
-                </View>
+                    );
+                })}
             </View>
-        )
+        );
     }
+
+    const groupedMessages = groupMessages();
 
     return (
         <KeyboardAvoidingView
@@ -334,9 +381,9 @@ const ChatDetailScreen = (props: Props) => {
             </View>
             <FlatList
                 ref={flatListRef}
-                data={messages}
-                renderItem={renderMessage}
-                keyExtractor={item => item.id + ''}
+                data={groupedMessages}
+                renderItem={renderMessageGroup}
+                keyExtractor={(item, index) => `group-${index}`}
                 contentContainerStyle={styles.messagesList}
                 onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
             />

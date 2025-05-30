@@ -45,16 +45,27 @@ const ChatDetailStyle = StyleSheet.create({
         fontSize: 12,
         color: '#666',
     },
-
     messagesList: {
         padding: 16,
     },
+    messageGroup: {
+        marginBottom: 20,
+    },
+    timestampContainer: {
+        alignSelf: 'center',
+        backgroundColor: '#f0f0f0',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginBottom: 10,
+    },
+    timestampText: {
+        fontSize: 12,
+        color: '#666',
+    },
     messageContainer: {
-        // marginVertical: 5,
-        // flexDirection: 'row',
-        // alignItems: 'flex-end',
         flexDirection: 'row',
-        marginBottom: 5,
+        marginBottom: 4,
     },
     ownMessage: {
         justifyContent: 'flex-end',
@@ -63,9 +74,15 @@ const ChatDetailStyle = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     avatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 16,
+        marginRight: 8,
+        marginTop: 3
+    },
+    avatarSpacer: {
         width: 32,
         height: 32,
-        borderRadius: 16,
         marginRight: 8,
     },
     messageBubble: {
@@ -75,11 +92,19 @@ const ChatDetailStyle = StyleSheet.create({
     },
     ownBubble: {
         backgroundColor: '#0084ff',
-        borderBottomRightRadius: 5,
+        borderBottomRightRadius: 16,
     },
     otherBubble: {
         backgroundColor: '#f0f0f0',
-        borderBottomLeftRadius: 5,
+        borderBottomLeftRadius: 16,
+    },
+    firstBubble: {
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+    },
+    lastBubble: {
+        borderBottomLeftRadius: 16,
+        borderBottomRightRadius: 16,
     },
     messageText: {
         fontSize: 16,
@@ -90,16 +115,6 @@ const ChatDetailStyle = StyleSheet.create({
     otherMessageText: {
         color: '#000',
     },
-    messageFooter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 4,
-    },
-    timeText: {
-        fontSize: 12,
-        color: '#8e8e8e',
-    },
     imageMessage: {
         width: 200,
         height: 200,
@@ -109,6 +124,7 @@ const ChatDetailStyle = StyleSheet.create({
     statusContainer: {
         marginLeft: 5,
         marginBottom: 2,
+        alignSelf: 'flex-end',
     },
     statusText: {
         fontSize: 12,
