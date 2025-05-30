@@ -23,7 +23,8 @@ const ShopHeaderComponent = ({
             router.push({
                 pathname: '/(routes)/chat-detail',
                 params: {
-                    id: shop?.ownerId ?? 0
+                    id: shop?.ownerId ?? 0,
+                    shopId: shop?.id ?? 0
                 }
             })
         } catch (error) {

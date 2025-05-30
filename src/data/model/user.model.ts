@@ -1,4 +1,5 @@
 import { Gender } from "@/src/common/resource/gender";
+import { ShopModel } from "./shop.model";
 
 export class UserModel {
     id: number;
@@ -11,6 +12,8 @@ export class UserModel {
     cart_id: number;
     roles: string;
     expires: boolean;
+    shop: ShopModel | null;
+    shopId: number | null;
 
     constructor(
         id?: number,
@@ -23,6 +26,8 @@ export class UserModel {
         cart_id?: number,
         roles?: string,
         expires?: boolean,
+        shop?: ShopModel,
+        shopId?: number
     ) {
         this.id = id ?? 0;
         this.name = name ?? '';
@@ -34,6 +39,8 @@ export class UserModel {
         this.cart_id = cart_id ?? 0;
         this.roles = roles ?? '';
         this.expires = expires ?? false;
+        this.shop = shop ?? null;
+        this.shopId = shopId ?? null;
     }
 
     convertObj(data: any) {
@@ -47,6 +54,8 @@ export class UserModel {
         model.image_url = data?.image_url ?? '';
         model.cart_id = data?.cart_id ?? 0;
         model.roles = data?.roles ?? '';
+        model.shop = data?.shop ? new ShopModel().convertObj(data.shop) : null;
+        model.shopId = data?.shopId ?? null;
 
         return model;
     }

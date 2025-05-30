@@ -21,17 +21,20 @@ import moment from "moment";
 type Props = {}
 
 const ChatDetailScreen = (props: Props) => {
-    const { id: receiverId } = useLocalSearchParams<{
-        id: string
+    const { id: receiverId, shopId } = useLocalSearchParams<{
+        id: string,
+        shopId: string,
     }>();
     const { showToast } = useToast();
     const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<ChatMessageModel[]>([]);
     const [otherUser, setOtherUser] = useState<UserModel | null>(null);
+    const [isOtherUserOnline, setIsOtherUserOnline] = useState<boolean>(false);
     const inputRef = useRef<TextInput>(null);
     const flatListRef = useRef<FlatList>(null);
     const wsRef = useRef<WebSocket | null>(null);
+    const lastCheckedShopId = useRef<number | null>(null);
 
     useEffect(() => {
         connectWebSocket();
@@ -64,12 +67,13 @@ const ChatDetailScreen = (props: Props) => {
                 const data = JSON.parse(event.data);
 
                 switch (data.type) {
-                    case WebSocketNotificationType.NEW_MESSAGE:
+                    case WebSocketNotificationType.NEW_MESSAGE: {
                         const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
                         setMessages(prev => [...prev, newMessage]);
                         flatListRef.current?.scrollToEnd();
                         break;
-                    case WebSocketNotificationType.MESSAGE_READ:
+                    }
+                    case WebSocketNotificationType.MESSAGE_READ: {
                         setMessages(prev => prev.map(
                             msg => {
                                 if (msg.id === data.messageId) {
@@ -83,15 +87,46 @@ const ChatDetailScreen = (props: Props) => {
                             }
                         ));
                         break;
+                    }
+                    case WebSocketNotificationType.SHOP_STATUS: {
+                        const targetShopId: number = parseInt(shopId) || (otherUser && otherUser.shopId ? otherUser.shopId : 0);
+                        if (targetShopId && data.shopId === targetShopId) {
+                            setIsOtherUserOnline(data.isOnline);
+                            lastCheckedShopId.current = data.shopId;
+                        }
+                        break;
+                    }
                 }
             } catch (error) {
                 console.log('>>> Error parsing Websocket message: ', error);
             }
         }
 
-        wsRef.current.onerror = () => {
-            console.error('WebSocket connection error');
+        wsRef.current.onerror = (error) => {
+            console.error('WebSocket connection error:', error);
+            setIsOtherUserOnline(false);
         }
+
+        wsRef.current.onclose = () => {
+            console.log('WebSocket connection closed');
+            /** Đóng kết nối thì kiểm tra lại trạng thái reconnect nếu cần **/
+            setTimeout(() => {
+                connectWebSocket();
+                const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
+                if (targetShopId && !isNaN(targetShopId) && wsRef.current?.readyState === WebSocket.OPEN && lastCheckedShopId.current !== targetShopId) {
+                    wsRef.current.send(JSON.stringify({
+                        type: WebSocketNotificationType.CHECK_SHOP_STATUS,
+                        shopId: targetShopId
+                    }))
+
+                    setTimeout(() => {
+                        if (isOtherUserOnline === undefined) {
+                            setIsOtherUserOnline(false);
+                        }
+                    }, 5000)
+                }
+            }, 5000);
+        };
     }
 
     const fetchMessages = async () => {
@@ -103,6 +138,37 @@ const ChatDetailScreen = (props: Props) => {
                     ? response[0].sender
                     : response[0].receiver;
                 setOtherUser(user);
+
+                const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
+                if (targetShopId && !isNaN(targetShopId) && wsRef.current?.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(JSON.stringify({
+                        type: WebSocketNotificationType.CHECK_SHOP_STATUS,
+                        shopId: targetShopId
+                    }));
+
+                    setTimeout(() => {
+                        if (isOtherUserOnline === undefined) {
+                            setIsOtherUserOnline(false);
+                        }
+                    }, 5000);
+                } else {
+                    setIsOtherUserOnline(false);
+                }
+            } else {
+                // Nếu không có tin nhắn, kiểm tra shopId từ params
+                if (shopId && wsRef.current?.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(JSON.stringify({
+                        type: WebSocketNotificationType.CHECK_SHOP_STATUS,
+                        shopId: parseInt(shopId)
+                    }));
+                    setTimeout(() => {
+                        if (isOtherUserOnline === undefined) {
+                            setIsOtherUserOnline(false);
+                        }
+                    }, 5000);
+                } else {
+                    setIsOtherUserOnline(false);
+                }
             }
         } catch (error: any) {
             console.log(error);
@@ -111,8 +177,9 @@ const ChatDetailScreen = (props: Props) => {
                 return;
             }
             showToast(MessageError.BUSY_SYSTEM, 'error');
+            setIsOtherUserOnline(false);
         }
-    }
+    };
 
     const handleSendMessage = async () => {
         if (!message.trim() || (!userSelector.isLogged && !userSelector.expires)) {
@@ -145,7 +212,7 @@ const ChatDetailScreen = (props: Props) => {
     }
 
     const handleImageSelect = async (images: Array<{ uri: string }>) => {
-        if (!userSelector.isLogged && !userSelector.expires) {
+        if (!images && !userSelector.isLogged && !userSelector.expires) {
             return;
         }
 
@@ -251,16 +318,18 @@ const ChatDetailScreen = (props: Props) => {
                     style={styles.headerAvatar}
                 />
                 <View style={styles.headerInfo}>
-                    <Text style={styles.headerName}>{otherUser?.name}</Text>
-                    {/* <View style={styles.onlineStatusContainer}>
-                        <View style={[
-                            styles.onlineIndicator,
-                            isOtherUserOnline ? styles.onlineIndicatorActive : styles.onlineIndicatorInactive
-                        ]} />
-                        <Text style={styles.headerStatus}>
-                            {isOtherUserOnline ? 'Đang hoạt động' : 'Không hoạt động'}
-                        </Text>
-                    </View> */}
+                    <Text style={styles.headerName}>{otherUser?.name || 'Cửa hàng'}</Text>
+                    {otherUser && (
+                        <View style={styles.onlineStatusContainer}>
+                            <View style={[
+                                styles.onlineIndicator,
+                                isOtherUserOnline ? styles.onlineIndicatorActive : styles.onlineIndicatorInactive
+                            ]} />
+                            <Text style={styles.headerStatus}>
+                                {isOtherUserOnline ? 'Đang hoạt động' : 'Không hoạt động'}
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </View>
             <FlatList
