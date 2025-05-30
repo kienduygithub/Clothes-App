@@ -88,7 +88,7 @@ const ListChatStyle = StyleSheet.create({
         marginRight: 10,
     },
     unreadMessage: {
-        color: '#000',
+        color: '#313131',
         fontWeight: '500',
     },
     unreadBadge: {

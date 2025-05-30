@@ -13,6 +13,8 @@ import { Animated, FlatList, Image, Text, TouchableOpacity, View } from "react-n
 import { AppConfig } from "@/src/common/config/app.config";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { LinearGradient } from "expo-linear-gradient";
+import { MaterialIcons } from "@expo/vector-icons";
+import { CommonColors } from "@/src/common/resource/colors";
 
 type Props = {}
 
@@ -97,7 +99,9 @@ const ListChatScreen = (props: Props) => {
                 />
                 <View style={styles.conversationContent}>
                     <View style={styles.conversationHeader}>
-                        <Text style={styles.userName}>{otherUser.name}</Text>
+                        <Text style={styles.userName} numberOfLines={1}>
+                            {otherUser.name}
+                        </Text>
                         <Text style={styles.timeAgo}>
                             {formatTimeAgo(lastMessage.createdAt)}
                         </Text>
@@ -110,6 +114,7 @@ const ListChatScreen = (props: Props) => {
                             ]}
                             numberOfLines={1}
                         >
+                            {lastMessage.senderId === userSelector.id ? 'Bạn: ' : ''}
                             {
                                 lastMessage.messageType === 'image'
                                     ? 'Đã gửi hình ảnh'
@@ -157,6 +162,9 @@ const ListChatScreen = (props: Props) => {
                             <Text style={styles.tagline}>Tin nhắn của bạn</Text>
                         </View>
                     </View>
+                    <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 'auto' }}>
+                        <MaterialIcons name="logout" size={24} color={CommonColors.white} />
+                    </TouchableOpacity>
                 </View>
             </LinearGradient>
             <FlatList
