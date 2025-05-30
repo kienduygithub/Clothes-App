@@ -28,6 +28,14 @@ const HeaderStyle = StyleSheet.create({
     },
     searchTxt: {
         color: CommonColors.gray
+    },
+    buttonMessage: {
+        backgroundColor: CommonColors.primary,
+        height: 35,
+        width: 35,
+        borderRadius: '50%',
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 
