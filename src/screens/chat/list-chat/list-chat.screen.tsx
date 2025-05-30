@@ -43,11 +43,14 @@ const ListChatScreen = (props: Props) => {
         }
     }
 
-    const handleConversationPress = (receiverId: number) => {
-        // router.push({
-        //     pathname: '/(routes)/chat/[id]',
-        //     params: { id: userId.toString() }
-        // } as any);
+    const handleConversationPress = (receiverId: number, shopId: number) => {
+        router.push({
+            pathname: '/(routes)/chat-detail',
+            params: {
+                id: receiverId,
+                shopId: shopId
+            }
+        });
     };
 
     const formatTimeAgo = (date: string) => {
@@ -76,7 +79,7 @@ const ListChatScreen = (props: Props) => {
         return (
             <TouchableOpacity
                 style={styles.conversationItem}
-                onPress={() => handleConversationPress(otherUser.id)}
+                onPress={() => handleConversationPress(otherUser.id, otherUser.shopId ?? 0)}
             >
                 <Image
                     source={{ uri: `${preImage}/${otherUser.image_url}` }}
