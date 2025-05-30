@@ -1,9 +1,49 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 const ListChatStyle = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'rgba(240,248,255,0.95)',
+    },
+    header: {
+        padding: 30,
+        paddingTop: 40,
+        paddingBottom: 20,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    userInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 15,
+    },
+    infoImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        borderWidth: 3,
+        borderColor: '#fff',
+    },
+    username: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#fff',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'Roboto-Bold',
+    },
+    tagline: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.9)',
+        fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
     },
     messagesList: {
         padding: 10,

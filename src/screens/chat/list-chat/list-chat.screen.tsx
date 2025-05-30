@@ -4,13 +4,15 @@ import * as ChatMessageMana from "@/src/data/management/chat-message.management"
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { RootState } from "@/src/data/types/global";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { useToast } from "@/src/customize/toast.context";
 import { MessageError } from "@/src/common/resource/message-error";
 import { router } from "expo-router";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { Animated, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { AppConfig } from "@/src/common/config/app.config";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { LinearGradient } from "expo-linear-gradient";
 
 type Props = {}
 
@@ -19,10 +21,18 @@ const ListChatScreen = (props: Props) => {
     const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
     const [preImage, setPreImage] = useState('');
     const [conversations, setConversations] = useState<Conversation[]>([]);
+    const dispatch = useDispatch();
+    const headerHeight = useHeaderHeight();
+    const [fadeAnim] = useState(new Animated.Value(0));
 
     useEffect(() => {
         fetchPreImage();
         fetchConversations();
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+        }).start();
     }, [])
 
     const fetchPreImage = () => {
@@ -120,7 +130,35 @@ const ListChatScreen = (props: Props) => {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { marginTop: headerHeight }]}>
+            <LinearGradient
+                colors={['#33adff', '#3b82f6']}
+                style={styles.header}
+            >
+                <View style={styles.headerContent}>
+                    <View style={styles.userInfo}>
+                        {userSelector.image_url === '' ? (
+                            <Image
+                                source={{
+                                    uri: 'https://tiki.vn/blog/wp-content/uploads/2023/01/Y7deW5ZtpOonbiD_XawHLHdkjKYKHvWxvxNZzKdXXn0L8InieLIH_-U5m0u-RUlFtXKp0Ty91Itj4Oxwn_tjKg_UZo3lxFSrOH_DHIbpKP1LDn80z6BbOxj4d8bmymdy8PWFGjLkTpCdoz-3X-KY7IedQ_dxWJlHSIBWwCYhgM02FvUfVUgLKOQxrQWgjw.jpg',
+                                }}
+                                style={styles.infoImage}
+                            />
+                        ) : (
+                            <Image
+                                source={{ uri: `${preImage}/${userSelector.image_url}` }}
+                                style={styles.infoImage}
+                            />
+                        )}
+                        <View>
+                            <Text style={styles.username}>
+                                {userSelector.name === '' ? 'Anonymous' : userSelector.name}
+                            </Text>
+                            <Text style={styles.tagline}>Tin nhắn của bạn</Text>
+                        </View>
+                    </View>
+                </View>
+            </LinearGradient>
             <FlatList
                 data={conversations}
                 renderItem={renderConversation}
