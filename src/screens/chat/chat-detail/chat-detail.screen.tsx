@@ -248,6 +248,7 @@ const ChatDetailScreen = (props: Props) => {
         let currentGroup: ChatMessageModel[] = [];
         let lastTimestamp: moment.Moment | null = null;
         const timeThreshold = 15; // 15 minutes
+        const today = moment().startOf('day'); // Current date at 00:00:00
 
         messages.forEach((msg, index) => {
             const currentTime = moment(msg.createdAt);
@@ -258,7 +259,9 @@ const ChatDetailScreen = (props: Props) => {
             } else if (currentTime.diff(lastTimestamp, 'minutes') >= timeThreshold) {
                 if (currentGroup.length > 0) {
                     grouped.push({
-                        timestamp: lastTimestamp.format('HH:mm'),
+                        timestamp: currentTime.isSame(today, 'day')
+                            ? lastTimestamp.format('HH:mm')
+                            : lastTimestamp.format('DD/MM/YYYY HH:mm'),
                         messages: currentGroup,
                     });
                 }
@@ -271,7 +274,9 @@ const ChatDetailScreen = (props: Props) => {
             // Push the last group
             if (index === messages.length - 1 && currentGroup.length > 0) {
                 grouped.push({
-                    timestamp: lastTimestamp.format('HH:mm'),
+                    timestamp: currentTime.isSame(today, 'day')
+                        ? lastTimestamp.format('HH:mm')
+                        : lastTimestamp.format('DD/MM/YYYY HH:mm'),
                     messages: currentGroup,
                 });
             }
@@ -288,6 +293,7 @@ const ChatDetailScreen = (props: Props) => {
                 </View>
                 {item.messages.map((msg, index) => {
                     const isOwnMessage = msg.senderId === userSelector.id;
+                    const showAvatar = !isOwnMessage && (index === item.messages.length - 1);
 
                     return (
                         <View
@@ -297,12 +303,13 @@ const ChatDetailScreen = (props: Props) => {
                                 isOwnMessage ? styles.ownMessage : styles.otherMessage,
                             ]}
                         >
-                            {!isOwnMessage && msg.sender && (
+                            {!isOwnMessage && showAvatar && msg.sender && (
                                 <Image
                                     source={{ uri: `${new AppConfig().getPreImage()}/${msg.sender.image_url}` }}
                                     style={styles.avatar}
                                 />
                             )}
+                            {!isOwnMessage && !showAvatar && <View style={styles.avatarSpacer} />}
                             <View
                                 style={[
                                     styles.messageBubble,
