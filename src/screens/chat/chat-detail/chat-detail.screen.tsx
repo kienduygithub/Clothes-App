@@ -77,6 +77,7 @@ const ChatDetailScreen = (props: Props) => {
 
                 switch (data.type) {
                     case WebSocketNotificationType.NEW_MESSAGE: {
+                        console.log(data);
                         const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
                         setMessages(prev => [...prev, newMessage]);
                         flatListRef.current?.scrollToEnd();
@@ -324,9 +325,9 @@ const ChatDetailScreen = (props: Props) => {
                                 isOwnMessage ? styles.ownMessage : styles.otherMessage,
                             ]}
                         >
-                            {!isOwnMessage && msg.sender && (
+                            {!isOwnMessage && (
                                 <Image
-                                    source={{ uri: `${new AppConfig().getPreImage()}/${msg.sender.image_url}` }}
+                                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url}` }}
                                     style={styles.avatar}
                                 />
                             )}
@@ -394,11 +395,11 @@ const ChatDetailScreen = (props: Props) => {
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
                 </TouchableOpacity>
                 <Image
-                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.image_url}` }}
+                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url}` }}
                     style={styles.headerAvatar}
                 />
                 <View style={styles.headerInfo}>
-                    <Text style={styles.headerName}>{otherUser?.name || 'Cửa hàng'}</Text>
+                    <Text style={styles.headerName}>{otherUser?.shop?.shop_name || 'Cửa hàng'}</Text>
                     {otherUser && (
                         <View style={styles.onlineStatusContainer}>
                             <View style={[
