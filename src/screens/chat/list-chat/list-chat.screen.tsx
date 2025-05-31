@@ -106,13 +106,13 @@ const ListChatScreen = (props: Props) => {
                 onPress={() => handleConversationPress(otherUser.id, otherUser.shopId ?? 0)}
             >
                 <Image
-                    source={{ uri: `${preImage}/${otherUser.image_url}` }}
+                    source={{ uri: `${preImage}/${otherUser.shop?.logo_url}` }}
                     style={styles.avatar}
                 />
                 <View style={styles.conversationContent}>
                     <View style={styles.conversationHeader}>
                         <Text style={styles.userName} numberOfLines={1}>
-                            {otherUser.name}
+                            {otherUser.shop?.shop_name}
                         </Text>
                         <Text style={styles.timeAgo}>
                             {formatTimeAgo(lastMessage.createdAt)}
