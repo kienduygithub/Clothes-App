@@ -38,6 +38,7 @@ const ChatDetailScreen = (props: Props) => {
 
     useEffect(() => {
         connectWebSocket();
+        markConversationOnEnter();
         fetchMessages();
         return () => {
             if (wsRef.current) {
@@ -45,6 +46,15 @@ const ChatDetailScreen = (props: Props) => {
             }
         }
     }, [])
+
+    const markConversationOnEnter = async () => {
+        try {
+            await ChatMessageMana.markConversationAsRead(parseInt(receiverId));
+        } catch (error) {
+            console.log("Lỗi khi đánh dấu cuộc trò chuyện đã đọc:", error);
+            showToast(MessageError.BUSY_SYSTEM, "error");
+        }
+    };
 
     const connectWebSocket = () => {
         const domain = new AppConfig().getDomain();
@@ -70,6 +80,13 @@ const ChatDetailScreen = (props: Props) => {
                         const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
                         setMessages(prev => [...prev, newMessage]);
                         flatListRef.current?.scrollToEnd();
+
+                        /** Đánh dấu tin nhắn mới là đã đọc nếu người dùng là receiver **/
+                        if (newMessage.receiverId === userSelector.id) {
+                            ChatMessageMana.markMessageAsRead(newMessage.id)
+                                .then(() => console.log("Tin nhắn mới đã được đánh dấu đã đọc"))
+                                .catch((err) => console.error("Lỗi khi đánh dấu tin nhắn: ", err));
+                        }
                         break;
                     }
                     case WebSocketNotificationType.MESSAGE_READ: {
@@ -83,6 +100,10 @@ const ChatDetailScreen = (props: Props) => {
                                 return msg;
                             }
                         ));
+                        break;
+                    }
+                    case WebSocketNotificationType.CONVERSATION_READ: {
+                        console.log("Cuộc trò chuyện đã được đánh dấu đã đọc:", data);
                         break;
                     }
                     case WebSocketNotificationType.SHOP_STATUS: {
