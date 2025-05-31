@@ -364,6 +364,9 @@ const ChatDetailScreen = (props: Props) => {
                                     {msg.status === StatusMessage.SENT && !msg.isRead && (
                                         <Text style={styles.statusText}>Đã gửi</Text>
                                     )}
+                                    {msg.status === StatusMessage.SENT && msg.isRead && (
+                                        <Ionicons name="checkmark-done" size={16} color="#4CAF50" />
+                                    )}
                                     {msg.status === 'failed' && (
                                         <Text style={[styles.statusText, styles.errorText]}>
                                             lỗi gửi tin nhắn
