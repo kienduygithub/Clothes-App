@@ -107,6 +107,7 @@ const ChatDetailScreen = (props: Props) => {
                         break;
                     }
                     case WebSocketNotificationType.SHOP_STATUS: {
+                        console.log('Trạng thái Shop: ', data.shopId, data.isOnline);
                         const targetShopId: number = parseInt(shopId) || (otherUser && otherUser.shopId ? otherUser.shopId : 0);
                         if (targetShopId && data.shopId === targetShopId) {
                             setIsOtherUserOnline(data.isOnline);
