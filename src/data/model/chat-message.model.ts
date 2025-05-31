@@ -2,7 +2,8 @@ import { UserModel } from "./user.model";
 
 export enum StatusMessage {
     SENDING = 'sending',
-    SENT = 'sent'
+    SENT = 'sent',
+    FAILED = 'failed'
 }
 
 export interface Conversation {
@@ -64,10 +65,16 @@ export class ChatMessageModel {
         obj.receiverId = data?.receiverId ?? 0;
         obj.message = data?.message ?? '';
         obj.messageType = data?.messageType ?? 'text';
-        obj.attachments = data?.attachments?.map((att: any) => ({
-            ...att,
-            url: `${preImage}/${att.url}`
-        } as ChatAttachment)) ?? [];
+        if (data?.attachments && typeof data.attachments === 'string') {
+            try {
+                obj.attachments = JSON.parse(data.attachments)?.map((att: any) => ({
+                    ...att,
+                    url: `${preImage}/${att.url}`
+                } as ChatAttachment)) ?? [];
+            } catch (error) {
+                console.log('Lỗi parse attachments: ', error);
+            }
+        }
         obj.createdAt = data?.createdAt ?? new Date().toISOString();
         obj.status = data?.status ?? '';
         obj.sender = data?.sender ?? new UserModel();

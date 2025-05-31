@@ -17,6 +17,7 @@ import { AppConfig } from "@/src/common/config/app.config";
 import { WebSocketNotificationType } from "@/src/common/resource/websocket";
 import { UserModel } from "@/src/data/model/user.model";
 import moment from "moment";
+import * as FileSystem from "expo-file-system"; // Thêm để lấy kích thước file
 
 type Props = {}
 
@@ -250,19 +251,29 @@ const ChatDetailScreen = (props: Props) => {
             return;
         }
 
-        const imagesInfo: ChatAttachment[] = [];
+        const imagesInfo: ChatAttachment[] = await Promise.all(
+            images.map(async (img) => {
+                const fileInfo = await FileSystem.getInfoAsync(img.uri);
+                const fileName = img.uri.split("/").pop() || `image_${Date.now()}.jpg`;
+                const fileType = fileName.endsWith(".png") ? "image/png" : "image/jpeg"; // Giả định
+                const fileSize = fileInfo.exists && fileInfo.size !== undefined ? fileInfo.size : 0;
+
+                return {
+                    url: img.uri, // Đường dẫn cục bộ, server sẽ xử lý
+                    type: fileType,
+                    name: fileName,
+                    size: fileSize,
+                } as ChatAttachment
+
+            })
+        );
 
         const tempMessage = ChatMessageModel.createMessage({
             senderId: userSelector.id,
             receiverId: parseInt(receiverId),
             message: '',
             messageType: 'image',
-            attachments: imagesInfo.map(img => ({
-                url: img.url,
-                type: img.type,
-                name: img.name,
-                size: img.size
-            } as ChatAttachment))
+            attachments: imagesInfo
         })
 
         setMessages(prev => [...prev, tempMessage]);
@@ -278,6 +289,13 @@ const ChatDetailScreen = (props: Props) => {
             ));
         } catch (error) {
             console.log(error);
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === tempMessage.id
+                        ? { ...msg, status: StatusMessage.FAILED } as ChatMessageModel
+                        : msg
+                )
+            );
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
