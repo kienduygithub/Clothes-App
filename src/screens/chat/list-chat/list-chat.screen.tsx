@@ -27,16 +27,6 @@ const ListChatScreen = (props: Props) => {
     const headerHeight = useHeaderHeight();
     const [fadeAnim] = useState(new Animated.Value(0));
 
-    // useFocusEffect(useCallback(() => {
-    //     fetchPreImage();
-    //     fetchConversations();
-    //     Animated.timing(fadeAnim, {
-    //         toValue: 1,
-    //         duration: 800,
-    //         useNativeDriver: true,
-    //     }).start();
-    // }, []))
-
     useEffect(() => {
         fetchPreImage();
         fetchConversations();
@@ -65,14 +55,26 @@ const ListChatScreen = (props: Props) => {
         }
     }
 
-    const handleConversationPress = (receiverId: number, shopId: number) => {
-        router.push({
-            pathname: '/(routes)/chat-detail',
-            params: {
-                id: receiverId,
-                shopId: shopId
+    const handleConversationPress = async (receiverId: number, shopId: number) => {
+        try {
+            await ChatMessageMana.markConversationAsRead(receiverId);
+            let conversationIndex = conversations.findIndex(rc => rc.otherUser.shopId === shopId);
+            if (conversationIndex > -1) {
+                conversations[conversationIndex].unreadCount = 0;
             }
-        });
+
+            setConversations(conversations);
+            router.push({
+                pathname: '/(routes)/chat-detail',
+                params: {
+                    id: receiverId,
+                    shopId: shopId
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            showToast(MessageError.BUSY_SYSTEM, 'error');
+        }
     };
 
     const formatTimeAgo = (date: string) => {
