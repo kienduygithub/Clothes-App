@@ -281,7 +281,7 @@ const ChatDetailScreen = (props: Props) => {
         flatListRef.current?.scrollToEnd();
 
         try {
-            const response = await ChatMessageMana.createMessage(tempMessage);
+            const response = await uploadWithRetry(tempMessage);
             setMessages(prev => prev.map(msg =>
                 msg.id === tempMessage.id
                     ? { ...response, status: StatusMessage.SENT } as ChatMessageModel
@@ -299,6 +299,20 @@ const ChatDetailScreen = (props: Props) => {
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
     }
+
+    // Hàm upload với retry
+    const uploadWithRetry = async (message: ChatMessageModel, retries = 2, delay = 2000) => {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await ChatMessageMana.createMessage(message);
+                return response;
+            } catch (error) {
+                console.log(`Lỗi upload (thử lần ${i + 1}):`, error);
+                if (i === retries - 1) throw error; // Ném lỗi nếu hết lần retry
+                await new Promise((resolve) => setTimeout(resolve, delay)); // Đợi trước khi thử lại
+            }
+        }
+    };
 
     const groupMessages = () => {
         const grouped: { timestamp: string; messages: ChatMessageModel[] }[] = [];
