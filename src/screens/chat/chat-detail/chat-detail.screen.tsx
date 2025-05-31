@@ -35,6 +35,7 @@ const ChatDetailScreen = (props: Props) => {
     const flatListRef = useRef<FlatList>(null);
     const wsRef = useRef<WebSocket | null>(null);
     const lastCheckedShopId = useRef<number | null>(null);
+    const isConnecting = useRef<boolean>(false); // Thêm flag để tránh tái kết nối lặp
 
     useEffect(() => {
         connectWebSocket();
@@ -47,6 +48,12 @@ const ChatDetailScreen = (props: Props) => {
         }
     }, [])
 
+    useEffect(() => {
+        if (messages.length > 0) {
+            flatListRef.current?.scrollToEnd();
+        }
+    }, [messages])
+
     const markConversationOnEnter = async () => {
         try {
             await ChatMessageMana.markConversationAsRead(parseInt(receiverId));
@@ -57,6 +64,11 @@ const ChatDetailScreen = (props: Props) => {
     };
 
     const connectWebSocket = () => {
+        if (isConnecting.current || wsRef.current?.readyState === WebSocket.OPEN) {
+            return; // Tránh tạo kết nối mới nếu đang kết nối hoặc đã mở
+        }
+
+        isConnecting.current = true;
         const domain = new AppConfig().getDomain();
         const hostMatch = domain.match(/https?:\/\/([^:/]+)/);
         const host = hostMatch ? hostMatch[1] : 'localhost';
@@ -70,6 +82,7 @@ const ChatDetailScreen = (props: Props) => {
                     userId: userSelector.id
                 }));
             }
+            isConnecting.current = false; // Đặt lại flag khi kết nối thành công
         }
         wsRef.current.onmessage = (event: WebSocketMessageEvent) => {
             try {
@@ -124,27 +137,30 @@ const ChatDetailScreen = (props: Props) => {
 
         wsRef.current.onerror = (error) => {
             console.error('WebSocket connection error:', error);
+            isConnecting.current = false;
             setIsOtherUserOnline(false);
         }
 
         wsRef.current.onclose = () => {
             console.log('WebSocket connection closed');
-            setTimeout(() => {
-                connectWebSocket();
-                const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
-                if (targetShopId && !isNaN(targetShopId) && wsRef.current?.readyState === WebSocket.OPEN && lastCheckedShopId.current !== targetShopId) {
-                    wsRef.current.send(JSON.stringify({
-                        type: WebSocketNotificationType.CHECK_SHOP_STATUS,
-                        shopId: targetShopId
-                    }))
+            if (!isConnecting.current) {
+                setTimeout(() => {
+                    connectWebSocket();
+                    const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
+                    if (targetShopId && !isNaN(targetShopId) && wsRef.current?.readyState === WebSocket.OPEN && lastCheckedShopId.current !== targetShopId) {
+                        wsRef.current.send(JSON.stringify({
+                            type: WebSocketNotificationType.CHECK_SHOP_STATUS,
+                            shopId: targetShopId
+                        }))
 
-                    setTimeout(() => {
-                        if (isOtherUserOnline === undefined) {
-                            setIsOtherUserOnline(false);
-                        }
-                    }, 5000)
-                }
-            }, 5000);
+                        setTimeout(() => {
+                            if (isOtherUserOnline === undefined) {
+                                setIsOtherUserOnline(false);
+                            }
+                        }, 5000)
+                    }
+                }, 5000);
+            }
         };
     }
 
