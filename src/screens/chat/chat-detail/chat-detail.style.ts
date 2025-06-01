@@ -69,6 +69,7 @@ const ChatDetailStyle = StyleSheet.create({
     messageContainer: {
         flexDirection: 'row',
         marginBottom: 4,
+        alignItems: 'flex-start',
     },
     ownMessage: {
         justifyContent: 'flex-end',
@@ -79,27 +80,30 @@ const ChatDetailStyle = StyleSheet.create({
     avatar: {
         width: 36,
         height: 36,
-        borderRadius: 16,
+        borderRadius: 18,
         marginRight: 8,
-        marginTop: 3
+        marginTop: 3,
     },
     avatarSpacer: {
-        width: 32,
-        height: 32,
-        marginRight: 8,
+        width: 36,
+        height: 36,
+        marginLeft: 8,
+    },
+    messageWrapper: {
+        flexDirection: 'column',
+        maxWidth: '70%',
     },
     messageBubble: {
-        maxWidth: '70%',
         padding: 12,
         borderRadius: 16,
     },
     ownBubble: {
         backgroundColor: '#0084ff',
-        borderBottomRightRadius: 16,
+        borderBottomRightRadius: 0,
     },
     otherBubble: {
         backgroundColor: '#f0f0f0',
-        borderBottomLeftRadius: 16,
+        borderBottomLeftRadius: 0,
     },
     firstBubble: {
         borderTopLeftRadius: 16,
@@ -125,8 +129,7 @@ const ChatDetailStyle = StyleSheet.create({
         marginBottom: 5,
     },
     statusContainer: {
-        marginLeft: 5,
-        marginBottom: 2,
+        marginTop: 4,
         alignSelf: 'flex-end',
     },
     statusText: {
@@ -159,6 +162,6 @@ const ChatDetailStyle = StyleSheet.create({
     sendButton: {
         padding: 10,
     },
-})
+});
 
 export default ChatDetailStyle;

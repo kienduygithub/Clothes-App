@@ -1,5 +1,5 @@
 import * as ChatMessageService from "@/src/data/service/chat-message.service";
-import { ChatMessageModel, Conversation } from "../model/chat-message.model";
+import { ChatMessageModel, Conversation, StatusMessage } from "../model/chat-message.model";
 import { UserModel } from "../model/user.model";
 import { AppConfig } from "@/src/common/config/app.config";
 
@@ -42,7 +42,7 @@ export const fetchChatHistory = async (receiverId: number) => {
     try {
         const result = await ChatMessageService.fetchChatHistory(receiverId);
         const response: ChatMessageModel[] = result?.messages?.map(
-            (message: any) => new ChatMessageModel().fromJson(message, new AppConfig().getPreImage())
+            (message: any) => new ChatMessageModel().fromJson(message, new AppConfig().getPreImage(), StatusMessage.SENT)
         ) ?? [];
         return response;
     } catch (error) {
