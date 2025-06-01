@@ -103,10 +103,11 @@ const ChatDetailScreen = (props: Props) => {
                         break;
                     }
                     case WebSocketNotificationType.MESSAGE_READ: {
+                        console.log('>>> Tin nhắn đã đọc: ', data, typeof data);
                         setMessages(prev => prev.map(
                             msg => {
-                                if (msg.id === data.messageId) {
-                                    let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage());
+                                if (msg.id === data.data.messageId) {
+                                    let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage(), StatusMessage.SENT);
                                     chat.isRead = true;
                                     return chat;
                                 }
