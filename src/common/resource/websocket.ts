@@ -9,5 +9,6 @@ export const WebSocketNotificationType = Object.freeze({
     CHECK_SHOP_STATUS: 'check_shop_status',
     SHOP_STATUS: 'shop_status',
     CHECK_USER_STATUS: 'check_user_status',
-    USER_STATUS: 'user_status'
+    USER_STATUS: 'user_status',
+    UPDATE_CONVERSATIONS: 'update_conversations'
 });
