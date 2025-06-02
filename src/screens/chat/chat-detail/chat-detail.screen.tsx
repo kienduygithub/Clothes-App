@@ -92,13 +92,23 @@ const ChatDetailScreen = (props: Props) => {
                 switch (data.type) {
                     case WebSocketNotificationType.NEW_MESSAGE: {
                         const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
-                        setMessages(prev => [...prev, newMessage]);
-                        flatListRef.current?.scrollToEnd();
-
-                        if (newMessage.receiverId === userSelector.id) {
-                            ChatMessageMana.markMessageAsRead(newMessage.id)
-                                .then(() => console.log("Tin nhắn mới đã được đánh dấu đã đọc"))
-                                .catch((err) => console.error("Lỗi khi đánh dấu tin nhắn: ", err));
+                        if (
+                            parseInt(receiverId) &&
+                            (newMessage.receiverId === userSelector.id || newMessage.senderId === userSelector.id) &&
+                            (newMessage.senderId === parseInt(receiverId) || newMessage.receiverId === parseInt(receiverId))
+                        ) {
+                            console.log("Tin nhắn khớp, cập nhật UI");
+                            if (newMessage.senderId !== userSelector.id) {
+                                setMessages(prev => [...prev, newMessage]);
+                                flatListRef.current?.scrollToEnd();
+                            }
+                            if (newMessage.receiverId === userSelector.id) {
+                                ChatMessageMana.markMessageAsRead(newMessage.id)
+                                    .then(() => console.log("Đánh dấu tin nhắn đã đọc"))
+                                    .catch((err) => console.error("Lỗi đánh dấu:", err));
+                            }
+                        } else {
+                            console.log("Tin nhắn không khớp:", { receiverId, userId: userSelector.id, newMessage });
                         }
                         break;
                     }

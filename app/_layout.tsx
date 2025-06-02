@@ -1,7 +1,10 @@
 import { Fonts } from '@/src/common/resource/fonts';
 import websocketService from '@/src/common/service/websocket.service';
+import { WebSocketProvider } from '@/src/customize/socket.context';
 import { ToastProvider } from '@/src/customize/toast.context';
+import { UserStoreState } from '@/src/data/store/reducers/user/user.reducer';
 import store from '@/src/data/store/store.config';
+import { RootState } from '@/src/data/types/global';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -9,7 +12,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 
 export {
   ErrorBoundary,
@@ -64,13 +67,18 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <Provider store={store}>
+      <RootLayoutNav />
+    </Provider>
+  )
 }
 
 function RootLayoutNav() {
+  const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
 
   return (
-    <Provider store={store}>
+    <WebSocketProvider userId={userSelector.isLogged ? userSelector.id : null}>
       <ToastProvider>
         <StatusBar />
         <Stack>
@@ -305,6 +313,6 @@ function RootLayoutNav() {
           />
         </Stack>
       </ToastProvider>
-    </Provider>
+    </WebSocketProvider>
   );
 }
