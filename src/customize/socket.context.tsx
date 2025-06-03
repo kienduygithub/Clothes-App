@@ -36,7 +36,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
             setIsConnecting(false);
             console.log("WebSocket kết nối thành công, đăng ký userId:", userId);
             if (wsRef.current && userId) {
-                wsRef.current.send(JSON.stringify({ type: WebSocketNotificationType.REGISTER, userId }));
+                wsRef.current.send(JSON.stringify({
+                    type: WebSocketNotificationType.REGISTER,
+                    userId
+                }));
             }
         };
 
@@ -73,7 +76,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
                 wsRef.current.close();
                 wsRef.current = null;
             }
-            // Không complete Subject ở đây để tránh hủy tất cả subscription
         };
     }, [userId]);
 

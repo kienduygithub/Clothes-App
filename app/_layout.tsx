@@ -45,12 +45,12 @@ export default function RootLayout() {
 
   /** Khởi tạo WebSocket **/
   useEffect(() => {
-    websocketService.initialize();
+    // websocketService.initialize();
 
-    // Clear khi thoát ứng dụng
-    return () => {
-      websocketService.disconnect();
-    };
+    // // Clear khi thoát ứng dụng
+    // return () => {
+    //   websocketService.disconnect();
+    // };
   }, []);
 
   useEffect(() => {

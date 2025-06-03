@@ -3,7 +3,7 @@ import ListChatStyle from "./list-chat.style";
 import * as ChatMessageMana from "@/src/data/management/chat-message.management";
 import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { RootState } from "@/src/data/types/global";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { useToast } from "@/src/customize/toast.context";
@@ -15,6 +15,8 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
+import { useWebSocket } from "@/src/customize/socket.context";
+import { Subject, Subscription } from "rxjs";
 
 type Props = {}
 
@@ -26,7 +28,8 @@ const ListChatScreen = (props: Props) => {
     const dispatch = useDispatch();
     const headerHeight = useHeaderHeight();
     const [fadeAnim] = useState(new Animated.Value(0));
-
+    const { subscribe } = useWebSocket();
+    const subscriptionRef = useRef<Subscription | null>(null);
     useEffect(() => {
         fetchPreImage();
         fetchConversations();
@@ -35,6 +38,8 @@ const ListChatScreen = (props: Props) => {
             duration: 800,
             useNativeDriver: true,
         }).start();
+        subscriptionRef.current = subscribe().subscribe((data: any) => {
+        })
     }, [])
 
     const fetchPreImage = () => {

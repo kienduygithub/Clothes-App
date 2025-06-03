@@ -90,7 +90,7 @@ const MeScreen = (props: Props) => {
 
     const logout = async () => {
         try {
-            websocketService.disconnect();
+            // websocketService.disconnect();
             await new AppConfig().clear();
             dispatch(UserActions.ResetInfoLogged());
             dispatch(CartActions.ResetCart());

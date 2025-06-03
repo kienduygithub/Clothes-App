@@ -71,7 +71,7 @@ const SignInScreen = () => {
             dispatch(UserActions.UpdateLoggedStatus(true));
 
             /** Khởi tạo kết nối WebSocket với người dùng có UserId **/
-            websocketService.updateUserId(userInfo.id);
+            // websocketService.updateUserId(userInfo.id);
 
             router.navigate("/(tabs)");
         } catch (error: any) {

@@ -18,6 +18,8 @@ import { WebSocketNotificationType } from "@/src/common/resource/websocket";
 import { UserModel } from "@/src/data/model/user.model";
 import moment from "moment";
 import * as FileSystem from "expo-file-system";
+import { useWebSocket } from "@/src/customize/socket.context";
+import { Subscription } from "rxjs";
 
 type Props = {}
 
@@ -34,26 +36,88 @@ const ChatDetailScreen = (props: Props) => {
     const [isOtherUserOnline, setIsOtherUserOnline] = useState<boolean>(false);
     const inputRef = useRef<TextInput>(null);
     const flatListRef = useRef<FlatList>(null);
-    const wsRef = useRef<WebSocket | null>(null);
-    const lastCheckedShopId = useRef<number | null>(null);
-    const isConnecting = useRef<boolean>(false);
-
+    const { subscribe, sendMessage, lastCheckedShopId, setLastCheckedShopId } = useWebSocket();
+    const subscriptionRef = useRef<Subscription | null>(null);
     useEffect(() => {
-        connectWebSocket();
         markConversationOnEnter();
         fetchMessages();
-        return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
+        subscriptionRef.current = subscribe().subscribe((data: any) => {
+            switch (data.type) {
+                case WebSocketNotificationType.NEW_MESSAGE: {
+                    const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
+                    if (
+                        parseInt(receiverId) &&
+                        (newMessage.receiverId === userSelector.id || newMessage.senderId === userSelector.id) &&
+                        (newMessage.senderId === parseInt(receiverId) || newMessage.receiverId === parseInt(receiverId))
+                    ) {
+                        console.log("Tin nhắn khớp, cập nhật UI");
+                        if (newMessage.senderId !== userSelector.id) {
+                            setMessages(prev => [...prev, newMessage]);
+                            flatListRef.current?.scrollToEnd();
+                        }
+                        if (newMessage.receiverId === userSelector.id) {
+                            ChatMessageMana.markMessageAsRead(newMessage.id)
+                                .then(() => console.log("Đánh dấu tin nhắn đã đọc"))
+                                .catch((err) => console.error("Lỗi đánh dấu:", err));
+                        }
+                    }
+                    break;
+                }
+                case WebSocketNotificationType.MESSAGE_READ: {
+                    console.log('>>> Tin nhắn đã đọc: ', data, typeof data);
+                    setMessages(prev => prev.map(
+                        msg => {
+                            if (msg.id === data.data.messageId) {
+                                let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage(), StatusMessage.SENT);
+                                chat.isRead = true;
+                                return chat;
+                            }
+                            return msg;
+                        }
+                    ));
+                    break;
+                }
+                case WebSocketNotificationType.CONVERSATION_READ: {
+                    console.log("Cuộc trò chuyện đã được đánh dấu đã đọc:", data);
+                    break;
+                }
+                case WebSocketNotificationType.SHOP_STATUS: {
+                    console.log('Trạng thái Shop: ', data.shopId, data.isOnline);
+                    const targetShopId: number = parseInt(shopId) || (otherUser && otherUser.shopId ? otherUser.shopId : 0);
+                    if (targetShopId && data.shopId === targetShopId) {
+                        setIsOtherUserOnline(data.isOnline);
+                        setLastCheckedShopId(data.shopId);
+                    }
+                    break;
+                }
+                default:
+                    console.log("Loại thông báo khác:", data.type);
             }
-        }
-    }, []);
+        })
+
+        return () => subscriptionRef.current?.unsubscribe();
+    }, [userSelector.id, receiverId, shopId]);
 
     useEffect(() => {
         if (messages.length > 0) {
             flatListRef.current?.scrollToEnd();
         }
     }, [messages]);
+
+    useEffect(() => {
+        const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
+        if (targetShopId && !isNaN(targetShopId) && targetShopId !== lastCheckedShopId) {
+            console.log("Gửi yêu cầu CHECK_SHOP_STATUS:", targetShopId);
+            sendMessage({ type: WebSocketNotificationType.CHECK_SHOP_STATUS, shopId: targetShopId });
+            setTimeout(() => {
+                if (isOtherUserOnline === undefined) {
+                    setIsOtherUserOnline(false);
+                }
+            }, 5000);
+        } else if (!targetShopId || isNaN(targetShopId)) {
+            setIsOtherUserOnline(false);
+        }
+    }, [shopId, otherUser?.shopId, lastCheckedShopId, sendMessage]);
 
     const markConversationOnEnter = async () => {
         try {
@@ -62,116 +126,6 @@ const ChatDetailScreen = (props: Props) => {
             console.log("Lỗi khi đánh dấu cuộc trò chuyện đã đọc:", error);
             showToast(MessageError.BUSY_SYSTEM, "error");
         }
-    };
-
-    const connectWebSocket = () => {
-        if (isConnecting.current || wsRef.current?.readyState === WebSocket.OPEN) {
-            return;
-        }
-
-        isConnecting.current = true;
-        const domain = new AppConfig().getDomain();
-        const hostMatch = domain.match(/https?:\/\/([^:/]+)/);
-        const host = hostMatch ? hostMatch[1] : 'localhost';
-        const wsUrl = `ws://${host}:3001`;
-
-        wsRef.current = new WebSocket(wsUrl);
-        wsRef.current.onopen = () => {
-            if (wsRef.current?.readyState === WebSocket.OPEN) {
-                wsRef.current.send(JSON.stringify({
-                    type: WebSocketNotificationType.REGISTER,
-                    userId: userSelector.id
-                }));
-            }
-            isConnecting.current = false;
-        };
-        wsRef.current.onmessage = (event: WebSocketMessageEvent) => {
-            try {
-                const data = JSON.parse(event.data);
-
-                switch (data.type) {
-                    case WebSocketNotificationType.NEW_MESSAGE: {
-                        const newMessage = new ChatMessageModel().fromJson(data.data, new AppConfig().getPreImage());
-                        if (
-                            parseInt(receiverId) &&
-                            (newMessage.receiverId === userSelector.id || newMessage.senderId === userSelector.id) &&
-                            (newMessage.senderId === parseInt(receiverId) || newMessage.receiverId === parseInt(receiverId))
-                        ) {
-                            console.log("Tin nhắn khớp, cập nhật UI");
-                            if (newMessage.senderId !== userSelector.id) {
-                                setMessages(prev => [...prev, newMessage]);
-                                flatListRef.current?.scrollToEnd();
-                            }
-                            if (newMessage.receiverId === userSelector.id) {
-                                ChatMessageMana.markMessageAsRead(newMessage.id)
-                                    .then(() => console.log("Đánh dấu tin nhắn đã đọc"))
-                                    .catch((err) => console.error("Lỗi đánh dấu:", err));
-                            }
-                        } else {
-                            console.log("Tin nhắn không khớp:", { receiverId, userId: userSelector.id, newMessage });
-                        }
-                        break;
-                    }
-                    case WebSocketNotificationType.MESSAGE_READ: {
-                        console.log('>>> Tin nhắn đã đọc: ', data, typeof data);
-                        setMessages(prev => prev.map(
-                            msg => {
-                                if (msg.id === data.data.messageId) {
-                                    let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage(), StatusMessage.SENT);
-                                    chat.isRead = true;
-                                    return chat;
-                                }
-                                return msg;
-                            }
-                        ));
-                        break;
-                    }
-                    case WebSocketNotificationType.CONVERSATION_READ: {
-                        console.log("Cuộc trò chuyện đã được đánh dấu đã đọc:", data);
-                        break;
-                    }
-                    case WebSocketNotificationType.SHOP_STATUS: {
-                        console.log('Trạng thái Shop: ', data.shopId, data.isOnline);
-                        const targetShopId: number = parseInt(shopId) || (otherUser && otherUser.shopId ? otherUser.shopId : 0);
-                        if (targetShopId && data.shopId === targetShopId) {
-                            setIsOtherUserOnline(data.isOnline);
-                            lastCheckedShopId.current = data.shopId;
-                        }
-                        break;
-                    }
-                }
-            } catch (error) {
-                console.log('>>> Error parsing Websocket message: ', error);
-            }
-        };
-
-        wsRef.current.onerror = (error) => {
-            console.error('WebSocket connection error:', error);
-            isConnecting.current = false;
-            setIsOtherUserOnline(false);
-        };
-
-        wsRef.current.onclose = () => {
-            console.log('WebSocket connection closed');
-            if (!isConnecting.current) {
-                setTimeout(() => {
-                    connectWebSocket();
-                    const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
-                    if (targetShopId && !isNaN(targetShopId) && wsRef.current?.readyState === WebSocket.OPEN && lastCheckedShopId.current !== targetShopId) {
-                        wsRef.current.send(JSON.stringify({
-                            type: WebSocketNotificationType.CHECK_SHOP_STATUS,
-                            shopId: targetShopId
-                        }));
-
-                        setTimeout(() => {
-                            if (isOtherUserOnline === undefined) {
-                                setIsOtherUserOnline(false);
-                            }
-                        }, 5000);
-                    }
-                }, 5000);
-            }
-        };
     };
 
     const fetchMessages = async () => {
@@ -183,36 +137,8 @@ const ChatDetailScreen = (props: Props) => {
                     ? response[0].sender
                     : response[0].receiver;
                 setOtherUser(user);
-
-                const targetShopId = shopId ? parseInt(shopId) : otherUser?.shopId;
-                if (targetShopId && !isNaN(targetShopId) && wsRef.current?.readyState === WebSocket.OPEN) {
-                    wsRef.current.send(JSON.stringify({
-                        type: WebSocketNotificationType.CHECK_SHOP_STATUS,
-                        shopId: targetShopId
-                    }));
-
-                    setTimeout(() => {
-                        if (isOtherUserOnline === undefined) {
-                            setIsOtherUserOnline(false);
-                        }
-                    }, 5000);
-                } else {
-                    setIsOtherUserOnline(false);
-                }
             } else {
-                if (shopId && wsRef.current?.readyState === WebSocket.OPEN) {
-                    wsRef.current.send(JSON.stringify({
-                        type: WebSocketNotificationType.CHECK_SHOP_STATUS,
-                        shopId: parseInt(shopId)
-                    }));
-                    setTimeout(() => {
-                        if (isOtherUserOnline === undefined) {
-                            setIsOtherUserOnline(false);
-                        }
-                    }, 5000);
-                } else {
-                    setIsOtherUserOnline(false);
-                }
+                setOtherUser(null);
             }
         } catch (error: any) {
             console.log(error);
