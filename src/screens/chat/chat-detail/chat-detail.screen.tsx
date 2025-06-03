@@ -79,6 +79,23 @@ const ChatDetailScreen = (props: Props) => {
                 }
                 case WebSocketNotificationType.CONVERSATION_READ: {
                     console.log("Cuộc trò chuyện đã được đánh dấu đã đọc:", data);
+                    const { userId1, userId2 } = data.data;
+
+                    if (userId2 !== userSelector.id || userId1 !== parseInt(receiverId)) {
+                        console.log("Thông báo không khớp với cuộc trò chuyện hiện tại:", { userId1, userId2, userSelectorId: userSelector.id, receiverId });
+                        break;
+                    }
+
+                    setMessages(prevMessages =>
+                        prevMessages.map(msg => {
+                            if (msg.senderId === userSelector.id && !msg.isRead) {
+                                console.log(`Cập nhật tin nhắn ${msg.id} thành đã đọc`);
+                                return { ...msg, isRead: true } as ChatMessageModel;
+                            }
+                            return msg;
+                        })
+                    );
+                    console.log("Sau khi cập nhật messages:", messages);
                     break;
                 }
                 case WebSocketNotificationType.SHOP_STATUS: {
