@@ -95,8 +95,11 @@ const ChatDetailScreen = (props: Props) => {
             }
         })
 
-        return () => subscriptionRef.current?.unsubscribe();
-    }, [userSelector.id, receiverId, shopId]);
+        return () => {
+            subscriptionRef.current?.unsubscribe();
+            setLastCheckedShopId(null); /** Quan trọng vì để tìm trạng thái shop khi mount lại **/
+        };
+    }, []);
 
     useEffect(() => {
         if (messages.length > 0) {

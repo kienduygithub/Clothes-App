@@ -17,6 +17,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { CommonColors } from "@/src/common/resource/colors";
 import { useWebSocket } from "@/src/customize/socket.context";
 import { Subject, Subscription } from "rxjs";
+import { WebSocketNotificationType } from "@/src/common/resource/websocket";
 
 type Props = {}
 
@@ -29,7 +30,7 @@ const ListChatScreen = (props: Props) => {
     const headerHeight = useHeaderHeight();
     const [fadeAnim] = useState(new Animated.Value(0));
     const { subscribe } = useWebSocket();
-    const subscriptionRef = useRef<Subscription | null>(null);
+    const subscriptionReff = useRef<Subscription | null>(null);
     useEffect(() => {
         fetchPreImage();
         fetchConversations();
@@ -38,9 +39,75 @@ const ListChatScreen = (props: Props) => {
             duration: 800,
             useNativeDriver: true,
         }).start();
-        subscriptionRef.current = subscribe().subscribe((data: any) => {
+        subscriptionReff.current = subscribe().subscribe((data: any) => {
+            switch (data.type) {
+                case WebSocketNotificationType.NEW_MESSAGE: {
+                    const newMessage = data.data;
+                    updateConversations(newMessage);
+                    break;
+                }
+                case WebSocketNotificationType.UPDATE_CONVERSATIONS: {
+                    const updatedConversation = data.data;
+                    setConversations(prev => {
+                        const existingIndex = prev.findIndex(
+                            conv => conv.otherUser.id === updatedConversation.otherUserId
+                        );
+                        if (existingIndex > -1) {
+                            const updated = [...prev];
+                            updated[existingIndex] = {
+                                ...updated[existingIndex],
+                                lastMessage: updatedConversation.lastMessage,
+                                unreadCount: updatedConversation.unreadCount
+                            };
+                            return updated;
+                        } else {
+                            return [
+                                {
+                                    otherUser: {
+                                        id: updatedConversation.otherUserId,
+                                        shop: updatedConversation.lastMessage.senderId === userSelector.id
+                                            ? updatedConversation.lastMessage.receiver.shop
+                                            : updatedConversation.lastMessage.sender.shop
+                                    },
+                                    lastMessage: updatedConversation.lastMessage,
+                                    unreadCount: updatedConversation.unreadCount
+                                } as Conversation,
+                                ...prev
+                            ]
+                        }
+                    })
+                }
+            }
         })
-    }, [])
+
+        return () => subscriptionReff.current?.unsubscribe();
+    }, [conversations])
+
+    const updateConversations = (newMessage: any) => {
+        const existingIndex = conversations.findIndex(
+            conv =>
+                (conv.otherUser.id === newMessage.sender.id && conv.otherUser.id !== userSelector.id) ||
+                (conv.otherUser.id === newMessage.receiver.id && conv.otherUser.id !== userSelector.id)
+        );
+        if (existingIndex > -1) {
+            setConversations(prev => {
+                const updated = [...prev];
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    lastMessage: newMessage
+                };
+                return updated
+            })
+        } else {
+            const newConversation: Conversation = {
+                otherUser: newMessage.senderId === userSelector.id ? newMessage.receiver : newMessage.sender,
+                lastMessage: newMessage,
+                unreadCount: newMessage.receiverId === userSelector.id ? 1 : 0
+            };
+
+            setConversations(prev => [newConversation, ...prev]);
+        }
+    }
 
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());

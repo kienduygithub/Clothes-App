@@ -34,7 +34,6 @@ export const UserReducer = (state = initialState, actions: ActionState) => {
             } as UserStoreState
         case UserActions.RESET_INFO_LOGGED:
             return {
-                ...state,
                 ...initialState,
             } as UserStoreState
         case UserActions.UPDATE_INFO_LOGGED:

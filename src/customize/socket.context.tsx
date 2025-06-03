@@ -46,7 +46,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
         wsRef.current.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                console.log("WebSocket nhận dữ liệu:", data);
+                console.log("WebSocket nhận dữ liệu:", data.type);
                 messageSubject.current.next(data); // Phát dữ liệu qua Subject
             } catch (error) {
                 console.error("Lỗi phân tích dữ liệu:", error);
