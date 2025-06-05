@@ -26,6 +26,8 @@ import { MessageError } from '@/src/common/resource/message-error';
 import * as ProductManagement from '@/src/data/management/product.management';
 import { ProductModel } from '@/src/data/model/product.model';
 import ProductItemComponent from '../home/comp/product-item/product-item.comp';
+import { useWebSocket } from '@/src/customize/socket.context';
+import { WebSocketNotificationType } from '@/src/common/resource/websocket';
 
 type Props = {};
 
@@ -38,6 +40,8 @@ const MeScreen = (props: Props) => {
     const [fadeAnim] = useState(new Animated.Value(0));
     const [products, setProducts] = useState<ProductModel[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+    const { sendMessage } = useWebSocket();
+
     useEffect(() => {
         fetchInfoUser();
         fetchProducts();
@@ -93,6 +97,10 @@ const MeScreen = (props: Props) => {
             dispatch(UserActions.ResetInfoLogged());
             dispatch(CartActions.ResetCart());
             dispatch(NotificationActions.ResetState());
+            sendMessage({
+                type: WebSocketNotificationType.LOGOUT,
+                userId: userSelector.id
+            })
             router.dismissAll();
             router.navigate({
                 pathname: '/(tabs)',
