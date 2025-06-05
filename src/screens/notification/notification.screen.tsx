@@ -14,7 +14,6 @@ import { RootState } from "@/src/data/types/global";
 import { PaginateModel } from "@/src/common/model/paginate.model";
 import * as NotificationMana from "@/src/data/management/notification.management";
 import * as NotificationActions from "@/src/data/store/actions/notification/notification.action";
-import * as UserActions from "@/src/data/store/actions/user/user.action";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
 import { NotificationActionType, NotificationReferenceType, NotificationType } from "@/src/common/resource/notification";
 import { LinearGradient } from "expo-linear-gradient";
@@ -24,13 +23,13 @@ import { MessageError } from "@/src/common/resource/message-error";
 import { getStatusTextAndColorOrder } from "@/src/common/resource/order_status";
 import { OrderModel } from "@/src/data/model/order.model";
 import { AppConfig } from "@/src/common/config/app.config";
+import store from "@/src/data/store/store.config";
 
 const NotificationScreen = () => {
     const { showToast } = useToast();
     const dispatch = useDispatch();
     const preImage = new AppConfig().getPreImage();
     const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
-    const notificationSelector: NotificationStoreState = useSelector((state: RootState) => state.notification);
     const [notifications, setNotifications] = useState<NotificationModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
@@ -43,16 +42,28 @@ const NotificationScreen = () => {
     const isFetching = useRef(false);
     const [selectedOrder, setSelectedOrder] = useState<OrderModel | null>(null);
 
-    useFocusEffect(useCallback(() => {
-        if (!notificationSelector.isLoaded) {
+    // useFocusEffect(useCallback(() => {
+    //     if (!store.getState().notification.isLoaded) {
+    //         fetchNotifications(1);
+    //     } else {
+    //         let notifications = store.getState().notification.notifications;
+    //         console.log(notifications.map(n => n.id));
+    //         setNotifications(notifications);
+    //         let isEndList =store.getState().notification.notifications.length >= notificationSelector.pagination.totalItems;
+    //         isEndReachedList.current = isEndList;
+    //     }
+    // }, []))
+    useEffect(() => {
+        if (!store.getState().notification.isLoaded) {
             fetchNotifications(1);
         } else {
+            let notificationSelector = store.getState().notification;
             console.log(notificationSelector.notifications.map(n => n.id));
             setNotifications(notificationSelector.notifications);
             let isEndList = notificationSelector.notifications.length >= notificationSelector.pagination.totalItems;
             isEndReachedList.current = isEndList;
         }
-    }, []))
+    }, [store.getState().notification.notifications])
 
     const fetchNotifications = async (page: number) => {
         try {
@@ -61,6 +72,7 @@ const NotificationScreen = () => {
             }
 
             isFetching.current = true;
+            const notificationSelector = store.getState().notification;
             const response = await NotificationMana.fetchNotificationByUser(page, notificationSelector.pagination.limit);
             const newNotifications = response.get('notifications');
 
@@ -121,6 +133,7 @@ const NotificationScreen = () => {
     }, [])
 
     const handleLoadMore = () => {
+        let notificationSelector = store.getState().notification;
         if (!isEndReachedList.current && !isFetching.current && notificationSelector.pagination.currentPage < notificationSelector.pagination.totalPages) {
             fetchNotifications(notificationSelector.pagination.currentPage + 1);
         }
@@ -250,7 +263,7 @@ const NotificationScreen = () => {
         >
             <View style={[styles.container]}>
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Thông báo {notificationSelector.unreadCount > 0 ? `(${notificationSelector.unreadCount})` : ''}</Text>
+                    <Text style={styles.headerTitle}>Thông báo {store.getState().notification.unreadCount > 0 ? `(${store.getState().notification.unreadCount})` : ''}</Text>
                 </View>
                 <FlatList
                     data={notifications}

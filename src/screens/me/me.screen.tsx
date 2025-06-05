@@ -26,7 +26,6 @@ import { MessageError } from '@/src/common/resource/message-error';
 import * as ProductManagement from '@/src/data/management/product.management';
 import { ProductModel } from '@/src/data/model/product.model';
 import ProductItemComponent from '../home/comp/product-item/product-item.comp';
-import websocketService from '@/src/common/service/websocket.service';
 
 type Props = {};
 
@@ -90,14 +89,13 @@ const MeScreen = (props: Props) => {
 
     const logout = async () => {
         try {
-            // websocketService.disconnect();
             await new AppConfig().clear();
             dispatch(UserActions.ResetInfoLogged());
             dispatch(CartActions.ResetCart());
             dispatch(NotificationActions.ResetState());
             router.dismissAll();
             router.navigate({
-                pathname: '/(routes)/sign-in',
+                pathname: '/(tabs)',
             });
         } catch (error) {
             console.log(error);

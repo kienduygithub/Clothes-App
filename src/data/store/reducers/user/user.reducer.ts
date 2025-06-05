@@ -14,10 +14,10 @@ export interface UserStoreState {
 }
 
 const initialState: UserStoreState = {
-    id: 0,
+    id: -1,
     name: '',
     image_url: '',
-    cart_id: 0,
+    cart_id: -1,
     roles: Roles.CUSTOMER,
     favorites: [],
     isLogged: false,

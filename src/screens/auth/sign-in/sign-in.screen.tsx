@@ -1,15 +1,9 @@
 import { Animated, ImageBackground, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import SignInStyle from "./sign-in.style";
-import { Link, router } from "expo-router";
-import InputField from "@/src/components/inputField/inputField.comp";
+import { router } from "expo-router";
 import { CommonColors } from "@/src/common/resource/colors";
-import { Routes } from "@/src/common/resource/routes";
-import SocialSignInButtons from "@/src/components/socialSignInButton/socialSignInButtons.comp";
 import * as AuthManagement from "../../../data/management/auth.management";
 import { AuthModel } from "@/src/data/model/auth.model";
-import { Formik } from "formik";
-import * as Yup from 'yup';
-import FormStyle from "@/src/common/styles/form.styles";
 import { HttpCode } from "@/src/common/resource/http-code";
 import { AppConfig } from "@/src/common/config/app.config";
 import { UserModel } from "@/src/data/model/user.model";
@@ -18,12 +12,10 @@ import { useDispatch, useSelector } from "react-redux";
 import * as  UserActions from "@/src/data/store/actions/user/user.action";
 import { RootState } from "@/src/data/types/global";
 import { UserStoreState } from "@/src/data/store/reducers/user/user.reducer";
-import { MessageError } from "@/src/common/resource/message-error";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import websocketService from "@/src/common/service/websocket.service";
 
 interface FormData {
     email: string;
@@ -69,10 +61,6 @@ const SignInScreen = () => {
             await new AppConfig().setUserInfo(userInfo);
             dispatch(UserActions.UpdateExpiresLogged(true));
             dispatch(UserActions.UpdateLoggedStatus(true));
-
-            /** Khởi tạo kết nối WebSocket với người dùng có UserId **/
-            // websocketService.updateUserId(userInfo.id);
-
             router.navigate("/(tabs)");
         } catch (error: any) {
             console.log(error);

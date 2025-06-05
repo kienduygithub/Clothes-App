@@ -2,6 +2,9 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { AppConfig } from "@/src/common/config/app.config";
 import { WebSocketNotificationType } from "@/src/common/resource/websocket";
 import { Subject, Observable } from "rxjs";
+import { useSelector } from "react-redux";
+import { RootState } from "../data/types/global";
+import { UserStoreState } from "../data/store/reducers/user/user.reducer";
 
 interface WebSocketContextType {
     subscribe: () => Observable<any>;
@@ -12,18 +15,18 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
-export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: number | null }> = ({
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
-    userId,
 }) => {
     const wsRef = useRef<WebSocket | null>(null);
-    const [isConnecting, setIsConnecting] = useState(false);
+    const isConnecting = useRef(false);
     const [lastCheckedShopId, setLastCheckedShopId] = useState<number | null>(null);
     const messageSubject = useRef(new Subject<any>());
+    const userSelector: UserStoreState = useSelector((state: RootState) => state.userLogged);
 
     const reconnect = () => {
-        if (!userId || isConnecting || (wsRef.current && wsRef.current.readyState === WebSocket.OPEN)) return;
-        setIsConnecting(true);
+        if (!userSelector.isLogged || isConnecting.current || (wsRef.current && wsRef.current.readyState === WebSocket.OPEN)) return;
+        isConnecting.current = true;
         const domain = new AppConfig().getDomain();
         const hostMatch = domain.match(/https?:\/\/([^:/]+)/);
         const host = hostMatch ? hostMatch[1] : "localhost";
@@ -33,12 +36,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
         wsRef.current = new WebSocket(wsUrl);
 
         wsRef.current.onopen = () => {
-            setIsConnecting(false);
-            console.log("WebSocket kết nối thành công, đăng ký userId:", userId);
-            if (wsRef.current && userId) {
+            isConnecting.current = false;
+            console.log("WebSocket kết nối thành công, đăng ký userId:", userSelector.id);
+            if (wsRef.current && userSelector.isLogged) {
                 wsRef.current.send(JSON.stringify({
                     type: WebSocketNotificationType.REGISTER,
-                    userId
+                    userId: userSelector.id
                 }));
             }
         };
@@ -47,7 +50,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
             try {
                 const data = JSON.parse(event.data);
                 console.log("WebSocket nhận dữ liệu:", data.type);
-                messageSubject.current.next(data); // Phát dữ liệu qua Subject
+                messageSubject.current.next(data);
             } catch (error) {
                 console.error("Lỗi phân tích dữ liệu:", error);
             }
@@ -55,14 +58,15 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
 
         wsRef.current.onerror = (error) => {
             console.error("Lỗi WebSocket:", error);
-            setIsConnecting(false);
+            isConnecting.current = false;
         };
 
         wsRef.current.onclose = () => {
             console.log("WebSocket đóng, thử kết nối lại...");
             wsRef.current = null;
-            setIsConnecting(false);
-            if (userId) {
+            isConnecting.current = false;
+            if (userSelector.isLogged) {
+                console.log('Tái kích hoạt WebSocket nếu còn login');
                 setTimeout(reconnect, 2000);
             }
         };
@@ -73,11 +77,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode; userId: nu
         return () => {
             console.log("Ngắt kết nối WebSocket...");
             if (wsRef.current) {
-                wsRef.current.close();
                 wsRef.current = null;
             }
         };
-    }, [userId]);
+    }, [userSelector.id]);
 
     const subscribe = () => {
         return messageSubject.current.asObservable();

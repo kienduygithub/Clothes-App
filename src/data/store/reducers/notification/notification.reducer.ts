@@ -41,7 +41,6 @@ export const NotificationReducer = (state = initialState, action: ActionState) =
             const notification = action.data.notification;
             const currNotifications = [...state.notifications];
             currNotifications.unshift(notification);
-            console.log(currNotifications.map(n => n.id));
             const updatedPagination = {
                 ...state.pagination,
                 totalItems: state.pagination.totalItems + 1,
