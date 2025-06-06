@@ -30,7 +30,8 @@ const ListChatScreen = (props: Props) => {
     const headerHeight = useHeaderHeight();
     const [fadeAnim] = useState(new Animated.Value(0));
     const { subscribe } = useWebSocket();
-    const subscriptionReff = useRef<Subscription | null>(null);
+    const subscriptionRef = useRef<Subscription | null>(null);
+
     useEffect(() => {
         fetchPreImage();
         fetchConversations();
@@ -39,7 +40,16 @@ const ListChatScreen = (props: Props) => {
             duration: 800,
             useNativeDriver: true,
         }).start();
-        subscriptionReff.current = subscribe().subscribe((data: any) => {
+
+        return () => {
+            if (subscriptionRef.current) {
+                subscriptionRef.current.unsubscribe();
+            }
+        };
+    }, [])
+
+    const subcribeWebSocket = () => {
+        subscriptionRef.current = subscribe().subscribe((data: any) => {
             switch (data.type) {
                 case WebSocketNotificationType.NEW_MESSAGE: {
                     const newMessage = data.data;
@@ -47,18 +57,24 @@ const ListChatScreen = (props: Props) => {
                     break;
                 }
                 case WebSocketNotificationType.UPDATE_CONVERSATIONS: {
+                    console.log(data.type)
                     const updatedConversation = data.data;
                     setConversations(prev => {
                         const existingIndex = prev.findIndex(
-                            conv => conv.otherUser.id === updatedConversation.otherUserId
+                            conv => (conv.otherUser.id === updatedConversation.lastMessage.senderId && conv.otherUser.id !== userSelector.id) ||
+                                (conv.otherUser.id === updatedConversation.lastMessage.receiverId && conv.otherUser.id !== userSelector.id)
                         );
+                        console.log(existingIndex);
                         if (existingIndex > -1) {
+                            console.log(updatedConversation.unreadCount);
                             const updated = [...prev];
                             updated[existingIndex] = {
                                 ...updated[existingIndex],
                                 lastMessage: updatedConversation.lastMessage,
-                                unreadCount: updatedConversation.unreadCount
+                                unreadCount: updatedConversation.lastMessage.senderId === userSelector.id
+                                    ? 0 : updatedConversation.unreadCount
                             };
+                            console.log(updated)
                             return updated;
                         } else {
                             return [
@@ -79,9 +95,7 @@ const ListChatScreen = (props: Props) => {
                 }
             }
         })
-
-        return () => subscriptionReff.current?.unsubscribe();
-    }, [conversations])
+    }
 
     const updateConversations = (newMessage: any) => {
         const existingIndex = conversations.findIndex(
@@ -125,6 +139,7 @@ const ListChatScreen = (props: Props) => {
             console.log(error);
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
+        subcribeWebSocket();
     }
 
     const handleConversationPress = async (receiverId: number, shopId: number) => {
