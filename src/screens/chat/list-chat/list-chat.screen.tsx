@@ -63,35 +63,6 @@ const ListChatScreen = (props: Props) => {
                     updateConversations(newMessage);
                     break;
                 }
-                // case WebSocketNotificationType.UPDATE_CONVERSATIONS: {
-                //     const updatedConversation = data.data;
-                //     const convrs = [...conversations];
-                //     const existingIndex = convrs.findIndex(
-                //         conv =>
-                //             (conv.otherUser.id === updatedConversation.lastMessage.senderId && conv.otherUser.id !== userSelector.id) ||
-                //             (conv.otherUser.id === updatedConversation.lastMessage.receiverId && conv.otherUser.id !== userSelector.id)
-                //     );
-                //     console.log(existingIndex);
-                //     if (existingIndex > -1) {
-                //         convrs[existingIndex].lastMessage = updatedConversation.lastMessage;
-                //         if (updatedConversation.lastMessage.senderId === userSelector.id) {
-                //             convrs[existingIndex].unreadCount = 0;
-                //         } else {
-                //             convrs[existingIndex].unreadCount = updatedConversation.unreadCount
-                //         }
-                //     } else {
-                //         convrs.unshift({
-                //             otherUser: updatedConversation.lastMessage.senderId === userSelector.id
-                //                 ? updatedConversation.lastMessage.receiver
-                //                 : updatedConversation.lastMessage.sender,
-                //             lastMessage: updatedConversation.lastMessage,
-                //             unreadCount: updatedConversation.lastMessage.senderId === userSelector.id
-                //                 ? 0
-                //                 : updatedConversation.unreadCount
-                //         } as Conversation);
-                //     }
-                //     setConversations(convrs);
-                // }
             }
         })
     }
