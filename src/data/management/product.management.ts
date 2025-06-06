@@ -17,6 +17,18 @@ export const fetchProducts = async () => {
     }
 }
 
+export const fetchRelativeProductInShop = async (shopId: number, productId: number) => {
+    try {
+        const result = await ProductService.fetchRelativeProductInShop(shopId, productId);
+        const response = result?.products?.map(
+            (product: any) => new ProductModel().convertObj(product)
+        ) ?? [];
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const fetchProductsByShopId = async (id: number) => {
     try {
         const result = await ProductService.fetchProductsByShopId(id);

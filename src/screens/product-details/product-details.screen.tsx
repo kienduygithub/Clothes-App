@@ -121,7 +121,7 @@ const ProductDetailScreen = (props: Props) => {
 
     const fetchProductShop = async () => {
         try {
-            const response = await ProductManagement.fetchProductsByShopId(product?.shop?.id ?? 0);
+            const response = await ProductManagement.fetchRelativeProductInShop(product?.shop?.id ?? 0, +id);
             console.log('Danh sách sản phẩm cửa hàng: Done!');
             setProducts(response);
         } catch (error) {
