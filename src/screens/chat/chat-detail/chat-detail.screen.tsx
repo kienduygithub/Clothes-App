@@ -64,7 +64,6 @@ const ChatDetailScreen = (props: Props) => {
                     break;
                 }
                 case WebSocketNotificationType.MESSAGE_READ: {
-                    console.log('>>> Tin nhắn đã đọc: ', data, typeof data);
                     setMessages(prev => prev.map(
                         msg => {
                             if (msg.id === data.data.messageId) {
@@ -95,7 +94,6 @@ const ChatDetailScreen = (props: Props) => {
                             return msg;
                         })
                     );
-                    console.log("Sau khi cập nhật messages:", messages);
                     break;
                 }
                 case WebSocketNotificationType.SHOP_STATUS: {
@@ -195,6 +193,10 @@ const ChatDetailScreen = (props: Props) => {
                     ? { ...response, status: StatusMessage.SENT } as ChatMessageModel
                     : msg
             ));
+            sendMessage({
+                type: WebSocketNotificationType.NEW_MESSAGE,
+                data: response
+            });
         } catch (error) {
             console.log(error);
             showToast(MessageError.BUSY_SYSTEM, 'error');
@@ -241,6 +243,10 @@ const ChatDetailScreen = (props: Props) => {
                     ? { ...response, status: StatusMessage.SENT } as ChatMessageModel
                     : msg
             ));
+            sendMessage({
+                type: WebSocketNotificationType.NEW_MESSAGE,
+                data: response
+            });
         } catch (error) {
             console.log(error);
             setMessages((prev) =>

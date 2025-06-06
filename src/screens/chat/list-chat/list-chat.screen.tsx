@@ -48,6 +48,13 @@ const ListChatScreen = (props: Props) => {
         };
     }, [])
 
+    useEffect(() => {
+        if (subscriptionRef.current) {
+            return;
+        }
+        subcribeWebSocket();
+    }, [conversations])
+
     const subcribeWebSocket = () => {
         subscriptionRef.current = subscribe().subscribe((data: any) => {
             switch (data.type) {
@@ -57,41 +64,33 @@ const ListChatScreen = (props: Props) => {
                     break;
                 }
                 case WebSocketNotificationType.UPDATE_CONVERSATIONS: {
-                    console.log(data.type)
                     const updatedConversation = data.data;
-                    setConversations(prev => {
-                        const existingIndex = prev.findIndex(
-                            conv => (conv.otherUser.id === updatedConversation.lastMessage.senderId && conv.otherUser.id !== userSelector.id) ||
-                                (conv.otherUser.id === updatedConversation.lastMessage.receiverId && conv.otherUser.id !== userSelector.id)
-                        );
-                        console.log(existingIndex);
-                        if (existingIndex > -1) {
-                            console.log(updatedConversation.unreadCount);
-                            const updated = [...prev];
-                            updated[existingIndex] = {
-                                ...updated[existingIndex],
-                                lastMessage: updatedConversation.lastMessage,
-                                unreadCount: updatedConversation.lastMessage.senderId === userSelector.id
-                                    ? 0 : updatedConversation.unreadCount
-                            };
-                            console.log(updated)
-                            return updated;
+                    const convrs = [...conversations];
+                    const existingIndex = convrs.findIndex(
+                        conv =>
+                            (conv.otherUser.id === updatedConversation.lastMessage.senderId && conv.otherUser.id !== userSelector.id) ||
+                            (conv.otherUser.id === updatedConversation.lastMessage.receiverId && conv.otherUser.id !== userSelector.id)
+                    );
+                    console.log(existingIndex);
+                    if (existingIndex > -1) {
+                        convrs[existingIndex].lastMessage = updatedConversation.lastMessage;
+                        if (updatedConversation.lastMessage.senderId === userSelector.id) {
+                            convrs[existingIndex].unreadCount = 0;
                         } else {
-                            return [
-                                {
-                                    otherUser: {
-                                        id: updatedConversation.otherUserId,
-                                        shop: updatedConversation.lastMessage.senderId === userSelector.id
-                                            ? updatedConversation.lastMessage.receiver.shop
-                                            : updatedConversation.lastMessage.sender.shop
-                                    },
-                                    lastMessage: updatedConversation.lastMessage,
-                                    unreadCount: updatedConversation.unreadCount
-                                } as Conversation,
-                                ...prev
-                            ]
+                            convrs[existingIndex].unreadCount = updatedConversation.unreadCount
                         }
-                    })
+                    } else {
+                        convrs.unshift({
+                            otherUser: updatedConversation.lastMessage.senderId === userSelector.id
+                                ? updatedConversation.lastMessage.receiver
+                                : updatedConversation.lastMessage.sender,
+                            lastMessage: updatedConversation.lastMessage,
+                            unreadCount: updatedConversation.lastMessage.senderId === userSelector.id
+                                ? 0
+                                : updatedConversation.unreadCount
+                        } as Conversation);
+                    }
+                    setConversations(convrs);
                 }
             }
         })
@@ -135,11 +134,11 @@ const ListChatScreen = (props: Props) => {
         try {
             const response = await ChatMessageMana.fetchConversations();
             setConversations(response);
+            console.log(response);
         } catch (error) {
             console.log(error);
             showToast(MessageError.BUSY_SYSTEM, 'error');
         }
-        subcribeWebSocket();
     }
 
     const handleConversationPress = async (receiverId: number, shopId: number) => {
