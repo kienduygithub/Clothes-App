@@ -214,7 +214,7 @@ const SearchResultScreen = (props: Props) => {
                             backgroundColor: 'transparent'
                         }}
                     >
-                        <Text style={styles.emptyText}>Không có có sản phẩm</Text>
+                        <Text style={styles.emptyText}>Không có sản phẩm</Text>
                     </Animated.View>
                 )}
             </View>

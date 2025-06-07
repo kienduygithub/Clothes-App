@@ -355,11 +355,17 @@ const ProductDetailScreen = (props: Props) => {
                         <Animated.View style={[styles.container, { marginTop: 10 }]} entering={FadeInDown.delay(800).duration(500)}>
                             <View style={styles.productShopWrapper}>
                                 <Text style={styles.productShopText}>Các sản phẩm khác của cửa hàng</Text>
-                                <ShopProductListComponent
-                                    products={products}
-                                    preImage={preImage}
-                                    shop_id={product.shop?.id ?? 0}
-                                />
+                                {products.length > 0 ? (
+                                    <ShopProductListComponent
+                                        products={products}
+                                        preImage={preImage}
+                                        shop_id={product.shop?.id ?? 0}
+                                    />
+                                ) : (
+                                    <View style={styles.emptyContainer}>
+                                        <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
+                                    </View>
+                                )}
                             </View>
                         </Animated.View>
                     )}
@@ -428,97 +434,5 @@ const ProductDetailScreen = (props: Props) => {
 }
 
 const styles = ProductDetailStyle;
-
-const reviewStyles = StyleSheet.create({
-    reviewWrapper: {
-        paddingVertical: 12,
-        backgroundColor: CommonColors.white,
-    },
-    reviewHeader: {
-        marginBottom: 12,
-        paddingHorizontal: 16
-    },
-    reviewTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#1F2937',
-        marginBottom: 8,
-    },
-    ratingSummary: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    ratingText: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#FF6200',
-        marginRight: 8,
-    },
-    stars: {
-        flexDirection: 'row',
-        marginRight: 8,
-    },
-    reviewCount: {
-        fontSize: 14,
-        color: '#6B7280',
-    },
-    reviewItem: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-    },
-    reviewUser: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: '#34D399',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-        overflow: 'hidden',
-    },
-    avatarText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    userDetails: {
-        flex: 1,
-    },
-    userName: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1F2937',
-        marginBottom: 4,
-    },
-    starContainer: {
-        flexDirection: 'row',
-    },
-    reviewComment: {
-        fontSize: 14,
-        color: '#1F2937',
-        marginBottom: 8,
-    },
-    reviewDate: {
-        fontSize: 12,
-        color: '#9CA3AF',
-    },
-    viewMoreButton: {
-        marginTop: 12,
-        paddingVertical: 10,
-        borderRadius: 8,
-        backgroundColor: CommonColors.primary,
-        alignItems: 'center',
-    },
-    viewMoreText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '500',
-    },
-});
 
 export default ProductDetailScreen;
