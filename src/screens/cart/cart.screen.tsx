@@ -67,6 +67,7 @@ const CartScreen = (props: Props) => {
 
     const fetchCartByUser = async () => {
         if (userSelector.isLogged === false) {
+            setLoading(false);
             return;
         }
         setLoading(true);

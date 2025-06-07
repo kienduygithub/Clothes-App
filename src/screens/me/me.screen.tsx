@@ -73,8 +73,7 @@ const MeScreen = (props: Props) => {
 
     const fetchProducts = async () => {
         try {
-            const response = await ProductManagement.fetchProducts();
-            console.log('Sản phẩm: Done!');
+            const response = await ProductManagement.fetchLatestProduct();
             setProducts(response);
         } catch (error) {
             console.log(error);
@@ -133,13 +132,6 @@ const MeScreen = (props: Props) => {
         }
 
         router.navigate('/(routes)/register-shop');
-    };
-
-    const navigateToProductDetail = (productId: number) => {
-        router.navigate({
-            pathname: '/(routes)/product-details',
-            params: { id: productId }
-        });
     };
 
     return (
@@ -244,15 +236,21 @@ const MeScreen = (props: Props) => {
                     </View>
                     <View style={styles.recentlyViewedSection}>
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Sản phẩm đã xem gần đây</Text>
+                            <Text style={styles.sectionTitle}>Sản phẩm gần đây</Text>
                         </View>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productCarousel}>
-                            {products.map((product) => (
-                                <View key={`${product.id}-latest`} style={{ marginRight: 16 }}>
-                                    <ProductItemComponent key={product.id} item={product} preImage={preImage} productType='regular' index={products.indexOf(product)} />
-                                </View>
-                            ))}
-                        </ScrollView>
+                        {products.length > 0 ? (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productCarousel}>
+                                {products.map((product) => (
+                                    <View key={`${product.id}-latest`} style={{ marginRight: 16 }}>
+                                        <ProductItemComponent key={product.id} item={product} preImage={preImage} productType='regular' index={products.indexOf(product)} />
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        ) : (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
+                            </View>
+                        )}
                     </View>
                 </ScrollView>
             </View>

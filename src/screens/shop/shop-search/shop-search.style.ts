@@ -1,14 +1,26 @@
 import { CommonColors } from "@/src/common/resource/colors";
+import { Fonts } from "@/src/common/resource/fonts";
 import { Dimensions, StyleSheet } from "react-native";
 
 const { width: WIDTH_SCREEN } = Dimensions.get('screen');
 
 const ShopSearchStyle = StyleSheet.create({
     /** Header */
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
+        backgroundColor: 'white',
+    },
+
+
     headerContainer: {
         width: WIDTH_SCREEN,
         height: 100,
-        backgroundColor: 'transparent',
+        backgroundColor: CommonColors.extraLightGray,
         marginBottom: 10,
         flexDirection: 'row',
         alignItems: 'center',
@@ -34,12 +46,14 @@ const ShopSearchStyle = StyleSheet.create({
         marginLeft: 18
     },
     textTitle: {
-        fontSize: 22,
-        fontWeight: '700',
-        letterSpacing: 1.2
+        fontSize: 18,
+        fontWeight: '500',
+        letterSpacing: 1.2,
+        fontFamily: Fonts.ROBOTO_MEDIUM
     },
 
     container: {
+        flex: 1,
         backgroundColor: CommonColors.extraLightGray,
         paddingTop: 10,
     },

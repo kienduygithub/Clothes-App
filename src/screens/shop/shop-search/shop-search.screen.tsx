@@ -164,10 +164,7 @@ const ShopSearchScreen = (props: Props) => {
     return (
         <>
             {/* Header */}
-            <View style={[styles.headerContainer]}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back-sharp" size={24} color="black" />
-                </TouchableOpacity>
+            <View style={[styles.header, { paddingTop: 30, position: 'relative' }]}>
                 {TYPE === 'All' && (
                     <View style={styles.searchContainer}>
                         <Octicons name="search" size={18} color={CommonColors.white} />
@@ -182,7 +179,7 @@ const ShopSearchScreen = (props: Props) => {
                     <Text style={styles.textTitle}>{TEXT_TITLE}</Text>
                 )}
             </View>
-            <View style={{ marginTop: 100 }}>
+            <View style={{ flex: 1 }}>
                 {isFetching.current ? (
                     <LoadingDots size={16} color={CommonColors.primary} />
                 ) : (
@@ -213,7 +210,7 @@ const ShopSearchScreen = (props: Props) => {
                             backgroundColor: 'transparent'
                         }}
                     >
-                        <Text style={styles.emptyText}>Không có có sản phẩm</Text>
+                        <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
                     </Animated.View>
                 )}
             </View>
@@ -241,5 +238,22 @@ const ButtonSearchMore = ({
 }
 
 const styles = ShopSearchStyle;
-
+{/* <View style={[styles.headerContainer]}>
+    <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <Ionicons name="arrow-back-sharp" size={24} color="black" />
+    </TouchableOpacity>
+    {TYPE === 'All' && (
+        <View style={styles.searchContainer}>
+            <Octicons name="search" size={18} color={CommonColors.white} />
+            <TextInput
+                value={searchInput}
+                onChangeText={(text: string) => setSearchInput(text)}
+                placeholder="Tìm kiếm sản phẩm trong cửa hàng"
+            />
+        </View>
+    )}
+    {TYPE !== 'All' && (
+        <Text style={styles.textTitle}>{TEXT_TITLE}</Text>
+    )}
+</View> */}
 export default ShopSearchScreen;
