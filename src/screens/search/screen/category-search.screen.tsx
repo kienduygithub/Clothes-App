@@ -36,7 +36,7 @@ const CategorySearchScreen = (props: Props) => {
     const [products, setProducts] = useState<ProductModel[]>([]);
     const initPaginate = new PaginateModel().convertObj({
         currentPage: 1,
-        limit: 2,
+        limit: 10,
         totalItems: 0,
         totalPages: 1,
     });
@@ -193,24 +193,11 @@ const CategorySearchScreen = (props: Props) => {
                     }
                 />
                 {isEndReached.current && !isFetching.current && (
-                    <View style={{ backgroundColor: CommonColors.extraLightGray }}>
-                        <Animated.View
-                            entering={FadeInDown.delay(1000).duration(300)}
-                            style={{
-                                flexDirection: 'row',
-                                gap: 10,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: CommonColors.extraLightGray,
-                                height: 50,
-                            }}
-                        >
-                            <Text style={{ fontSize: 18, fontWeight: '500', color: CommonColors.primary }}>
-                                Không tìm thấy sản phẩm nữa
-                            </Text>
-                            <FontAwesome6 name="sad-cry" size={22} color={CommonColors.primary} />
-                        </Animated.View>
-                    </View>
+                    <Animated.View entering={FadeInDown.delay(1000).duration(300)}>
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
+                        </View>
+                    </Animated.View>
                 )}
             </View>
             <CustomBottomSheet

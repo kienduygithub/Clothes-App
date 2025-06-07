@@ -51,7 +51,20 @@ const CategorySearchStyle = StyleSheet.create({
     btnSearchMoreText: {
         fontSize: 18,
         color: CommonColors.primary
-    }
+    },
+    emptyContainer: {
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        backgroundColor: 'transparent'
+    },
+    emptyText: {
+        textAlign: "center",
+        color: "#666",
+        fontSize: 15
+    },
 });
 
 export default CategorySearchStyle;
