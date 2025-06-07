@@ -20,27 +20,35 @@ const FlashSaleComponent = ({ products, preImage }: Props) => {
                     activeOpacity={0.7}
                     style={styles.titleButton}
                 >
-                    <Text style={styles.titleBtn}>Xem tất cả</Text>
+                    <Text style={styles.titleBtn}>
+                        Xem tất cả
+                    </Text>
                     <Ionicons name="chevron-forward" size={16} color="#33adff" />
                 </TouchableOpacity>
             </View>
-            <FlatList
-                data={products}
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ marginLeft: 20, paddingRight: 20 }}
-                keyExtractor={(item) => `${item.id}`}
-                renderItem={({ index, item }) => (
-                    <View style={{ marginRight: 10 }}>
-                        <ProductItemComponent
-                            item={item}
-                            index={index}
-                            preImage={preImage}
-                            productType="sale"
-                        />
-                    </View>
-                )}
-            />
+            {products.length > 0 ? (
+                <FlatList
+                    data={products}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ marginLeft: 20, paddingRight: 20 }}
+                    keyExtractor={(item) => `${item.id}`}
+                    renderItem={({ index, item }) => (
+                        <View style={{ marginRight: 10 }}>
+                            <ProductItemComponent
+                                item={item}
+                                index={index}
+                                preImage={preImage}
+                                productType="sale"
+                            />
+                        </View>
+                    )}
+                />
+            ) : (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
+                </View>
+            )}
         </View>
     );
 };

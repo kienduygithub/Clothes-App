@@ -52,20 +52,34 @@ const ProductListComponent = ({ products, preImage, flatlist }: Props) => {
                             productType="regular"
                         />
                     )}
+                    ListEmptyComponent={() => (
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
+                        </View>
+                    )}
                 />
             ) : (
-                <View style={styles.itemsWrapper}>
-                    {products.map((item, index) => (
-                        <View key={item.id} style={styles.productWrapper}>
-                            <ProductItemComponent
-                                item={item}
-                                index={index}
-                                preImage={preImage}
-                                productType="regular"
-                            />
+                <>
+                    {products.length > 0 ? (
+                        <View style={styles.itemsWrapper}>
+                            {products.map((item, index) => (
+                                <View key={item.id} style={styles.productWrapper}>
+                                    <ProductItemComponent
+                                        item={item}
+                                        index={index}
+                                        preImage={preImage}
+                                        productType="regular"
+                                    />
+                                </View>
+                            ))}
                         </View>
-                    ))}
-                </View>
+                    ) : (
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>Không tìm thấy sản phẩm</Text>
+                        </View>
+                    )}
+
+                </>
             )}
         </View>
     );

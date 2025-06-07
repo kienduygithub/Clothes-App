@@ -36,11 +36,23 @@ const ProductListStyle = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'stretch',
-        marginBottom: 50,
     },
     productWrapper: {
         width: '50%',
         paddingLeft: 5,
+    },
+    emptyContainer: {
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        backgroundColor: 'transparent'
+    },
+    emptyText: {
+        textAlign: "center",
+        color: "#666",
+        fontSize: 15
     },
 });
 

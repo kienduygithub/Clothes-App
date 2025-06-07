@@ -23,14 +23,15 @@ const HomeScreen = () => {
     const [refreshProduct, setRefreshProduct] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [products, setProducts] = useState<ProductModel[]>([]);
+    const [latestProducts, setLatestProducts] = useState<ProductModel[]>([]);
     const [categories, setCategories] = useState<CategoryModel[]>([]);
     const [isSearchOverlayVisible, setSearchOverlayVisible] = useState(false);
     const firstFetching = useRef(true);
-
     useEffect(() => {
         fetchPreImage();
         fetchCategories();
         fetchProducts();
+        fetchLatestProducts();
         firstFetching.current = false;
     }, [])
 
@@ -61,7 +62,6 @@ const HomeScreen = () => {
     const fetchProducts = async () => {
         try {
             const response = await ProductManagement.fetchProducts();
-            console.log('Sản phẩm: Done!');
             setProducts(response);
         } catch (error) {
             console.log(error);
@@ -71,10 +71,18 @@ const HomeScreen = () => {
         }
     }
 
+    const fetchLatestProducts = async () => {
+        try {
+            const response = await ProductManagement.fetchLatestProduct();
+            setLatestProducts(response);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const fetchCategories = async () => {
         try {
             const response = await CategoryManagement.fetchParentCategories();
-            console.log('Danh mục: Done!');
             setCategories(response);
         } catch (error) {
             console.log(error);
@@ -125,7 +133,7 @@ const HomeScreen = () => {
                             }
                         >
                             <CategoryListComponent categories={categories} preImage={preImage} setRefreshCategory={setRefreshCategory} />
-                            <FlashSaleComponent preImage={preImage} products={products} />
+                            <FlashSaleComponent preImage={preImage} products={latestProducts} />
                             <View style={{ marginHorizontal: 20, marginBottom: 10 }}>
                                 <Image
                                     source={require("@/assets/images/sale-banner.jpg")}

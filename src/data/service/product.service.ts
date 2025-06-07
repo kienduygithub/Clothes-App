@@ -30,6 +30,20 @@ export const fetchRelativeProductInShop = async (shopId: number, productId: numb
     }
 }
 
+export const fetchLatestProduct = async () => {
+    try {
+        const domain = new AppConfig().getDomain();
+        const response = await ServiceCore.GET(
+            `${domain}`,
+            `product/latest`
+        )
+
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const fetchProductsByShopId = async (id: number) => {
     try {
         const domain = new AppConfig().getDomain();

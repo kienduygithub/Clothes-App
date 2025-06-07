@@ -34,6 +34,19 @@ const FlashSaleComponentStyle = StyleSheet.create({
         color: '#33adff',
         fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'Roboto-Medium',
     },
+    emptyContainer: {
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 50,
+        backgroundColor: 'transparent'
+    },
+    emptyText: {
+        textAlign: "center",
+        color: "#666",
+        fontSize: 15
+    },
 })
 
 export default FlashSaleComponentStyle;

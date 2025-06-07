@@ -29,6 +29,18 @@ export const fetchRelativeProductInShop = async (shopId: number, productId: numb
     }
 }
 
+export const fetchLatestProduct = async () => {
+    try {
+        const result = await ProductService.fetchLatestProduct();
+        const response = result?.products?.map(
+            (product: any) => new ProductModel().convertObj(product)
+        ) ?? [];
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const fetchProductsByShopId = async (id: number) => {
     try {
         const result = await ProductService.fetchProductsByShopId(id);
