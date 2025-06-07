@@ -95,7 +95,8 @@ export const searchAndFilterProductMobile = async (
     sortPrice: Sort,
     minPrice: number,
     maxPrice: number,
-    minRatings: number[]
+    minRatings: number[],
+    isLatest: boolean
 ) => {
     try {
         const domain = new AppConfig().getDomain();
@@ -122,7 +123,9 @@ export const searchAndFilterProductMobile = async (
 
         const response = await ServiceCore.GET(
             `${domain}`,
-            `product/search-and-filter?${queryParams.toString()}`
+            isLatest
+                ? `product/latest/search-and-filter?${queryParams.toString()}`
+                : `product/search-and-filter?${queryParams.toString()}`
         )
 
         return response;

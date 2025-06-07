@@ -19,6 +19,15 @@ const FlashSaleComponent = ({ products, preImage }: Props) => {
                 <TouchableOpacity
                     activeOpacity={0.7}
                     style={styles.titleButton}
+                    onPress={() => {
+                        router.push({
+                            pathname: '/(routes)/search-result',
+                            params: {
+                                search: '',
+                                type: 'latest'
+                            },
+                        });
+                    }}
                 >
                     <Text style={styles.titleBtn}>
                         Xem tất cả

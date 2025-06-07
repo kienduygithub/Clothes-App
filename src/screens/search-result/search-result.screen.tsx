@@ -24,7 +24,10 @@ import LoadingDots from "@apolloeagle/loading-dots";
 type Props = {};
 
 const SearchResultScreen = (props: Props) => {
-    const { search: SEARCH_PARAMS, shop_id: SHOP } = useRoute().params as { search: string, shop_id: string };
+    const { search: SEARCH_PARAMS, shop_id: SHOP, type } = useRoute().params as {
+        search: string, shop_id: string,
+        type?: string
+    };
     const { showToast } = useToast();
     const [preImage, setPreImage] = useState('');
     const [refreshing, setRefreshing] = useState(false);
@@ -92,6 +95,7 @@ const SearchResultScreen = (props: Props) => {
                     params.minRatings
                 );
             } else {
+                console.log(type);
                 response = await ProductManagement.searchAndFilterProductMobile(
                     searchValue,
                     page,
@@ -101,7 +105,8 @@ const SearchResultScreen = (props: Props) => {
                     params.sortPrice,
                     params.minPrice,
                     params.maxPrice,
-                    params.minRatings
+                    params.minRatings,
+                    type && type === 'latest' ? true : false
                 );
             }
 

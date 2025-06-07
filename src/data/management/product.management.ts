@@ -88,7 +88,8 @@ export const searchAndFilterProductMobile = async (
     sortPrice: Sort,
     minPrice: number,
     maxPrice: number,
-    minRatings: number[]
+    minRatings: number[],
+    isLatest: boolean
 ) => {
     try {
         const result = await ProductService.searchAndFilterProductMobile(
@@ -100,7 +101,8 @@ export const searchAndFilterProductMobile = async (
             sortPrice,
             minPrice,
             maxPrice,
-            minRatings
+            minRatings,
+            isLatest
         );
         const products: ProductModel[] = result?.products?.map(
             (product: any) => new ProductModel().convertObj(product)

@@ -30,8 +30,8 @@ const HomeScreen = () => {
     useEffect(() => {
         fetchPreImage();
         fetchCategories();
-        fetchProducts();
         fetchLatestProducts();
+        fetchProducts();
         firstFetching.current = false;
     }, [])
 
