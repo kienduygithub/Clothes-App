@@ -15,6 +15,7 @@ import TabProductComponent from "./comp/tab-product/tab-product.component";
 import TabCategoryComponent from "./comp/tab-category/tab-category.component";
 import SearchOverlayComponent from "@/src/components/search-overlay/search-overlay.component";
 import { MessageError } from "@/src/common/resource/message-error";
+import store from "@/src/data/store/store.config";
 
 type Props = {}
 
@@ -36,7 +37,6 @@ const ShopScreen = (props: Props) => {
     const [searchInput, setSearchInput] = useState('');
     const [shop, setShop] = useState<ShopModel | null>(null);
     const [openSearchOverlay, setOpenSearchOverlay] = useState(false);
-
     const fetchPreImage = () => {
         setPreImage(new AppConfig().getPreImage());
     }

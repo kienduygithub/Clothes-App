@@ -248,6 +248,14 @@ const ProductDetailScreen = (props: Props) => {
         )
     }
 
+    const openSelectVariant = () => {
+        if (userSelector.isLogged && userSelector.id === product?.shop?.ownerId) {
+            showToast('Không thể chọn sản phẩm thuộc cửa hàng của bạn', 'info');
+            return;
+        }
+        handleSnapPress(0);
+    }
+
     return (
         <>
             <View style={{ position: 'relative', width: SCREEN_WIDTH, backgroundColor: CommonColors.yellow }}>
@@ -395,12 +403,14 @@ const ProductDetailScreen = (props: Props) => {
                                 borderWidth: 1,
                             }
                         ]}
-                        onPress={() => handleSnapPress(0)}
+                        onPress={() => openSelectVariant()}
                     >
                         <Ionicons name="cart-outline" size={20} color={CommonColors.primary} />
-                        <Text style={[styles.buttonTxt, { color: CommonColors.primary }]}>Thêm vào giỏ</Text>
+                        <Text style={[styles.buttonTxt, { color: CommonColors.primary }]}>
+                            Thêm vào giỏ
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => handleSnapPress(0)}>
+                    <TouchableOpacity style={styles.button} onPress={() => openSelectVariant()}>
                         <Text style={styles.buttonTxt}>Mua ngay</Text>
                     </TouchableOpacity>
                 </Animated.View>

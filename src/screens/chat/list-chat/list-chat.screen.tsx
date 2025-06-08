@@ -162,14 +162,22 @@ const ListChatScreen = (props: Props) => {
                 style={styles.conversationItem}
                 onPress={() => handleConversationPress(otherUser.id, otherUser.shopId ?? 0)}
             >
-                <Image
-                    source={{ uri: `${preImage}/${otherUser.shop?.logo_url}` }}
-                    style={styles.avatar}
-                />
+                {otherUser.shop?.logo_url ? (
+                    <Image
+                        source={{ uri: `${preImage}/${otherUser.shop?.logo_url}` }}
+                        style={styles.avatar}
+                    />
+                ) : (
+                    <Image
+                        source={{ uri: `${preImage}/${otherUser.image_url}` }}
+                        style={styles.avatar}
+                    />
+                )}
+
                 <View style={styles.conversationContent}>
                     <View style={styles.conversationHeader}>
                         <Text style={styles.userName} numberOfLines={1}>
-                            {otherUser.shop?.shop_name}
+                            {otherUser.shop?.shop_name ? otherUser.shop.shop_name : otherUser.name}
                         </Text>
                         <Text style={styles.timeAgo}>
                             {formatTimeAgo(lastMessage.createdAt)}

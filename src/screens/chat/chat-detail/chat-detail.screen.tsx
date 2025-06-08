@@ -336,7 +336,7 @@ const ChatDetailScreen = (props: Props) => {
                         >
                             {!isOwnMessage && (
                                 <Image
-                                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url}` }}
+                                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url || otherUser?.image_url}` }}
                                     style={styles.avatar}
                                     defaultSource={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url}` }}
                                 />
@@ -410,12 +410,12 @@ const ChatDetailScreen = (props: Props) => {
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
                 </TouchableOpacity>
                 <Image
-                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url}` }}
+                    source={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url || otherUser?.image_url}` }}
                     style={styles.headerAvatar}
-                    defaultSource={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url}` }}
+                    defaultSource={{ uri: `${new AppConfig().getPreImage()}/${otherUser?.shop?.logo_url || otherUser?.image_url}` }}
                 />
                 <View style={styles.headerInfo}>
-                    <Text style={styles.headerName}>{otherUser?.shop?.shop_name || 'Cửa hàng'}</Text>
+                    <Text style={styles.headerName}>{otherUser?.shop?.shop_name || otherUser?.name || 'Cửa hàng'}</Text>
                     {otherUser && (
                         <View style={styles.onlineStatusContainer}>
                             <View style={[

@@ -4,6 +4,7 @@ import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import * as ChatMessageMana from "@/src/data/management/chat-message.management";
 import { router } from "expo-router";
+import store from "@/src/data/store/store.config";
 
 type Props = {
     shop: ShopModel | null;
@@ -16,6 +17,7 @@ const ShopHeaderComponent = ({
     shop,
     preImage = ''
 }: Props) => {
+    const userSelector = store.getState().userLogged;
 
     const onCreateConversation = async () => {
         try {
@@ -52,11 +54,12 @@ const ShopHeaderComponent = ({
                         <Text style={styles.address}>{shop.contact_address}</Text>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.btn} onPress={onCreateConversation}>
-                    {/* <AntDesign name="plus" size={15} color={CommonColors.white} /> */}
-                    <MaterialCommunityIcons name="message-reply-text-outline" size={15} color="white" />
-                    <Text style={styles.btnText}>Chat</Text>
-                </TouchableOpacity>
+                {userSelector.isLogged && userSelector.id !== shop?.ownerId && (
+                    <TouchableOpacity style={styles.btn} onPress={onCreateConversation}>
+                        <MaterialCommunityIcons name="message-reply-text-outline" size={15} color="white" />
+                        <Text style={styles.btnText}>Chat</Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     )
