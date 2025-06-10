@@ -63,8 +63,6 @@ const ProductDetailScreen = (props: Props) => {
     const [firstLoading, setFirstLoading] = useState(true);
 
     const dispatch = useDispatch();
-
-    const sheetRef = useRef<BottomSheet>(null);
     const [isOpenSelectVariantSheet, setIsOpenSelectVariantSheet] = useState(false);
 
     useEffect(() => {
@@ -158,18 +156,18 @@ const ProductDetailScreen = (props: Props) => {
                 quantity
             ))
             showToast("Đã thêm sản phẩm vào giỏ hàng", "success");
-            sheetRef.current?.close();
+            setIsOpenSelectVariantSheet(false);
         } catch (error: any) {
             console.log(error);
             if (error?.message?.includes("Vượt quá số lượng hàng tồn kho")) {
                 showToast(MessageError.EXCEED_QUANTITY_STOCK, "error");
             } else if (error?.message === 'Session expired, please log in again') {
-                sheetRef.current?.close();
+                setIsOpenSelectVariantSheet(false);
                 router.navigate('/(routes)/sign-in');
                 showToast(MessageError.EXPIRES_SESSION, "error");
             } else {
                 showToast(MessageError.BUSY_SYSTEM, "error");
-                sheetRef.current?.close();
+                setIsOpenSelectVariantSheet(false);
             }
 
         }
