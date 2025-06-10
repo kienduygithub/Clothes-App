@@ -7,8 +7,8 @@ import {
     Dimensions,
     TouchableWithoutFeedback,
     ScrollView,
-    Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -18,25 +18,27 @@ interface BottomSheetProps {
     children: React.ReactNode;
     height?: number;
 }
+
 const BottomSheetComponent: React.FC<BottomSheetProps> = ({
     isOpen,
     onClose,
     children,
-    height = SCREEN_HEIGHT * 0.6,
+    height = SCREEN_HEIGHT * 0.5,
 }) => {
-    const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+    const adjustedScreenHeight = SCREEN_HEIGHT;
+    const translateY = useRef(new Animated.Value(adjustedScreenHeight)).current;
     const backdropOpacity = useRef(new Animated.Value(0)).current;
     const isAnimating = useRef(false);
 
     const resetPosition = Animated.timing(translateY, {
-        toValue: SCREEN_HEIGHT - height,
+        toValue: adjustedScreenHeight,
         duration: 300,
         useNativeDriver: true,
     });
 
     const closeSheet = Animated.parallel([
         Animated.timing(translateY, {
-            toValue: SCREEN_HEIGHT,
+            toValue: adjustedScreenHeight,
             duration: 300,
             useNativeDriver: true,
         }),
@@ -49,7 +51,7 @@ const BottomSheetComponent: React.FC<BottomSheetProps> = ({
 
     const openSheet = Animated.parallel([
         Animated.timing(translateY, {
-            toValue: SCREEN_HEIGHT - height,
+            toValue: 0,
             duration: 300,
             useNativeDriver: true,
         }),
@@ -65,7 +67,7 @@ const BottomSheetComponent: React.FC<BottomSheetProps> = ({
             onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
             onPanResponderMove: (_, gestureState) => {
                 if (gestureState.dy > 0) {
-                    translateY.setValue(SCREEN_HEIGHT - height + gestureState.dy);
+                    translateY.setValue(adjustedScreenHeight - height + gestureState.dy);
                 }
             },
             onPanResponderRelease: (_, gestureState) => {
@@ -99,7 +101,7 @@ const BottomSheetComponent: React.FC<BottomSheetProps> = ({
         } else {
             hide();
         }
-    }, [isOpen]);
+    }, [isOpen, show, hide]);
 
     return (
         <>
@@ -127,15 +129,15 @@ const BottomSheetComponent: React.FC<BottomSheetProps> = ({
                         transform: [{ translateY }],
                     },
                 ]}
-                {...panResponder.panHandlers}
             >
-                <View style={styles.handlerContainer}>
+                <View style={styles.handlerContainer} {...panResponder.panHandlers}>
                     <View style={styles.handler} />
                 </View>
-
                 <ScrollView
-                    style={{ flex: 1 }}
+                    style={styles.scrollView}
+                    contentContainerStyle={{ paddingBottom: 20, minHeight: height - 20 }}
                     showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled={true}
                 >
                     {children}
                 </ScrollView>
@@ -171,6 +173,9 @@ const styles = StyleSheet.create({
         height: 6,
         borderRadius: 3,
         backgroundColor: '#ccc',
+    },
+    scrollView: {
+        flex: 1,
     },
 });
 

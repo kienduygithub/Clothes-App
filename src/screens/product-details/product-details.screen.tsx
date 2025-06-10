@@ -411,7 +411,6 @@ const ProductDetailScreen = (props: Props) => {
                 <BottomSheetComponent
                     isOpen={isOpenSelectVariantSheet}
                     onClose={() => setIsOpenSelectVariantSheet(false)}
-                    height={670}
                 >
                     <SelectVariantComponent
                         product={product}
