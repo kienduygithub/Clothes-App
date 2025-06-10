@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import {
     View,
     StyleSheet,
@@ -29,85 +29,117 @@ const BottomSheetComponent: React.FC<BottomSheetProps> = ({
     const translateY = useRef(new Animated.Value(adjustedScreenHeight)).current;
     const backdropOpacity = useRef(new Animated.Value(0)).current;
     const isAnimating = useRef(false);
+    const [localIsOpen, setLocalIsOpen] = useState(isOpen);
 
-    const resetPosition = Animated.timing(translateY, {
-        toValue: adjustedScreenHeight,
-        duration: 300,
-        useNativeDriver: true,
-    });
-
-    const closeSheet = Animated.parallel([
-        Animated.timing(translateY, {
-            toValue: adjustedScreenHeight,
-            duration: 300,
-            useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }),
-    ]);
-
-    const openSheet = Animated.parallel([
+    const resetPosition = useCallback(() => {
         Animated.timing(translateY, {
             toValue: 0,
             duration: 300,
             useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-        }),
-    ]);
+        }).start();
+    }, [translateY]);
+
+    const closeSheet = useCallback(() => {
+        if (isAnimating.current) return;
+
+        isAnimating.current = true;
+        setLocalIsOpen(false);
+
+        Animated.parallel([
+            Animated.timing(translateY, {
+                toValue: adjustedScreenHeight,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+            Animated.timing(backdropOpacity, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+        ]).start(({ finished }) => {
+            if (finished) {
+                isAnimating.current = false;
+                onClose();
+            }
+        });
+    }, [adjustedScreenHeight, onClose, backdropOpacity, translateY]);
+
+    const openSheet = useCallback(() => {
+        if (isAnimating.current) return;
+
+        isAnimating.current = true;
+        setLocalIsOpen(true);
+
+        Animated.parallel([
+            Animated.timing(translateY, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+            Animated.timing(backdropOpacity, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+        ]).start(({ finished }) => {
+            if (finished) {
+                isAnimating.current = false;
+            }
+        });
+    }, [backdropOpacity, translateY]);
 
     const panResponder = useRef(
         PanResponder.create({
-            onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
+            onMoveShouldSetPanResponder: (_, gestureState) => {
+                // Chỉ phản ứng khi vuốt xuống mạnh và theo chiều dọc
+                return gestureState.dy > 30 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy);
+            },
             onPanResponderMove: (_, gestureState) => {
                 if (gestureState.dy > 0) {
-                    translateY.setValue(adjustedScreenHeight - height + gestureState.dy);
+                    translateY.setValue(gestureState.dy);
                 }
             },
             onPanResponderRelease: (_, gestureState) => {
-                if (gestureState.dy > 100) {
-                    hide();
+                // Tăng ngưỡng đáng kể để tránh đóng bottom sheet khi vuốt nhẹ
+                if (gestureState.dy > 200 || gestureState.vy > 1.0) {
+                    closeSheet();
                 } else {
-                    resetPosition.start();
+                    resetPosition();
                 }
             },
         })
     ).current;
 
     const show = useCallback(() => {
-        isAnimating.current = true;
-        openSheet.start(() => {
-            isAnimating.current = false;
-        });
-    }, [height]);
+        openSheet();
+    }, [openSheet]);
 
     const hide = useCallback(() => {
-        isAnimating.current = true;
-        closeSheet.start(() => {
-            isAnimating.current = false;
-            onClose();
-        });
-    }, [height]);
+        closeSheet();
+    }, [closeSheet]);
 
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !localIsOpen && !isAnimating.current) {
             show();
-        } else {
+        } else if (!isOpen && localIsOpen && !isAnimating.current) {
             hide();
         }
-    }, [isOpen, show, hide]);
+    }, [isOpen, localIsOpen, show, hide]);
+
+    // Nếu component bị unmount khi đang mở, đảm bảo gọi onClose
+    useEffect(() => {
+        return () => {
+            if (localIsOpen) {
+                onClose();
+            }
+        };
+    }, [localIsOpen, onClose]);
 
     return (
         <>
             {/* Backdrop */}
             <Animated.View
-                pointerEvents={isOpen ? 'auto' : 'none'}
+                pointerEvents={localIsOpen ? 'auto' : 'none'}
                 style={[
                     styles.backdrop,
                     {
