@@ -127,7 +127,7 @@ const PaymentScreen = (props: Props) => {
                 dispatch(UserActions.UpdateExpiresLogged(false));
                 showToast(MessageError.EXPIRES_SESSION, 'error');
             } else {
-                showToast(MessageError.BUSY_SYSTEM, 'error');
+                showToast(error?.message, 'error');
             }
         }
     }
