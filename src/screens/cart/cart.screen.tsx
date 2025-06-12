@@ -213,7 +213,8 @@ const CartScreen = (props: Props) => {
                     } else if (coupon.discount_type === DiscountTypes.FIXED) {
                         discount = coupon.discount_value;
                     }
-                    shopTotal -= discount;
+
+                    shopTotal = Math.max(0, shopTotal - discount);
                 }
             }
 
@@ -321,6 +322,9 @@ const CartScreen = (props: Props) => {
                 subTotal += shopTotalFinal;
                 discount += shopDiscount;
 
+                // Đảm bảo shop_final_total không âm
+                const shopFinalTotal = Math.max(0, shopTotalFinal - shopDiscount);
+
                 return {
                     cart_shop_id: cart_shop.id,
                     shop: cart_shop.shop ?? new ShopModel(),
@@ -328,7 +332,7 @@ const CartScreen = (props: Props) => {
                     selected_coupon: cart_shop.selectedCoupon ? cart_shop.selectedCoupon : null,
                     shop_total: shopTotalFinal,
                     shop_discount: shopDiscount,
-                    shop_final_total: shopTotalFinal - shopDiscount
+                    shop_final_total: shopFinalTotal
                 } as CartShopFinalType;
             })
             .filter((item): item is CartShopFinalType => item !== null) ?? [];
@@ -338,8 +342,7 @@ const CartScreen = (props: Props) => {
             return;
         }
 
-        // Calculate final total
-        const final_total = subTotal - discount;
+        const final_total = Math.max(0, subTotal - discount);
 
         try {
             router.navigate({
