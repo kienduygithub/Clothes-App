@@ -200,9 +200,10 @@ const RegisterShopScreen = () => {
             }
             showToast('Đăng ký cửa hàng thành công', 'success');
             router.back();
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
-            showToast('Hệ thống đang bận, vui lòng thử lại', 'error');
+            showToast(error?.message, "error");
+            // showToast('Hệ thống đang bận, vui lòng thử lại', 'error');
         }
     };
 

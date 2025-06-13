@@ -152,7 +152,7 @@ const NotificationScreen = () => {
 
         if (item.type === NotificationType.ORDER_NEW) {
             title = "Đơn hàng mới";
-            message = `Bạn đã mua ${item.data?.order_id ? `#${item.data.order_id}` : ''} thành công. Tổng: ${formatPriceRender(item.data?.shop_total ?? 0)} VNĐ`;
+            message = `Bạn đã mua ${item.data?.order_id ? `#${item.data.order_id}` : ''} thành công. Tổng: ${formatPriceRender(item.data?.order_total ?? 0)} VNĐ`;
         } else if (item.type === NotificationType.ORDER_CANCELED) {
             icon = (
                 <Feather name="x-octagon" size={24} color={CommonColors.red} />
