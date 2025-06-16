@@ -70,7 +70,6 @@ const ChatDetailScreen = (props: Props) => {
                                 // let chat = new ChatMessageModel().fromJson(msg, new AppConfig().getPreImage(), StatusMessage.SENT);
                                 let chat = { ...msg } as ChatMessageModel;
                                 chat.isRead = true;
-                                console.log(chat);
                                 return chat;
                             }
                             return msg;

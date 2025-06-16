@@ -92,6 +92,7 @@ const HomeScreen = () => {
     const onRefresh = () => {
         setRefreshing(true);
         fetchProducts();
+        fetchLatestProducts();
     };
 
     const onHandleSearch = (searchValue: string) => {
